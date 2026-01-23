@@ -13,6 +13,8 @@
 # 项目技术栈
 ### 核心（必须）
 
+**Python 3.12.10**
+
 **Django：主框架**
 
 Django + Django 模板 + Django Admin + 简单 JS
