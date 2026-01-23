@@ -54,8 +54,8 @@ DataTables 是一个 jQuery 插件，用于增强 HTML 表格的功能，提供�
   
 ### 可选增强
 
-Django REST Framework：如需部分API
-Celery：后台任务（数据分析）
-Redis：缓存
-Django Channels：WebSocket（实时通知）
+- Django REST Framework：如需部分API
+- Celery：后台任务（数据分析）
+- Redis：缓存
+- Django Channels：WebSocket（实时通知）
 
