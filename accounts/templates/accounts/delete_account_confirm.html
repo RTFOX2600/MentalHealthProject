@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}注销账号 - 学校平台{% endblock %}
+
+{% block content %}
+    <h2 style="color: var(--error-color);">确认注销账号？</h2>
+    <div style="text-align: center;">
+        <p style="color: var(--nav-link-color); margin-bottom: 2rem;">
+            请注意：此操作是不可逆的。一旦注销，您的所有数据将被永久删除，您将无法再使用此账号登录。
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn" style="background-color: var(--error-color);">确认注销</button>
+        </form>
+        <div class="footer-text" style="margin-top: 1rem;">
+            <a href="{% url 'home' %}">取消并返回</a>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<!--suppress ProblematicWhitespace -->
+<html lang="zh-hans">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}学校平台{% endblock %}</title>
+	<link rel="shortcut icon" href="{% static 'favicon.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+</head>
+<body>
+<div id="loader-wrapper">
+    <span class="loader"></span>
+</div>
+<nav class="navbar">
+	<a href="{% url 'home' %}" class="navbar-brand">学校平台</a>
+	<div class="nav-links">
+		<a href="{% url 'home' %}">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/home.svg' %}'); mask-image: url('{% static 'icons/home.svg' %}');"></span>
+            首页
+        </a>
+		{% if user.is_authenticated %}
+			{% if user.is_staff %}
+				<a href="{% url 'admin:index' %}" target="_blank">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/shield.svg' %}'); mask-image: url('{% static 'icons/shield.svg' %}');"></span>
+                    管理后台
+                </a>
+			{% endif %}
+            <div class="dropdown">
+                <div class="nav-user">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}'); margin-right: 0.15rem;"></span>
+                    {% if user.last_name or user.first_name %}{{ user.last_name }}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}
+                    <svg style="width: 16px; height: 16px; margin-left: 0.15rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+                <div class="dropdown-content">
+                    <a href="{% url 'profile_update' %}">
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}');"></span>
+                        修改个人信息
+                    </a>
+                    <a href="{% url 'password_change' %}">
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/lock.svg' %}'); mask-image: url('{% static 'icons/lock.svg' %}');"></span>
+                        修改密码
+                    </a>
+                    <a href="{% url 'delete_account' %}" class="delete-account">
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/trash.svg' %}'); mask-image: url('{% static 'icons/trash.svg' %}');"></span>
+                        注销账号
+                    </a>
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0;">
+                    <form action="{% url 'logout' %}" method="post" id="logout-form" style="display:none;">
+                        {% csrf_token %}
+                    </form>
+                    <a href="javascript:void(0)" onclick="document.getElementById('logout-form').submit();">
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/logout.svg' %}'); mask-image: url('{% static 'icons/logout.svg' %}');"></span>
+                        退出登录
+                    </a>
+                </div>
+            </div>
+		{% else %}
+			<a href="{% url 'login' %}">登录</a>
+			<a href="{% url 'register' %}">注册</a>
+		{% endif %}
+	</div>
+</nav>
+<div class="container">
+	<div class="card">
+		{% block content %}{% endblock %}
+	</div>
+</div>
+<script>
+    window.addEventListener('load', function() {
+        const loader = document.getElementById('loader-wrapper');
+        loader.classList.add('loader-hidden');
+    });
+</script>
+</body>
+</html>

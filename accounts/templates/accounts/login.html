@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}登录 - 学校平台{% endblock %}
+
+{% block content %}
+    <h2>欢迎回来</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">登录</button>
+    </form>
+    <div class="footer-text">
+        还没有账号？<a href="{% url 'register' %}">立即注册</a>
+    </div>
+{% endblock %}

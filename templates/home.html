@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - 学校平台{% endblock %}
+
+{% block content %}
+    <h2>欢迎来到学校平台</h2>
+    <div style="text-align: center; margin-top: 1rem;">
+    {% if user.is_authenticated %}
+        <p style="color: var(--nav-link-color);">您好，<strong>{{ user.name|default:user.username }}</strong>！您已成功登录。</p>
+        <p style="color: var(--muted-text); margin-top: 0.5rem;">您的职位是：{{ user.position }}</p>
+    {% else %}
+        <p style="color: var(--nav-link-color);">请先登录或注册以访问更多功能。</p>
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+            <a href="{% url 'login' %}" class="btn" style="width: auto; padding: 0.625rem 2rem;">登录</a>
+            <a href="{% url 'register' %}" class="btn btn-secondary" style="width: auto; padding: 0.625rem 2rem;">注册</a>
+        </div>
+    {% endif %}
+    </div>
+{% endblock %}
