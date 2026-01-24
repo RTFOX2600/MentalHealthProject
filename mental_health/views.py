@@ -121,20 +121,20 @@ def _save_canteen_data(dataset, df):
 def _save_school_gate_data(dataset, df):
     """保存校门进出数据"""
     dataset.gate_records.all().delete()
-
+    
     # 定义方向映射
     direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
-
+    
     records = []
     for _, row in df.iterrows():
         dt = pd.to_datetime(row['校门进出时间'])
         if dt.tzinfo is None:
             dt = timezone.make_aware(dt, LOCAL_TZ)
-
+        
         # 标准化方向
         raw_dir = str(row['进出方向']).strip()
         direction = direction_map.get(raw_dir, raw_dir)
-
+        
         records.append(SchoolGateRecord(
             dataset=dataset,
             student_id=str(row['学号']),
@@ -142,8 +142,15 @@ def _save_school_gate_data(dataset, df):
             direction=direction,
             location=row['位置']
         ))
-
-    SchoolGateRecord.objects.bulk_create(records, batch_size=1000)
+        
+        # 每 500 条批量插入一次，避免内存占用过大
+        if len(records) >= 500:
+            SchoolGateRecord.objects.bulk_create(records, batch_size=500)
+            records = []
+    
+    # 插入剩余记录
+    if records:
+        SchoolGateRecord.objects.bulk_create(records, batch_size=500)
 
 
 def _save_dorm_gate_data(dataset, df):
@@ -170,8 +177,14 @@ def _save_dorm_gate_data(dataset, df):
             direction=direction,
             building=row['楼栋']
         ))
-
-    DormGateRecord.objects.bulk_create(records, batch_size=1000)
+        
+        # 每 500 条批量插入一次
+        if len(records) >= 500:
+            DormGateRecord.objects.bulk_create(records, batch_size=500)
+            records = []
+    
+    if records:
+        DormGateRecord.objects.bulk_create(records, batch_size=500)
 
 
 def _save_network_data(dataset, df):
@@ -190,7 +203,14 @@ def _save_network_data(dataset, df):
             domain=str(row.get('访问域名', '')),
             use_vpn=use_vpn
         ))
-    NetworkAccessRecord.objects.bulk_create(records, batch_size=1000)
+        
+        # 每 500 条批量插入一次
+        if len(records) >= 500:
+            NetworkAccessRecord.objects.bulk_create(records, batch_size=500)
+            records = []
+    
+    if records:
+        NetworkAccessRecord.objects.bulk_create(records, batch_size=500)
 
 
 def _save_grades_data(dataset, df):
