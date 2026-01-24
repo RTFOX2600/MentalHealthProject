@@ -59,20 +59,19 @@ def upload_file(request, file_type):
             defaults={'uploaded_by': request.user}
         )
 
-        # 根据类型保存数据
-        with transaction.atomic():
-            if file_type == 'canteen':
-                _save_canteen_data(dataset, df)
-            elif file_type == 'school-gate':
-                _save_school_gate_data(dataset, df)
-            elif file_type == 'dorm-gate':
-                _save_dorm_gate_data(dataset, df)
-            elif file_type == 'network':
-                _save_network_data(dataset, df)
-            elif file_type == 'grades':
-                _save_grades_data(dataset, df)
-            else:
-                return JsonResponse({'status': 'error', 'detail': '未知的文件类型'}, status=400)
+        # 根据类型保存数据（分批提交，无需大事务）
+        if file_type == 'canteen':
+            _save_canteen_data(dataset, df)
+        elif file_type == 'school-gate':
+            _save_school_gate_data(dataset, df)
+        elif file_type == 'dorm-gate':
+            _save_dorm_gate_data(dataset, df)
+        elif file_type == 'network':
+            _save_network_data(dataset, df)
+        elif file_type == 'grades':
+            _save_grades_data(dataset, df)
+        else:
+            return JsonResponse({'status': 'error', 'detail': '未知的文件类型'}, status=400)
 
         # 标记当前表格已上传
         uploaded_tables = request.session.get('uploaded_tables', [])
@@ -114,8 +113,14 @@ def _save_canteen_data(dataset, df):
             month=row['年份-月份'],
             consumption=float(row['食堂消费额度（本月）'])
         ))
-
-    CanteenConsumption.objects.bulk_create(records, batch_size=1000)
+        
+        # 每 500 条批量插入一次
+        if len(records) >= 500:
+            CanteenConsumption.objects.bulk_create(records, batch_size=500)
+            records = []
+    
+    if records:
+        CanteenConsumption.objects.bulk_create(records, batch_size=500)
 
 
 def _save_school_gate_data(dataset, df):
@@ -234,8 +239,14 @@ def _save_grades_data(dataset, df):
             month=row['年份-月份'],
             subject_grades=subject_grades
         ))
-
-    GradeRecord.objects.bulk_create(records, batch_size=1000)
+        
+        # 每 500 条批量插入一次
+        if len(records) >= 500:
+            GradeRecord.objects.bulk_create(records, batch_size=500)
+            records = []
+    
+    if records:
+        GradeRecord.objects.bulk_create(records, batch_size=500)
 
 
 @login_required
