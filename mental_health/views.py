@@ -268,14 +268,22 @@ def analyze_data(request, analysis_type='comprehensive'):
         pass
 
     try:
-        # 获取当前会话的数据集
+        # 获取当前会话的数据集（优先使用 session_id，否则使用用户最新数据）
         session_id = request.session.get('dataset_session_id')
-        if not session_id:
-            return JsonResponse({'status': 'error', 'detail': '未找到上传的数据'}, status=404)
-
-        dataset = UploadedDataSet.objects.filter(session_id=session_id).first()
+        
+        if session_id:
+            dataset = UploadedDataSet.objects.filter(session_id=session_id).first()
+        else:
+            # Session 过期时，使用当前用户最新上传的数据集
+            dataset = UploadedDataSet.objects.filter(
+                uploaded_by=request.user
+            ).order_by('-uploaded_at').first()
+        
         if not dataset:
-            return JsonResponse({'status': 'error', 'detail': '未找到上传的数据'}, status=404)
+            return JsonResponse({
+                'status': 'error',
+                'detail': '未找到上传的数据，请先上传数据文件'
+            }, status=404)
 
         # 准备数据字典
         data_dict = {}
