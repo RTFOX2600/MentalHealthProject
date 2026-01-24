@@ -203,6 +203,10 @@ form li {
 
 /* 全局响应式微调 */
 @media (max-width: 640px) {
+    body {
+        padding-top: 56px; /* 适配移动端较矮的固定导航栏 */
+    }
+
     html {
         font-size: 14px;
     }
