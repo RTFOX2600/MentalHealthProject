@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}首页 - 学校平台{% endblock %}
+{% block title %}首页 - 思想关怀系统{% endblock %}
 
 {% block content %}
-    <h2>欢迎来到学校平台</h2>
+    <h2>欢迎来到思想关怀系统</h2>
     <div style="text-align: center; margin-top: 1rem;">
     {% if user.is_authenticated %}
         <p style="color: var(--nav-link-color);">您好，<strong>{{ user.name|default:user.username }}</strong>！您已成功登录。</p>

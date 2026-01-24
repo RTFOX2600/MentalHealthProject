@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}关于我们 - 思想关怀系统{% endblock %}
+
+{% block content_wrapper %}
+<link rel="stylesheet" href="{% static 'css/about.css' %}">
+<div class="about-page-container">
+    <!-- 顶部横幅 -->
+    <div class="hero-banner">
+        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 1.5rem; color: white;">思想关怀系统</h1>
+        <p style="font-size: 1.35rem; opacity: 0.95; max-width: 750px; line-height: 1.6; color: white;">
+            融合大数据分析与心理健康评估，为高校提供精准的思想引导、思政辅助与舆情监控支持。
+        </p>
+    </div>
+
+    <!-- 技术栈部分 -->
+    <div class="section-title">
+        <div class="dot"></div>
+        <h2>项目技术栈</h2>
+    </div>
+    <div class="grid-container">
+        <div class="tech-card" style="border-top: 5px solid var(--python-color);">
+            <h4>Python 3.12</h4>
+            <p>高性能后端驱动，负责复杂的数据清洗、分析逻辑与核心算法实现。</p>
+        </div>
+        <div class="tech-card" style="border-top: 5px solid var(--django-color);">
+            <h4>Django</h4>
+            <p>全能型 Web 框架，提供稳健的安全机制、ORM 管理与高效的开发流程。</p>
+        </div>
+        <div class="tech-card" style="border-top: 5px solid var(--bootstrap-color);">
+            <h4>Bootstrap</h4>
+            <p>现代响应式 UI，确保系统在 PC、平板与手机端均有极致的视觉表现。</p>
+        </div>
+        <div class="tech-card" style="border-top: 5px solid var(--chartjs-color);">
+            <h4>Chart.js</h4>
+            <p>动态数据可视化，将抽象的思想状态分析结果转化为直观的图表报告。</p>
+        </div>
+        <div class="tech-card" style="border-top: 5px solid var(--datatables-color);">
+            <h4>DataTables</h4>
+            <p>专业级数据展示，提供极致的表格排序、全局搜索与即时统计功能。</p>
+        </div>
+        <div class="tech-card" style="border-top: 5px solid var(--postgresql-color);">
+            <h4>PostgreSQL</h4>
+            <p>工业级数据底座，保障海量校园行为数据的高并发读取与持久化存储。</p>
+        </div>
+    </div>
+
+    <!-- 团队部分 -->
+    <div class="section-title">
+        <div class="dot"></div>
+        <h2>项目团队</h2>
+    </div>
+    <div class="team-container">
+        <div class="member-card">
+            <div>
+                <span class="role-badge">Project Author</span>
+                <span class="member-name" style="color: var(--primary-color);">史天润 & 申卓毅</span>
+                <p class="member-desc">
+                    负责系统从 0 到 1 的全栈架构设计，涵盖大数据接入、分析模型训练以及用户交互界面的深度打磨。
+                </p>
+            </div>
+        </div>
+        <div class="member-card">
+            <div>
+                <span class="role-badge">Mentor</span>
+                <span class="member-name" style="color: #10b981;">舒亦雄 老师</span>
+                <p class="member-desc">
+                    提供项目方向指导、技术难点突破及业务逻辑校准，确保系统在教育管理实务中的有效落地。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系方式部分 -->
+    <div class="section-title" style="margin-top: 5rem;">
+        <div class="dot"></div>
+        <h2>联系方式</h2>
+    </div>
+    <div class="contact-container">
+        <div class="contact-card" style="border-left: 5px solid var(--primary-color);">
+            <h4>系统管理员</h4>
+	        <p>如有任何系统故障或数据异常，请及时与管理员取得联系。</p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <p><strong>史天润：</strong> <a href="mailto:2652205627@qq.com" style="color: var(--primary-color);">2652205627@qq.com</a></p>
+                <p><strong>申卓毅：</strong> <a href="mailto:1578093978@qq.com" style="color: var(--primary-color);">1578093978@qq.com</a></p>
+            </div>
+	        <h4>指导老师</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <p><strong>舒亦雄：</strong> <a href="mailto:852085570@qq.com" style="color: var(--primary-color);">852085570@qq.com</a></p>
+            </div>
+        </div>
+        <div class="contact-card" style="border-left: 5px solid #10b981;">
+            <h4>学校资源</h4>
+            <div style="margin-top: 0.5rem;">
+                <p>
+	                <strong>学校官网：</strong>
+	                <a href="https://www.whpu.edu.cn/" target="_blank" style="color: var(--primary-color);">https://www.whpu.edu.cn/</a>
+                </p>
+	            <p>
+		            <strong>心理咨询：</strong>
+		            <a href="https://xgc.whpu.edu.cn/info/1011/3555.htm" target="_blank" style="color: var(--primary-color);">https://xgc.whpu.edu.cn/info/1011/3555.htm</a>
+	            </p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>2026 思想关怀系统 · 致力于智能化校园建设</p>
+    </footer>
+</div>
+{% endblock %}

@@ -5,7 +5,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>{% block title %}学校平台{% endblock %}</title>
+	<title>{% block title %}思想关怀系统{% endblock %}</title>
 	<link rel="shortcut icon" href="{% static 'favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 </head>
@@ -14,11 +14,15 @@
     <span class="loader"></span>
 </div>
 <nav class="navbar">
-	<a href="{% url 'home' %}" class="navbar-brand">学校平台</a>
+	<a href="{% url 'home' %}" class="navbar-brand">思想关怀系统</a>
 	<div class="nav-links">
 		<a href="{% url 'home' %}">
             <span class="icon" style="-webkit-mask-image: url('{% static 'icons/home.svg' %}'); mask-image: url('{% static 'icons/home.svg' %}');"></span>
             首页
+        </a>
+        <a href="{% url 'about' %}">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/info.svg' %}'); mask-image: url('{% static 'icons/info.svg' %}');"></span>
+            关于
         </a>
 		{% if user.is_authenticated %}
 			{% if user.is_staff %}
@@ -65,9 +69,11 @@
 	</div>
 </nav>
 <div class="container">
+    {% block content_wrapper %}
 	<div class="card">
 		{% block content %}{% endblock %}
 	</div>
+    {% endblock %}
 </div>
 <script>
     window.addEventListener('load', function() {
