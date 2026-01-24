@@ -1,0 +1,36 @@
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --bg-color: #f3f4f6;
+    --text-color: #1f2937;
+    --heading-color: #111827;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --nav-link-color: #4b5563;
+    --label-color: #374151;
+    --input-bg: #f9fafb;
+    --muted-text: #4b5563;
+    --error-color: #ef4444;
+    --success-color: #10b981;
+    --info-color: #0683f1;
+    --shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #6366f1;
+        --primary-hover: #818cf8;
+        --bg-color: #0f172a;
+        --text-color: #f1f5f9;
+        --heading-color: #f8fafc;
+        --card-bg: #1e293b;
+        --border-color: #334155;
+        --nav-link-color: #94a3b8;
+        --label-color: #cbd5e1;
+        --input-bg: #334155;
+        --muted-text: #cbd5e1;
+        --shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    }
+}

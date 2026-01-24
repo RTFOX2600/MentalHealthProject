@@ -2,18 +2,72 @@
 
 {% block title %}首页 - 思想关怀系统{% endblock %}
 
-{% block content %}
-    <h2>欢迎来到思想关怀系统</h2>
-    <div style="text-align: center; margin-top: 1rem;">
-    {% if user.is_authenticated %}
-        <p style="color: var(--nav-link-color);">您好，<strong>{{ user.name|default:user.username }}</strong>！您已成功登录。</p>
-        <p style="color: var(--muted-text); margin-top: 0.5rem;">您的职位是：{{ user.position }}</p>
-    {% else %}
-        <p style="color: var(--nav-link-color);">请先登录或注册以访问更多功能。</p>
-        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
-            <a href="{% url 'login' %}" class="btn" style="width: auto; padding: 0.625rem 2rem;">登录</a>
-            <a href="{% url 'register' %}" class="btn btn-secondary" style="width: auto; padding: 0.625rem 2rem;">注册</a>
+{% block content_wrapper %}
+{% load static %}
+	<link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+	<div class="hero-section">
+	    <h1 class="hero-title">思想关怀系统</h1>
+	    <p class="hero-subtitle">
+	        为每一位学生提供专业的心理健康支持与思想关怀。
+	    </p>
+	    <div class="hero-cta">
+	        {% if user.is_authenticated %}
+	            <a href="javascript:void(0)" class="btn btn-light">进入工作台</a>
+	            <a href="{% url 'about' %}" class="btn btn-outline-light">了解更多</a>
+	        {% else %}
+	            <a href="{% url 'login' %}" class="btn btn-light">立即登录</a>
+	            <a href="{% url 'register' %}" class="btn btn-outline-light">加入我们</a>
+	        {% endif %}
+	    </div>
+	</div>
+
+	<!-- 个人状态 -->
+	{% if user.is_authenticated %}
+		<div class="fade-in-up" style="animation-delay: 0.1s; margin-top: -2rem; margin-bottom: 3rem;">
+			<div class="feature-card" style="text-align: left; max-width: 100%; margin-bottom: 0;">
+			    <h3 style="text-align: left;">个人状态</h3>
+			    <p>您好，<strong>{{ user.name|default:user.username }}</strong>！欢迎回来。</p>
+			    <p>您的身份是：<span class="badge bg-primary" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ user.position|default:"普通用户" }}</span></p>
+			</div>
+		</div>
+	{% endif %}
+
+	<!-- 简要介绍 -->
+	<div class="section-title fade-in-up" style="animation-delay: 0.2s;">
+	    <h2>核心服务</h2>
+	    <p>我们提供全方位的支持，确保学生的心理健康得到最专业的照顾。</p>
+	</div>
+
+	<div class="feature-grid">
+	    <div class="fade-in-up" style="animation-delay: 0.3s;">
+            <div class="feature-card" style="height: 100%; margin-bottom: 0;">
+                <div class="feature-icon-wrapper">
+                     <span class="icon" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
+                </div>
+                <h3>心理咨询</h3>
+                <p>专业的心理咨询师团队，为学生提供一对一的线下交流与心理服务。</p>
+            </div>
         </div>
-    {% endif %}
-    </div>
+
+	    <div class="fade-in-up" style="animation-delay: 0.4s;">
+            <div class="feature-card" style="height: 100%; margin-bottom: 0;">
+                <div class="feature-icon-wrapper">
+                     <span class="icon" style="-webkit-mask-image: url('{% static 'icons/info.svg' %}'); mask-image: url('{% static 'icons/info.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
+                </div>
+                <h3>智能分析</h3>
+                <p>智能分析学生心理、思想健康状态，提供个性化的建议。</p>
+            </div>
+        </div>
+
+	    <div class="fade-in-up" style="animation-delay: 0.5s;">
+            <div class="feature-card" style="height: 100%; margin-bottom: 0;">
+                <div class="feature-icon-wrapper">
+                     <span class="icon" style="-webkit-mask-image: url('{% static 'icons/shield.svg' %}'); mask-image: url('{% static 'icons/shield.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
+                </div>
+                <h3>隐私保障</h3>
+                <p>最高级别的加密处理与隐私保护协议，确保每一条数据的安全。</p>
+            </div>
+        </div>
+	</div>
 {% endblock %}

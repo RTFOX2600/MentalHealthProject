@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}注销账号 - 学校平台{% endblock %}
+{% block title %}注销账号 - 思想关怀系统{% endblock %}
 
 {% block content %}
     <h2 style="color: var(--error-color);">确认注销账号？</h2>
@@ -14,7 +14,7 @@
             <button type="submit" class="btn" style="background-color: var(--error-color);">确认注销</button>
         </form>
         <div class="footer-text" style="margin-top: 1rem;">
-            <a href="{% url 'home' %}">取消并返回</a>
+            <a class="external-link" href="{% url 'home' %}">取消并返回</a>
         </div>
     </div>
 {% endblock %}

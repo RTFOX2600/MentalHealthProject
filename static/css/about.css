@@ -4,7 +4,7 @@
     max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
-    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeInUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .hero-banner {
