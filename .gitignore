@@ -1,7 +1,33 @@
+# Python
 .venv/
+venv/
+env/
 *.pyc
-db.sqlite3
-.idea/
+*.pyo
+*.pyd
 __pycache__/
-./staticfiles/
-./static/downloads/*
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+*.log
+local_settings.py
+media/
+staticfiles/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project specific
+static/downloads/*
+!static/downloads/.gitkeep
