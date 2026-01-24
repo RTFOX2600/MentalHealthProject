@@ -31,3 +31,4 @@ staticfiles/
 # Project specific
 static/downloads/*
 !static/downloads/.gitkeep
+diagnose_upload.py
