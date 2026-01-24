@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure-53j_bl9ycppk9-c%@n_e5_q&e*l2u#=%m%he5jq1bg=%a^vh8l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 允许的主机名（必须配置）
+ALLOWED_HOSTS = ['rtfox.top', 'www.rtfox.top', '127.0.0.1', 'localhost']
+
+# CSRF 信任的来源（关键配置）
+CSRF_TRUSTED_ORIGINS = [
+    'https://rtfox.top',
+    'https://www.rtfox.top'
+]
 
 
 # Application definition
