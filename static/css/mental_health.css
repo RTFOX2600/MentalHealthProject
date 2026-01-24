@@ -1,0 +1,236 @@
+/* Mental Health Analysis Page Styles */
+
+.mh-container {
+    padding: 2rem 0;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.mh-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.mh-section {
+    margin-bottom: 2.5rem;
+    padding: 2rem;
+    background: var(--card-bg);
+    border-radius: 1rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.mh-section h2 {
+    color: var(--heading-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+}
+
+.mh-section p {
+    color: var(--text-color);
+}
+
+.mh-param-card label {
+    color: var(--label-color);
+}
+
+.mh-param-card input, 
+.mh-param-card select {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.mh-param-card input:focus, 
+.mh-param-card select:focus {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+.mh-upload-area p {
+    color: var(--primary-color);
+}
+
+.selected-file {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color) !important;
+}
+
+.mh-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.mh-upload-item {
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.mh-upload-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow);
+    border-color: var(--primary-color);
+}
+
+.mh-upload-area {
+    border: 2px dashed var(--primary-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mh-upload-area:hover {
+    background: var(--input-bg);
+}
+
+.mh-upload-area.dragover {
+    background: rgba(79, 70, 229, 0.1);
+    border-style: solid;
+}
+
+.mh-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: none;
+    width: 100%;
+}
+
+.mh-btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.mh-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.mh-btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.mh-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mh-analyze-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 992px) {
+    .mh-analyze-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.mh-param-card {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+}
+
+.mh-param-comp { background: rgba(79, 70, 229, 0.05); border-color: rgba(79, 70, 229, 0.2); }
+.mh-param-ideo { background: rgba(236, 72, 153, 0.05); border-color: rgba(236, 72, 153, 0.2); }
+.mh-param-pov { background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); }
+
+.mh-action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.mh-btn-analyze {
+    height: 3.5rem;
+    font-size: 1.1rem;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.mh-result {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+
+.mh-result.success { background: rgba(16, 185, 129, 0.1); color: var(--success-color); border: 1px solid var(--success-color); }
+.mh-result.error { background: rgba(239, 68, 68, 0.1); color: var(--error-color); border: 1px solid var(--error-color); }
+
+.mh-svg-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Generic Mask Icon */
+/*noinspection DuplicatedCode*/
+.mh-icon {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: currentColor;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    vertical-align: middle;
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+    .mh-param-comp { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.3); }
+    .mh-param-ideo { background: rgba(236, 72, 153, 0.1); border-color: rgba(236, 72, 153, 0.3); }
+    .mh-param-pov { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); }
+    
+    .mh-upload-item {
+        background: var(--card-bg);
+    }
+    
+    .text-muted {
+        color: #94a3b8 !important;
+    }
+}

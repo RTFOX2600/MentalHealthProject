@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}关于我们 - 思想关怀系统{% endblock %}
+{% block title %}关于我们 - 精准思政系统{% endblock %}
 
 {% block content_wrapper %}
 <link rel="stylesheet" href="{% static 'css/about.css' %}">
 <div class="about-page-container">
     <!-- 顶部横幅 -->
     <div class="hero-banner">
-        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 1.5rem; color: white;">思想关怀系统</h1>
+        <h1 style="font-size: 3rem; font-weight: 900; margin-bottom: 1.5rem; color: white;">精准思政系统</h1>
         <p style="font-size: 1.35rem; opacity: 0.95; max-width: 750px; line-height: 1.6; color: white;">
             融合大数据分析与心理健康评估，为高校提供精准的思想引导、思政辅助与舆情监控支持。
         </p>
@@ -114,8 +114,29 @@
         </div>
     </div>
 
+    <!-- 其它项目部分 -->
+    <div class="section-title" style="margin-top: 5rem;">
+        <div class="dot"></div>
+        <h2>其它项目</h2>
+    </div>
+    <div class="contact-container">
+        <div class="contact-card" style="border-left: 5px solid var(--info-color);">
+            <h4 style="color: var(--info-color);">班级宿舍分配系统</h4>
+            <p style="margin-top: 0.5rem; margin-bottom: 1rem; color: var(--muted-text);">
+                基于遗传算法的智能宿舍分配系统，自动综合考虑班级、性别、住宿偏好等多维约束，生成最优化分配方案。
+            </p>
+            <a href="{% static 'downloads/ez-allocation Setup 1.0.0.exe' %}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;" download>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                下载安装包
+            </a>
+        </div>
+    </div>
+
     <footer>
-        <p>2026 思想关怀系统 · 致力于智能化校园建设</p>
+        <p>2026 精准思政系统 · 致力于智能化校园建设</p>
     </footer>
 </div>
 {% endblock %}

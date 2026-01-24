@@ -1,2 +1,8 @@
 Django~=6.0.1
 gunicorn
+pandas
+numpy
+scikit-learn
+openpyxl
+pytz
+starlette

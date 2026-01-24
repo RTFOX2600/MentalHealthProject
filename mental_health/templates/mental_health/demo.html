@@ -1,0 +1,399 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}精准思政分析系统 - 演示{% endblock %}
+
+{% block container_class %}container-fluid px-md-5{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mental_health.css' %}">
+{% endblock %}
+
+{% block content_wrapper %}
+<div class="mh-container">
+    <!-- 头部 -->
+    <div class="mh-header">
+        <h1 class="display-4 fw-bold">精准思政分析系统</h1>
+        <p class="lead text-muted">基于校园行为数据的精准思政分析平台（程序与算法可行性验证）</p>
+    </div>
+
+    <!-- 表格上传区 -->
+    <div class="mh-section">
+        <h2>
+            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></span>
+            数据表格上传
+        </h2>
+        <div class="alert alert-info border-0 shadow-sm mb-4">
+            <p class="mb-0" style="color: #0f172a">
+                可以<strong>直接</strong>点击底部的分析按钮使用已有数据；或<strong>依次</strong>上传以下五个表格文件以覆盖旧数据。
+            </p>
+        </div>
+
+        <div class="mh-upload-grid">
+            <!-- 1. 食堂消费统计表 -->
+            <div class="mh-upload-item">
+                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}');"></span>
+                    1. 食堂消费统计表
+                </h3>
+                <p class="small text-muted mb-3">格式：学号, 年份-月份, 食堂消费额度</p>
+                <div class="upload-form" id="canteen-form">
+                    <div class="mh-upload-area mb-3" onclick="document.getElementById('canteen-file').click()">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="canteen-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'canteen')">
+                    </div>
+                    <div id="canteen-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('canteen')" id="btn-upload-canteen" disabled>上传表格</button>
+                    <div class="progress mt-3" id="canteen-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="canteen-result"></div>
+                </div>
+            </div>
+
+            <!-- 2. 校门进出记录表 -->
+            <div class="mh-upload-item">
+                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}');"></span>
+                    2. 校门进出记录表
+                </h3>
+                <p class="small text-muted mb-3">格式：学号, 进出时间, 方向, 位置</p>
+                <div class="upload-form" id="school-gate-form">
+                    <div class="mh-upload-area mb-3" onclick="document.getElementById('school-gate-file').click()">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="school-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'school-gate')">
+                    </div>
+                    <div id="school-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('school-gate')" id="btn-upload-school-gate" disabled>上传表格</button>
+                    <div class="progress mt-3" id="school-gate-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="school-gate-result"></div>
+                </div>
+            </div>
+
+            <!-- 3. 寝室门禁记录表 -->
+            <div class="mh-upload-item">
+                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}');"></span>
+                    3. 寝室门禁记录表
+                </h3>
+                <p class="small text-muted mb-3">格式：学号, 进出时间, 方向, 楼栋</p>
+                <div class="upload-form" id="dorm-gate-form">
+                    <div class="mh-upload-area mb-3" onclick="document.getElementById('dorm-gate-file').click()">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="dorm-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'dorm-gate')">
+                    </div>
+                    <div id="dorm-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('dorm-gate')" id="btn-upload-dorm-gate" disabled>上传表格</button>
+                    <div class="progress mt-3" id="dorm-gate-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="dorm-gate-result"></div>
+                </div>
+            </div>
+
+            <!-- 4. 网络访问记录表 -->
+            <div class="mh-upload-item">
+                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}');"></span>
+                    4. 网络访问记录表
+                </h3>
+                <p class="small text-muted mb-3">格式：学号, 开始时间, 域名, VPN使用</p>
+                <div class="upload-form" id="network-form">
+                    <div class="mh-upload-area mb-3" onclick="document.getElementById('network-file').click()">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="network-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'network')">
+                    </div>
+                    <div id="network-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('network')" id="btn-upload-network" disabled>上传表格</button>
+                    <div class="progress mt-3" id="network-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="network-result"></div>
+                </div>
+            </div>
+
+            <!-- 5. 各科成绩表 -->
+            <div class="mh-upload-item">
+                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}');"></span>
+                    5. 各科成绩表
+                </h3>
+                <p class="small text-muted mb-3">格式：学号, 年份-月份, 课程成绩</p>
+                <div class="upload-form" id="grades-form">
+                    <div class="mh-upload-area mb-3" onclick="document.getElementById('grades-file').click()">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="grades-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'grades')">
+                    </div>
+                    <div id="grades-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('grades')" id="btn-upload-grades" disabled>上传表格</button>
+                    <div class="progress mt-3" id="grades-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="grades-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据分析区 -->
+    <div class="mh-section">
+        <h2>
+            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/search.svg' %}'); mask-image: url('{% static 'icons/search.svg' %}');"></span>
+            数据分析与处理
+        </h2>
+        <p class="text-muted mb-4">请配置分析参数后点击对应的分析按钮生成报告。</p>
+        
+        <!-- 动态参数面板 -->
+        <div class="mh-analyze-grid">
+            <!-- 综合分析参数 -->
+            <div class="mh-param-card mh-param-comp">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2 text-primary">
+                    <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/dollar.svg' %}'); mask-image: url('{% static 'icons/dollar.svg' %}');"></span>
+                    综合分析参数
+                </h4>
+                <div class="mb-3">
+	                <label for="param-comp-contamination">风险关注比例</label>
+	                <input type="range" class="form-range" id="param-comp-contamination" min="0.05" max="0.3" step="0.05" value="0.15">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>5%</span><span>当前: <b id="val-comp-contamination">15%</b></span><span>30%</span>
+                    </div>
+                </div>
+                <div>
+                    <label for="param-comp-night" class="form-label small">深夜起始点</label>
+                    <select class="form-select form-select-sm" id="param-comp-night">
+                        <option value="22">22:00</option>
+                        <option value="23" selected>23:00</option>
+                        <option value="0">00:00</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 精准思政参数 -->
+            <div class="mh-param-card mh-param-ideo">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2" style="color: #d63384;">
+                    <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/shield-heart.svg' %}'); mask-image: url('{% static 'icons/shield-heart.svg' %}');"></span>
+                    精准思政参数
+                </h4>
+                <div class="mb-3">
+                    <label for="param-ideo-pos" class="form-label small">正向度敏感点</label>
+                    <input type="number" class="form-control form-control-sm" id="param-ideo-pos" value="3.0" step="0.5">
+                </div>
+                <div>
+                    <label for="param-ideo-emo" class="form-label small">情绪波动灵敏度</label>
+                    <input type="number" class="form-control form-control-sm" id="param-ideo-emo" value="1.2" step="0.1">
+                </div>
+            </div>
+
+            <!-- 精准扶贫参数 -->
+            <div class="mh-param-card mh-param-pov">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2" style="color: #198754;">
+                    <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/dollar.svg' %}'); mask-image: url('{% static 'icons/dollar.svg' %}');"></span>
+                    精准扶贫参数
+                </h4>
+                <div class="mb-3">
+                    <label for="param-pov-avg" class="form-label small">困难生月均基准 (元)</label>
+                    <input type="number" class="form-control form-control-sm" id="param-pov-avg" value="350" step="50">
+                </div>
+                <div>
+                    <label for="param-pov-low" class="form-label small">低消费判定线 (元)</label>
+                    <input type="number" class="form-control form-control-sm" id="param-pov-low" value="300" step="50">
+                </div>
+            </div>
+        </div>
+
+        <div class="mh-action-buttons">
+            <button class="mh-btn mh-btn-analyze mh-btn-primary" onclick="startAnalysis('comprehensive')" id="btn-comp">
+                <span class="btn-text">开始综合分析</span>
+            </button>
+            <button class="mh-btn mh-btn-analyze" onclick="startAnalysis('ideology')" id="btn-ideo" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: #000;">
+                <span class="btn-text">开始精准思政分析</span>
+            </button>
+            <button class="mh-btn mh-btn-analyze" onclick="startAnalysis('poverty')" id="btn-pov" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: #fff;">
+                <span class="btn-text">开始精准扶贫分析</span>
+            </button>
+        </div>
+        <div id="analyse-result" class="mh-result"></div>
+    </div>
+</div>
+
+<!-- 通知提示组件 -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="mh-toast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="mh-toast-body"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 文件状态管理
+const uploadedFiles = { 'canteen': false, 'school-gate': false, 'dorm-gate': false, 'network': false, 'grades': false };
+const fileData = { 'canteen': null, 'school-gate': null, 'dorm-gate': null, 'network': null, 'grades': null };
+
+// 初始化拖拽上传
+document.querySelectorAll('.mh-upload-area').forEach(area => {
+    area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('dragover'); });
+    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+    area.addEventListener('drop', (e) => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const type = area.parentElement.id.replace('-form', '');
+            const input = document.getElementById(`${type}-file`);
+            const dt = new DataTransfer(); dt.items.add(files[0]);
+            input.files = dt.files;
+            handleFileSelect(input, type);
+        }
+    });
+});
+
+function handleFileSelect(input, type) {
+    const file = input.files[0];
+    if (!file) return;
+    fileData[type] = file;
+    const info = document.getElementById(`${type}-file-info`);
+    info.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
+    info.style.display = 'block';
+    document.getElementById(`btn-upload-${type}`).disabled = false;
+}
+
+async function uploadFile(type) {
+    const btn = document.getElementById(`btn-upload-${type}`);
+    const progress = document.getElementById(`${type}-progress`);
+    const bar = progress.querySelector('.progress-bar');
+    const result = document.getElementById(`${type}-result`);
+    
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="loading-spinner"></span> 上传中...';
+    progress.style.display = 'flex';
+    bar.style.width = '0%';
+    
+    const formData = new FormData();
+    formData.append('file', fileData[type]);
+    
+    try {
+        let uploadUrl = `/mental_health/upload/${type}/`;
+        const response = await fetch(uploadUrl, { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        if (response.ok) {
+            bar.style.width = '100%';
+            uploadedFiles[type] = true;
+            result.innerHTML = '<div class="small text-success fw-bold">✓ 上传成功</div>';
+            showToast('上传成功: ' + fileData[type].name, 'success');
+        } else {
+            throw new Error(data.detail || '上传失败');
+        }
+    } catch (e) {
+        result.innerHTML = `<div class="small text-danger">✗ ${e.message}</div>`;
+        showToast(e.message, 'danger');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        setTimeout(() => { progress.style.display = 'none'; }, 2000);
+    }
+}
+
+function getFormattedTimestamp() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+
+async function startAnalysis(type) {
+    const btnId = type === 'comprehensive' ? 'btn-comp' : (type === 'ideology' ? 'btn-ideo' : 'btn-pov');
+    const typeLabel = type === 'comprehensive' ? '综合分析' : (type === 'ideology' ? '精准思政分析' : '精准扶贫分析');
+    const btn = document.getElementById(btnId);
+    const btnText = btn.querySelector('.btn-text');
+    const resultDiv = document.getElementById('analyse-result');
+    
+    const originalText = btnText.innerHTML;
+    btn.disabled = true;
+    btnText.innerHTML = '<span class="loading-spinner"></span> 正在分析中...';
+    resultDiv.style.display = 'none';
+
+    // 获取参数
+    let params = {};
+    if (type === 'comprehensive') {
+        params = {
+            contamination: document.getElementById('param-comp-contamination').value,
+            night_start: document.getElementById('param-comp-night').value
+        };
+    } else if (type === 'ideology') {
+        params = {
+            pos_threshold: document.getElementById('param-ideo-pos').value,
+            emo_high_factor: document.getElementById('param-ideo-emo').value,
+            emo_low_factor: 1 / document.getElementById('param-ideo-emo').value
+        };
+    } else if (type === 'poverty') {
+        const avg = parseFloat(document.getElementById('param-pov-avg').value);
+        params = {
+            avg_threshold_hard: avg,
+            avg_threshold_special: avg - 100,
+            avg_threshold_general: avg + 100,
+            low_month_value: document.getElementById('param-pov-low').value
+        };
+    }
+
+    try {
+        const response = await fetch(`/mental_health/analyze/${type}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = getFormattedTimestamp();
+            a.download = `${typeLabel}_${timestamp}.xlsx`;
+            document.body.appendChild(a); a.click(); a.remove();
+            
+            resultDiv.innerHTML = '<h5 class="mb-2 fw-bold">✓ 分析成功</h5><p class="mb-0">报告已生成并开始下载。</p>';
+            resultDiv.className = 'mh-result success';
+            resultDiv.style.display = 'block';
+            showToast('分析完成，报告已下载', 'success');
+        } else {
+            const data = await response.json();
+            throw new Error(data.detail || '分析失败');
+        }
+    } catch (e) {
+        resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">✗ 分析失败</h5><p class="mb-0">${e.message}</p>`;
+        resultDiv.className = 'mh-result error';
+        resultDiv.style.display = 'block';
+        showToast(e.message, 'danger');
+    } finally {
+        btnText.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toastEl = document.getElementById('mh-toast');
+    const toastBody = document.getElementById('mh-toast-body');
+    toastEl.className = `toast align-items-center border-0 text-white bg-${type}`;
+    toastBody.innerText = message;
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+}
+
+// 联动滑块值显示
+document.getElementById('param-comp-contamination').addEventListener('input', (e) => {
+    document.getElementById('val-comp-contamination').innerText = Math.round(e.target.value * 100) + '%';
+});
+</script>
+{% endblock %}

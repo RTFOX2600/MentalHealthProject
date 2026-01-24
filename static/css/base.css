@@ -186,6 +186,7 @@ form li {
 }
 
 /* 图标系统 (Mask 方案) */
+/*noinspection DuplicatedCode*/
 .icon {
     display: inline-block;
     width: 1.25rem;
