@@ -49,6 +49,18 @@ body {
     transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
 }
 
+.external-link {
+    color: var(--primary-color);
+    transition: color 0.2s;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.external-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
 .navbar {
     background-color: var(--card-bg);
     border-bottom: 1px solid var(--border-color);

@@ -157,12 +157,3 @@
     color: var(--muted-text);
     font-size: 0.9rem;
 }
-
-a {
-    transition: color 0.2s, text-decoration 0.2s;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-}
