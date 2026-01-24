@@ -1,0 +1,161 @@
+/* 导航栏基础样式 */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.4s ease;
+}
+
+.navbar-brand:hover {
+    color: var(--primary-hover);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--nav-link-color);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s, background-color 0.4s ease;
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+/* 用户下拉菜单 */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-user {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--nav-link-color);
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.5rem 0;
+    transition: color 0.4s ease;
+}
+
+.nav-user:hover {
+    color: var(--primary-color);
+}
+
+.nav-user svg {
+    transition: transform 0.3s ease;
+}
+
+.dropdown:hover .nav-user svg {
+    transform: rotate(180deg);
+}
+
+.dropdown-content {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+    position: absolute;
+    top: 100%; /* 确保它紧贴着父容器底部 */
+    right: 0;
+    background-color: var(--card-bg);
+    min-width: 180px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    z-index: 100;
+    overflow: hidden;
+    padding: 0.5rem 0; /* 增加一点内边距，让菜单不那么拥挤 */
+}
+
+.dropdown:hover .dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-content a {
+    color: var(--text-color);
+    padding: 10px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    transition: background-color 0.2s, color 0.4s ease;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.dropdown-content a.delete-account {
+    color: var(--muted-text);
+}
+
+.dropdown-content a.delete-account:hover {
+    color: var(--error-color);
+}
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: var(--nav-link-color);
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.4s ease;
+}
+
+.logout-btn:hover {
+    color: var(--primary-color);
+}
+
+/* 导航栏响应式 */
+@media (max-width: 640px) {
+    .navbar {
+        position: fixed !important; /* 强制保持固定定位 */
+        top: 0 !important;          /* 强制置顶，消除间隙 */
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0.5rem 1rem;
+        justify-content: center;
+        margin-top: 0 !important;    /* 消除任何可能的边距 */
+    }
+
+    .navbar-brand {
+        display: none;
+    }
+
+    .nav-links {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

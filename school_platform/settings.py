@@ -122,10 +122,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+# 静态文件的 URL 前缀
 STATIC_URL = 'static/'
+# 静态文件的目录（开发环境必备）
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+# 收集静态文件的目标目录（生产环境必备）
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 AUTH_USER_MODEL = 'accounts.User'
