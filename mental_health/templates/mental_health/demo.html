@@ -6,7 +6,8 @@
 {% block container_class %}container-fluid px-md-5{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/mental_health.css' %}">
+<!--suppress ProblematicWhitespace -->
+	<link rel="stylesheet" href="{% static 'css/mental_health.css' %}">
 {% endblock %}
 
 {% block content_wrapper %}
@@ -203,6 +204,7 @@
             </div>
         </div>
 
+	    <!-- 开始按钮 -->
         <div class="mh-action-buttons">
             <button class="mh-btn mh-btn-analyze mh-btn-primary" onclick="startAnalysis('comprehensive')" id="btn-comp">
                 <span class="btn-text">开始综合分析</span>

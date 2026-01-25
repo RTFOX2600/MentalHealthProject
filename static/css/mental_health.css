@@ -83,7 +83,7 @@
 
 /* 上传进度条样式 */
 .mh-upload-item .progress {
-    height: 1.5rem;  /* 默认 1rem 太瘦，改为 1.5rem */
+    min-height: 0.875rem;
     font-size: 0.875rem;
     border-radius: 0.5rem;
 }
