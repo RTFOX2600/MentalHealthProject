@@ -372,10 +372,11 @@ def check_task_status(request, task_id):
 def download_result(request, task_id):
     """
     下载分析结果文件
-    从缓存中获取文件数据
+    直接从 Celery 结果后端读取
     """
     from django.core.cache import cache
     from celery.result import AsyncResult
+    import base64
     
     task = AsyncResult(task_id)
     
@@ -385,21 +386,39 @@ def download_result(request, task_id):
             'detail': '任务尚未完成或已失败'
         }, status=400)
     
-    # 从缓存获取文件
-    cache_key = f'analysis_result_{task_id}'
-    cached_data = cache.get(cache_key)
+    # 从 Celery 结果后端获取结果
+    result = task.result
     
-    if not cached_data:
+    if not result or result.get('status') != 'success':
         return JsonResponse({
             'status': 'error',
-            'detail': '文件已过期，请重新分析'
+            'detail': '分析结果不可用'
         }, status=404)
     
-    # 返回文件流
-    response = FileResponse(
-        io.BytesIO(cached_data['excel_data']),
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{cached_data["filename"]}"'
+    # 先尝试从缓存获取（快）
+    cache_key = result.get('cache_key')
+    if cache_key:
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            response = FileResponse(
+                io.BytesIO(cached_data['excel_data']),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="{cached_data["filename"]}"'
+            return response
     
-    return response
+    # 缓存失败，从 Celery 结果中获取 base64 编码的数据
+    if 'excel_b64' in result:
+        excel_data = base64.b64decode(result['excel_b64'])
+        response = FileResponse(
+            io.BytesIO(excel_data),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{result["filename"]}"'
+        return response
+    
+    # 所有方式均失败
+    return JsonResponse({
+        'status': 'error',
+        'detail': '文件数据不可用，请重新分析'
+    }, status=404)

@@ -156,11 +156,13 @@ def analyze_task(self, user_id, analysis_type, params=None):
                 'excel_data': result['excel_data']
             }, timeout=3600)
             
+            # 返回结果（同时包含 base64 数据作为备用）
             return {
                 'status': 'success',
                 'filename': result['filename'],
                 'task_id': self.request.id,
-                'cache_key': cache_key
+                'cache_key': cache_key,
+                'excel_b64': excel_b64  # 备用方案：直接从 Celery 结果后端读取
             }
         else:
             return {
