@@ -312,7 +312,7 @@ def upload_task(self, user_id, file_type, file_content, filename):
                         location=row['位置']
                     )
                 elif file_type == 'dorm-gate':
-                    dt = pd.to_datetime(row['寅室进出时间'])
+                    dt = pd.to_datetime(row['寝室进出时间'])
                     if dt.tzinfo is None:
                         dt = timezone.make_aware(dt, LOCAL_TZ)
                     direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
@@ -357,17 +357,17 @@ def upload_task(self, user_id, file_type, file_content, filename):
             except KeyError as col_error:
                 return {
                     'status': 'error',
-                    'message': f'第 {idx + 2} 行数据错误：缺少列 "{col_error}"\n\n请检查：\n1. 表格是否为正确的文件类型\n2. 列名是否完全匹配（区分大小写、中文符号）'
+                    'message': f'数据错误：缺少列 "{col_error}"'
                 }
             except ValueError as val_error:
                 return {
                     'status': 'error',
-                    'message': f'第 {idx + 2} 行数据错误：{str(val_error)}\n\n请检查：\n1. 日期时间格式是否正确（如 2024-01-01 12:00:00）\n2. 数值字段是否为有效数字'
+                    'message': f'第 {idx + 2} 行数据错误：{str(val_error)}'
                 }
-            except Exception as row_error:
+            except Exception as e:
                 return {
                     'status': 'error',
-                    'message': f'第 {idx + 2} 行数据处理失败：{str(row_error)}\n\n请检查该行数据是否完整且格式正确'
+                    'message': f'第 {idx + 2} 行数据处理失败：{str(e)}'
                 }
             
             # 每 500 条批量插入一次

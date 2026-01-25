@@ -37,7 +37,7 @@
                     <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}');"></span>
                     1. 食堂消费统计表
                 </h3>
-                <p class="small text-muted mb-3">格式：学号, 年份-月份, 食堂消费额度</p>
+                <p class="small text-muted mb-3">格式：学号, 年份-月份, 食堂消费额度（本月）</p>
                 <div class="upload-form" id="canteen-form">
                     <div class="mh-upload-area mb-3" onclick="document.getElementById('canteen-file').click()">
                         <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -58,7 +58,7 @@
                     <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}');"></span>
                     2. 校门进出记录表
                 </h3>
-                <p class="small text-muted mb-3">格式：学号, 进出时间, 方向, 位置</p>
+                <p class="small text-muted mb-3">格式：学号, 校门进出时间, 进出方向, 位置</p>
                 <div class="upload-form" id="school-gate-form">
                     <div class="mh-upload-area mb-3" onclick="document.getElementById('school-gate-file').click()">
                         <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -79,7 +79,7 @@
                     <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}');"></span>
                     3. 寝室门禁记录表
                 </h3>
-                <p class="small text-muted mb-3">格式：学号, 进出时间, 方向, 楼栋</p>
+                <p class="small text-muted mb-3">格式：学号, 寝室进出时间, 进出方向, 楼栋</p>
                 <div class="upload-form" id="dorm-gate-form">
                     <div class="mh-upload-area mb-3" onclick="document.getElementById('dorm-gate-file').click()">
                         <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -100,7 +100,7 @@
                     <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}');"></span>
                     4. 网络访问记录表
                 </h3>
-                <p class="small text-muted mb-3">格式：学号, 开始时间, 域名, VPN使用</p>
+                <p class="small text-muted mb-3">格式：学号, 开始时间, 访问域名, 是否使用VPN</p>
                 <div class="upload-form" id="network-form">
                     <div class="mh-upload-area mb-3" onclick="document.getElementById('network-file').click()">
                         <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -121,7 +121,7 @@
                     <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}');"></span>
                     5. 各科成绩表
                 </h3>
-                <p class="small text-muted mb-3">格式：学号, 年份-月份, 课程成绩</p>
+                <p class="small text-muted mb-3">格式：学号, 年份-月份, 各课程成绩</p>
                 <div class="upload-form" id="grades-form">
                     <div class="mh-upload-area mb-3" onclick="document.getElementById('grades-file').click()">
                         <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
