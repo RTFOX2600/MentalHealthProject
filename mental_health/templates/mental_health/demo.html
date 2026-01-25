@@ -407,7 +407,7 @@ async function startAnalysis(type) {
         if (data.status === 'submitted') {
             // 任务已提交，开始轮询
             btnText.innerHTML = '<span class="loading-spinner"></span> 正在分析中...';
-            await pollTaskStatus(data.task_id, type, typeLabel, btnText, resultDiv);
+            await pollTaskStatus(data.task_id, type, typeLabel, btnText, resultDiv, originalText, btn);
         } else {
             throw new Error(data.detail || '任务提交失败');
         }
@@ -422,11 +422,7 @@ async function startAnalysis(type) {
 }
 
 // 轮询任务状态
-async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv) {
-    const btnId = type === 'comprehensive' ? 'btn-comp' : (type === 'ideology' ? 'btn-ideo' : 'btn-pov');
-    const btn = document.getElementById(btnId);
-    const originalText = btnText.innerHTML;
-    
+async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv, originalText, btn) {
     const pollInterval = setInterval(async () => {
         try {
             const response = await fetch(`/mental_health/task-status/${taskId}/`, {
