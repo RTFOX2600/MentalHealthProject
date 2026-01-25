@@ -230,14 +230,20 @@ def upload_task(self, user_id, file_type, file_content, filename):
         file_obj = io.BytesIO(file_data)
         
         # 读取文件
-        if filename.endswith('.csv'):
-            df = pd.read_csv(file_obj, encoding='utf-8')
-        elif filename.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file_obj)
-        else:
+        try:
+            if filename.endswith('.csv'):
+                df = pd.read_csv(file_obj, encoding='utf-8')
+            elif filename.endswith(('.xlsx', '.xls')):
+                df = pd.read_excel(file_obj)
+            else:
+                return {
+                    'status': 'error',
+                    'message': '只支持 CSV 或 Excel 文件'
+                }
+        except Exception as parse_error:
             return {
                 'status': 'error',
-                'message': '只支持 CSV 或 Excel 文件'
+                'message': f'文件解析失败：{str(parse_error)}\n\n请检查：\n1. 文件是否损坏或格式不正确\n2. Excel 文件是否被其他程序占用\n3. CSV 文件编码是否为 UTF-8'
             }
         
         total_rows = len(df)
@@ -280,72 +286,89 @@ def upload_task(self, user_id, file_type, file_content, filename):
         batch_size = 500
         records = []
         processed = 0
-        
+                
         for idx, row in df.iterrows():
-            # 构建记录对象
-            if file_type == 'canteen':
-                record = CanteenConsumption(
-                    dataset=dataset,
-                    student_id=str(row['学号']),
-                    month=row['年份-月份'],
-                    consumption=float(row['食堂消费额度（本月）'])
-                )
-            elif file_type == 'school-gate':
-                dt = pd.to_datetime(row['校门进出时间'])
-                if dt.tzinfo is None:
-                    dt = timezone.make_aware(dt, LOCAL_TZ)
-                direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
-                raw_dir = str(row['进出方向']).strip()
-                direction = direction_map.get(raw_dir, raw_dir)
-                record = SchoolGateRecord(
-                    dataset=dataset,
-                    student_id=str(row['学号']),
-                    entry_time=dt,
-                    direction=direction,
-                    location=row['位置']
-                )
-            elif file_type == 'dorm-gate':
-                dt = pd.to_datetime(row['寝室进出时间'])
-                if dt.tzinfo is None:
-                    dt = timezone.make_aware(dt, LOCAL_TZ)
-                direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
-                raw_dir = str(row['进出方向']).strip()
-                direction = direction_map.get(raw_dir, raw_dir)
-                record = DormGateRecord(
-                    dataset=dataset,
-                    student_id=str(row['学号']),
-                    entry_time=dt,
-                    direction=direction,
-                    building=row['楼栋']
-                )
-            elif file_type == 'network':
-                dt = pd.to_datetime(row['开始时间'])
-                if dt.tzinfo is None:
-                    dt = timezone.make_aware(dt, LOCAL_TZ)
-                use_vpn = str(row['是否使用VPN']).strip() in ['是', 'yes', 'Yes', 'YES']
-                record = NetworkAccessRecord(
-                    dataset=dataset,
-                    student_id=str(row['学号']),
-                    start_time=dt,
-                    domain=str(row.get('访问域名', '')),
-                    use_vpn=use_vpn
-                )
-            elif file_type == 'grades':
-                grade_columns = [col for col in df.columns if col not in ['学号', '年份-月份']]
-                subject_grades = {}
-                for col in grade_columns:
-                    try:
-                        subject_grades[col] = float(row[col])
-                    except:
-                        subject_grades[col] = 0.0
-                record = GradeRecord(
-                    dataset=dataset,
-                    student_id=str(row['学号']),
-                    month=row['年份-月份'],
-                    subject_grades=subject_grades
-                )
-            
-            records.append(record)
+            try:
+                # 构建记录对象
+                if file_type == 'canteen':
+                    record = CanteenConsumption(
+                        dataset=dataset,
+                        student_id=str(row['学号']),
+                        month=row['年份-月份'],
+                        consumption=float(row['食堂消费额度（本月）'])
+                    )
+                elif file_type == 'school-gate':
+                    dt = pd.to_datetime(row['校门进出时间'])
+                    if dt.tzinfo is None:
+                        dt = timezone.make_aware(dt, LOCAL_TZ)
+                    direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
+                    raw_dir = str(row['进出方向']).strip()
+                    direction = direction_map.get(raw_dir, raw_dir)
+                    record = SchoolGateRecord(
+                        dataset=dataset,
+                        student_id=str(row['学号']),
+                        entry_time=dt,
+                        direction=direction,
+                        location=row['位置']
+                    )
+                elif file_type == 'dorm-gate':
+                    dt = pd.to_datetime(row['寅室进出时间'])
+                    if dt.tzinfo is None:
+                        dt = timezone.make_aware(dt, LOCAL_TZ)
+                    direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
+                    raw_dir = str(row['进出方向']).strip()
+                    direction = direction_map.get(raw_dir, raw_dir)
+                    record = DormGateRecord(
+                        dataset=dataset,
+                        student_id=str(row['学号']),
+                        entry_time=dt,
+                        direction=direction,
+                        building=row['楼栋']
+                    )
+                elif file_type == 'network':
+                    dt = pd.to_datetime(row['开始时间'])
+                    if dt.tzinfo is None:
+                        dt = timezone.make_aware(dt, LOCAL_TZ)
+                    use_vpn = str(row['是否使用VPN']).strip() in ['是', 'yes', 'Yes', 'YES']
+                    record = NetworkAccessRecord(
+                        dataset=dataset,
+                        student_id=str(row['学号']),
+                        start_time=dt,
+                        domain=str(row.get('访问域名', '')),
+                        use_vpn=use_vpn
+                    )
+                elif file_type == 'grades':
+                    grade_columns = [col for col in df.columns if col not in ['学号', '年份-月份']]
+                    subject_grades = {}
+                    for col in grade_columns:
+                        try:
+                            subject_grades[col] = float(row[col])
+                        except:
+                            subject_grades[col] = 0.0
+                    record = GradeRecord(
+                        dataset=dataset,
+                        student_id=str(row['学号']),
+                        month=row['年份-月份'],
+                        subject_grades=subject_grades
+                    )
+                        
+                records.append(record)
+                    
+            except KeyError as col_error:
+                return {
+                    'status': 'error',
+                    'message': f'第 {idx + 2} 行数据错误：缺少列 "{col_error}"\n\n请检查：\n1. 表格是否为正确的文件类型\n2. 列名是否完全匹配（区分大小写、中文符号）'
+                }
+            except ValueError as val_error:
+                return {
+                    'status': 'error',
+                    'message': f'第 {idx + 2} 行数据错误：{str(val_error)}\n\n请检查：\n1. 日期时间格式是否正确（如 2024-01-01 12:00:00）\n2. 数值字段是否为有效数字'
+                }
+            except Exception as row_error:
+                return {
+                    'status': 'error',
+                    'message': f'第 {idx + 2} 行数据处理失败：{str(row_error)}\n\n请检查该行数据是否完整且格式正确'
+                }
             
             # 每 500 条批量插入一次
             if len(records) >= batch_size:
