@@ -47,16 +47,10 @@ def upload_file(request, file_type):
         else:
             return JsonResponse({'status': 'error', 'detail': '只支持 CSV 或 Excel 文件'}, status=400)
 
-        # 获取或创建会话ID
-        session_id = request.session.get('dataset_session_id')
-        if not session_id:
-            session_id = str(uuid.uuid4())
-            request.session['dataset_session_id'] = session_id
-
-        # 获取或创建数据集
+        # 获取或创建当前用户的数据集（每个用户独立管理数据）
         dataset, created = UploadedDataSet.objects.get_or_create(
-            session_id=session_id,
-            defaults={'uploaded_by': request.user}
+            uploaded_by=request.user,
+            defaults={'session_id': str(uuid.uuid4())}
         )
 
         # 根据类型保存数据（分批提交，无需大事务）
