@@ -137,3 +137,29 @@ AUTH_USER_MODEL = 'accounts.User'
 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
+
+# ========================================
+# Celery 配置
+# ========================================
+
+# Celery Broker URL（使用 Redis）
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+# Celery 结果存储后端
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# 任务序列化格式
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+
+# 时区配置（与 Django 保持一致）
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = False
+
+# 任务结果过期时间（秒）
+CELERY_RESULT_EXPIRES = 3600  # 1小时
+
+# 任务执行时间限制（秒）
+CELERY_TASK_TIME_LIMIT = 300  # 5分钟
+CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4分钟软限制

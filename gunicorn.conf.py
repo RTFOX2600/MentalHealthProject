@@ -1,6 +1,6 @@
 # Gunicorn 配置文件
 bind = "0.0.0.0:8000"
-workers = 4
+workers = 7
 worker_class = "sync"
 timeout = 180  # 超时 3 分钟
 keepalive = 5

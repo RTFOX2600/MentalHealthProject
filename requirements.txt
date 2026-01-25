@@ -6,3 +6,5 @@ scikit-learn
 openpyxl
 pytz
 starlette
+celery
+redis
