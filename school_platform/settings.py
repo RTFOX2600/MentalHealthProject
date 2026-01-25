@@ -163,3 +163,15 @@ CELERY_RESULT_EXPIRES = 3600  # 1小时
 # 任务执行时间限制（秒）
 CELERY_TASK_TIME_LIMIT = 300  # 5分钟
 CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4分钟软限制
+
+# ========================================
+# Django 缓存配置（使用 Redis）
+# ========================================
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # 使用数据库 1（与 Celery 隔离）
+        'TIMEOUT': 3600,  # 默认缓存 1 小时
+    }
+}
