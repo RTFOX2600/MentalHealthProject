@@ -305,7 +305,7 @@ def upload_task(self, user_id, file_type, file_content, filename):
                     location=row['位置']
                 )
             elif file_type == 'dorm-gate':
-                dt = pd.to_datetime(row['寅室进出时间'])
+                dt = pd.to_datetime(row['寝室进出时间'])
                 if dt.tzinfo is None:
                     dt = timezone.make_aware(dt, LOCAL_TZ)
                 direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
