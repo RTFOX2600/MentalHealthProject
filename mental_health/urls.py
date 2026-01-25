@@ -7,4 +7,6 @@ urlpatterns = [
     path('demo/', views.demo_page, name='demo'),
     path('upload/<str:file_type>/', views.upload_file, name='upload'),
     path('analyze/<str:analysis_type>/', views.analyze_data, name='analyze'),
+    path('task-status/<str:task_id>/', views.check_task_status, name='task_status'),
+    path('download-result/<str:task_id>/', views.download_result, name='download_result'),
 ]

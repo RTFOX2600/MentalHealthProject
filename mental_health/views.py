@@ -247,7 +247,8 @@ def _save_grades_data(dataset, df):
 @csrf_exempt
 def analyze_data(request, analysis_type='comprehensive'):
     """
-    分析数据接口
+    分析数据接口（异步版本）
+    提交任务到 Celery，返回任务ID
     analysis_type: comprehensive, ideology, poverty
     """
     if request.method != 'POST':
@@ -262,120 +263,143 @@ def analyze_data(request, analysis_type='comprehensive'):
         pass
 
     try:
-        # 获取当前会话的数据集（优先使用 session_id，否则使用用户最新数据）
-        session_id = request.session.get('dataset_session_id')
-        
-        if session_id:
-            dataset = UploadedDataSet.objects.filter(session_id=session_id).first()
-        else:
-            # Session 过期时，使用当前用户最新上传的数据集
-            dataset = UploadedDataSet.objects.filter(
-                uploaded_by=request.user
-            ).order_by('-uploaded_at').first()
+        # 检查用户是否有数据
+        dataset = UploadedDataSet.objects.filter(
+            uploaded_by=request.user
+        ).first()
         
         if not dataset:
             return JsonResponse({
                 'status': 'error',
                 'detail': '未找到上传的数据，请先上传数据文件'
             }, status=404)
-
-        # 准备数据字典
-        data_dict = {}
-
-        if analysis_type in ['comprehensive', 'poverty']:
-            # 需要食堂消费数据
-            canteen_records = dataset.canteen_records.all().values('student_id', 'month', 'consumption')
-            if canteen_records:
-                data_dict['canteen'] = [
-                    {
-                        '学号': r['student_id'],
-                        '年份-月份': r['month'],
-                        '食堂消费额度（本月）': float(r['consumption'])
-                    }
-                    for r in canteen_records
-                ]
-
-        if analysis_type in ['comprehensive', 'poverty']:
-            # 需要校门进出数据
-            gate_records = dataset.gate_records.all().values('student_id', 'entry_time', 'direction', 'location')
-            if gate_records:
-                data_dict['school_gate'] = [
-                    {
-                        '学号': r['student_id'],
-                        '校门进出时间': r['entry_time'],
-                        '进出方向': r['direction'],
-                        '位置': r['location']
-                    }
-                    for r in gate_records
-                ]
-
-        if analysis_type == 'comprehensive':
-            # 需要寝室门禁数据
-            dorm_records = dataset.dorm_records.all().values('student_id', 'entry_time', 'direction', 'building')
-            if dorm_records:
-                data_dict['dorm_gate'] = [
-                    {
-                        '学号': r['student_id'],
-                        '寝室进出时间': r['entry_time'],
-                        '进出方向': r['direction'],
-                        '楼栋': r['building']
-                    }
-                    for r in dorm_records
-                ]
-
-        if analysis_type in ['comprehensive', 'ideology']:
-            # 需要网络访问数据
-            network_records = dataset.network_records.all().values('student_id', 'start_time', 'domain', 'use_vpn')
-            if network_records:
-                data_dict['network'] = [
-                    {
-                        '学号': r['student_id'],
-                        '开始时间': r['start_time'],
-                        '访问域名': r['domain'],
-                        '是否使用VPN': '是' if r['use_vpn'] else '否'
-                    }
-                    for r in network_records
-                ]
-
-        if analysis_type in ['comprehensive', 'ideology']:
-            # 需要成绩数据
-            grade_records = dataset.grade_records.all().values('student_id', 'month', 'subject_grades')
-            if grade_records:
-                grades_list = []
-                for r in grade_records:
-                    grade_dict = {'学号': r['student_id'], '年份-月份': r['month']}
-                    grade_dict.update(r['subject_grades'])
-                    grades_list.append(grade_dict)
-                data_dict['grades'] = grades_list
-
-        # 执行分析
-        if analysis_type == 'comprehensive':
-            from core.mental_health.analyse import MentalHealthAnalyzer
-            analyzer = MentalHealthAnalyzer(params=params)
-        elif analysis_type == 'ideology':
-            from core.mental_health.analyse import PrecisionIdeologyAnalyzer
-            analyzer = PrecisionIdeologyAnalyzer(params=params)
-        elif analysis_type == 'poverty':
-            from core.mental_health.analyse import PrecisionPovertyAlleviationAnalyzer
-            analyzer = PrecisionPovertyAlleviationAnalyzer(params=params)
-        else:
-            return JsonResponse({'status': 'error', 'detail': '未知的分析类型'}, status=400)
-
-        result = analyzer.analyze_comprehensive(data_dict)
-
-        if result['status'] == 'success':
-            # 直接返回文件流，不再保存到服务器本地
-            filename = result['filename']
-            response = FileResponse(
-                io.BytesIO(result['excel_data']),
-                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
-            response['Content-Disposition'] = f'attachment; filename="{filename}"'
-            return response
-        else:
-            return JsonResponse({'status': 'error', 'detail': result['message']}, status=500)
-
+        
+        # 提交异步任务
+        from .tasks import analyze_task
+        task = analyze_task.delay(
+            user_id=request.user.id,
+            analysis_type=analysis_type,
+            params=params
+        )
+        
+        return JsonResponse({
+            'status': 'submitted',
+            'task_id': task.id,
+            'message': '分析任务已提交，正在处理中...'
+        })
+    
     except Exception as e:
         import traceback
         traceback.print_exc()
         return JsonResponse({'status': 'error', 'detail': str(e)}, status=500)
+
+
+@login_required
+def check_task_status(request, task_id):
+    """
+    查询任务状态
+    返回任务进度和结果
+    """
+    from celery.result import AsyncResult
+    
+    task = AsyncResult(task_id)
+    
+    if task.state == 'PENDING':
+        response = {
+            'status': 'pending',
+            'current': 0,
+            'total': 100,
+            'message': '任务排队中...'
+        }
+    elif task.state == 'PREPARING':
+        response = {
+            'status': 'processing',
+            'current': task.info.get('current', 10),
+            'total': task.info.get('total', 100),
+            'message': task.info.get('status', '正在准备数据...')
+        }
+    elif task.state == 'LOADING':
+        response = {
+            'status': 'processing',
+            'current': task.info.get('current', 30),
+            'total': task.info.get('total', 100),
+            'message': task.info.get('status', '正在加载数据...')
+        }
+    elif task.state == 'ANALYZING':
+        response = {
+            'status': 'processing',
+            'current': task.info.get('current', 50),
+            'total': task.info.get('total', 100),
+            'message': task.info.get('status', '正在进行数据分析...')
+        }
+    elif task.state == 'GENERATING':
+        response = {
+            'status': 'processing',
+            'current': task.info.get('current', 90),
+            'total': task.info.get('total', 100),
+            'message': task.info.get('status', '正在生成报告...')
+        }
+    elif task.state == 'SUCCESS':
+        result = task.result
+        if result.get('status') == 'success':
+            response = {
+                'status': 'success',
+                'filename': result.get('filename'),
+                'task_id': task_id,
+                'cache_key': result.get('cache_key'),
+                'message': '分析完成！'
+            }
+        else:
+            response = {
+                'status': 'error',
+                'message': result.get('message', '分析失败')
+            }
+    elif task.state == 'FAILURE':
+        response = {
+            'status': 'error',
+            'message': str(task.info)
+        }
+    else:
+        response = {
+            'status': 'unknown',
+            'message': f'未知状态: {task.state}'
+        }
+    
+    return JsonResponse(response)
+
+
+@login_required
+def download_result(request, task_id):
+    """
+    下载分析结果文件
+    从缓存中获取文件数据
+    """
+    from django.core.cache import cache
+    from celery.result import AsyncResult
+    
+    task = AsyncResult(task_id)
+    
+    if task.state != 'SUCCESS':
+        return JsonResponse({
+            'status': 'error',
+            'detail': '任务尚未完成或已失败'
+        }, status=400)
+    
+    # 从缓存获取文件
+    cache_key = f'analysis_result_{task_id}'
+    cached_data = cache.get(cache_key)
+    
+    if not cached_data:
+        return JsonResponse({
+            'status': 'error',
+            'detail': '文件已过期，请重新分析'
+        }, status=404)
+    
+    # 返回文件流
+    response = FileResponse(
+        io.BytesIO(cached_data['excel_data']),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename="{cached_data["filename"]}"'
+    
+    return response
