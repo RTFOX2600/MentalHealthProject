@@ -296,11 +296,7 @@ async function uploadFile(type) {
     formData.append('file', fileData[type]);
     
     try {
-        // 模拟上传进度（快速增长到 30%）
-        bar.style.width = '30%';
-        bar.textContent = '30%';
-        btn.innerHTML = '<span class="loading-spinner"></span> 正在上传...';
-        
+        // 提交异步任务
         let uploadUrl = `/mental_health/upload/${type}/`;
         const response = await fetch(uploadUrl, {
             method: 'POST',
@@ -310,22 +306,11 @@ async function uploadFile(type) {
             }
         });
         
-        // 上传完成，处理数据阶段
-        bar.style.width = '60%';
-        bar.textContent = '60%';
-        btn.innerHTML = '<span class="loading-spinner"></span> 正在处理数据...';
-        
         const data = await response.json();
         
-        if (response.ok) {
-            // 存储到数据库完成
-            bar.style.width = '100%';
-            bar.textContent = '100%';
-            btn.innerHTML = '<span class="loading-spinner"></span> 完成!';
-            
-            uploadedFiles[type] = true;
-            result.innerHTML = `<div class="small text-success fw-bold">✓ 上传成功 (${data.records} 条记录)</div>`;
-            showToast(`上传成功: ${fileData[type].name} (${data.records} 条记录)`, 'success');
+        if (data.status === 'submitted') {
+            // 任务已提交，开始轮询
+            await pollUploadStatus(data.task_id, type, btn, progress, bar, result, originalText);
         } else {
             throw new Error(data.detail || '上传失败');
         }
@@ -334,15 +319,67 @@ async function uploadFile(type) {
         bar.textContent = '';
         result.innerHTML = `<div class="small text-danger">✗ ${e.message}</div>`;
         showToast(e.message, 'danger');
-    } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
         setTimeout(() => { 
             progress.style.display = 'none';
-            bar.style.width = '0%';
-            bar.textContent = '';
         }, 3000);
     }
+}
+
+// 轮询上传任务状态
+async function pollUploadStatus(taskId, type, btn, progress, bar, result, originalText) {
+    const pollInterval = setInterval(async () => {
+        try {
+            const response = await fetch(`/mental_health/upload-status/${taskId}/`, {
+                method: 'GET',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'processing' || data.status === 'pending') {
+                // 更新进度信息
+                const progressPct = data.current ? Math.round((data.current / data.total) * 100) : 0;
+                bar.style.width = `${progressPct}%`;
+                bar.textContent = `${progressPct}%`;
+                btn.innerHTML = `<span class="loading-spinner"></span> ${data.message}`;
+            } else if (data.status === 'success') {
+                // 任务完成
+                clearInterval(pollInterval);
+                bar.style.width = '100%';
+                bar.textContent = '100%';
+                btn.innerHTML = '<span class="loading-spinner"></span> 完成!';
+                
+                uploadedFiles[type] = true;
+                result.innerHTML = `<div class="small text-success fw-bold">✓ 上传成功 (${data.records} 条记录)</div>`;
+                showToast(`上传成功: ${fileData[type].name} (${data.records} 条记录)`, 'success');
+                
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                setTimeout(() => { 
+                    progress.style.display = 'none';
+                    bar.style.width = '0%';
+                    bar.textContent = '';
+                }, 3000);
+            } else if (data.status === 'error') {
+                // 任务失败
+                clearInterval(pollInterval);
+                throw new Error(data.message || '上传失败');
+            }
+        } catch (e) {
+            clearInterval(pollInterval);
+            bar.style.width = '0%';
+            bar.textContent = '';
+            result.innerHTML = `<div class="small text-danger">✗ ${e.message}</div>`;
+            showToast(e.message, 'danger');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            setTimeout(() => { 
+                progress.style.display = 'none';
+            }, 3000);
+        }
+    }, 1000); // 每 1 秒轮询一次（上传比分析快）
 }
 
 function getFormattedTimestamp() {

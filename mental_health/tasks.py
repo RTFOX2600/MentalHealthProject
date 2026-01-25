@@ -188,3 +188,199 @@ def analyze_task(self, user_id, analysis_type, params=None):
             'status': 'error',
             'message': str(e)
         }
+
+
+@shared_task(bind=True, name='mental_health.upload_task')
+def upload_task(self, user_id, file_type, file_content, filename):
+    """
+    异步上传任务
+    
+    Args:
+        self: Celery task instance
+        user_id: 用户ID
+        file_type: 文件类型 (canteen, school-gate, dorm-gate, network, grades)
+        file_content: 文件内容 (base64编码)
+        filename: 文件名
+    
+    Returns:
+        dict: 上传结果
+    """
+    try:
+        import pandas as pd
+        import io
+        import base64
+        from .models import (
+            CanteenConsumption, SchoolGateRecord, DormGateRecord,
+            NetworkAccessRecord, GradeRecord
+        )
+        from django.utils import timezone
+        import pytz
+        import uuid
+        
+        LOCAL_TZ = pytz.timezone('Asia/Shanghai')
+        
+        # 更新任务状态：正在解析文件
+        self.update_state(
+            state='PARSING',
+            meta={'current': 10, 'total': 100, 'status': '正在解析文件...'}
+        )
+        
+        # 解码文件内容
+        file_data = base64.b64decode(file_content)
+        file_obj = io.BytesIO(file_data)
+        
+        # 读取文件
+        if filename.endswith('.csv'):
+            df = pd.read_csv(file_obj, encoding='utf-8')
+        elif filename.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(file_obj)
+        else:
+            return {
+                'status': 'error',
+                'message': '只支持 CSV 或 Excel 文件'
+            }
+        
+        total_rows = len(df)
+        
+        # 更新任务状态：开始存储
+        self.update_state(
+            state='STORING',
+            meta={'current': 30, 'total': 100, 'status': f'开始存储 {total_rows} 条记录...'}
+        )
+        
+        # 获取或创建当前用户的数据集
+        dataset, created = UploadedDataSet.objects.get_or_create(
+            uploaded_by_id=user_id,
+            defaults={'session_id': str(uuid.uuid4())}
+        )
+        
+        # 根据类型删除旧数据
+        if file_type == 'canteen':
+            dataset.canteen_records.all().delete()
+            model_class = CanteenConsumption
+        elif file_type == 'school-gate':
+            dataset.gate_records.all().delete()
+            model_class = SchoolGateRecord
+        elif file_type == 'dorm-gate':
+            dataset.dorm_records.all().delete()
+            model_class = DormGateRecord
+        elif file_type == 'network':
+            dataset.network_records.all().delete()
+            model_class = NetworkAccessRecord
+        elif file_type == 'grades':
+            dataset.grade_records.all().delete()
+            model_class = GradeRecord
+        else:
+            return {
+                'status': 'error',
+                'message': '未知的文件类型'
+            }
+        
+        # 分批插入数据，并实时报告进度
+        batch_size = 500
+        records = []
+        processed = 0
+        
+        for idx, row in df.iterrows():
+            # 构建记录对象
+            if file_type == 'canteen':
+                record = CanteenConsumption(
+                    dataset=dataset,
+                    student_id=str(row['学号']),
+                    month=row['年份-月份'],
+                    consumption=float(row['食堂消费额度（本月）'])
+                )
+            elif file_type == 'school-gate':
+                dt = pd.to_datetime(row['校门进出时间'])
+                if dt.tzinfo is None:
+                    dt = timezone.make_aware(dt, LOCAL_TZ)
+                direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
+                raw_dir = str(row['进出方向']).strip()
+                direction = direction_map.get(raw_dir, raw_dir)
+                record = SchoolGateRecord(
+                    dataset=dataset,
+                    student_id=str(row['学号']),
+                    entry_time=dt,
+                    direction=direction,
+                    location=row['位置']
+                )
+            elif file_type == 'dorm-gate':
+                dt = pd.to_datetime(row['寅室进出时间'])
+                if dt.tzinfo is None:
+                    dt = timezone.make_aware(dt, LOCAL_TZ)
+                direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
+                raw_dir = str(row['进出方向']).strip()
+                direction = direction_map.get(raw_dir, raw_dir)
+                record = DormGateRecord(
+                    dataset=dataset,
+                    student_id=str(row['学号']),
+                    entry_time=dt,
+                    direction=direction,
+                    building=row['楼栋']
+                )
+            elif file_type == 'network':
+                dt = pd.to_datetime(row['开始时间'])
+                if dt.tzinfo is None:
+                    dt = timezone.make_aware(dt, LOCAL_TZ)
+                use_vpn = str(row['是否使用VPN']).strip() in ['是', 'yes', 'Yes', 'YES']
+                record = NetworkAccessRecord(
+                    dataset=dataset,
+                    student_id=str(row['学号']),
+                    start_time=dt,
+                    domain=str(row.get('访问域名', '')),
+                    use_vpn=use_vpn
+                )
+            elif file_type == 'grades':
+                grade_columns = [col for col in df.columns if col not in ['学号', '年份-月份']]
+                subject_grades = {}
+                for col in grade_columns:
+                    try:
+                        subject_grades[col] = float(row[col])
+                    except:
+                        subject_grades[col] = 0.0
+                record = GradeRecord(
+                    dataset=dataset,
+                    student_id=str(row['学号']),
+                    month=row['年份-月份'],
+                    subject_grades=subject_grades
+                )
+            
+            records.append(record)
+            
+            # 每 500 条批量插入一次
+            if len(records) >= batch_size:
+                model_class.objects.bulk_create(records, batch_size=batch_size)
+                processed += len(records)
+                records = []
+                
+                # 更新进度：30% + (processed / total_rows * 70%)
+                progress = 30 + int((processed / total_rows) * 70)
+                self.update_state(
+                    state='STORING',
+                    meta={
+                        'current': progress,
+                        'total': 100,
+                        'status': f'已存储 {processed}/{total_rows} 条记录...'
+                    }
+                )
+        
+        # 插入剩余记录
+        if records:
+            model_class.objects.bulk_create(records, batch_size=batch_size)
+            processed += len(records)
+        
+        # 更新任务状态：完成
+        return {
+            'status': 'success',
+            'message': f'{file_type} 上传成功',
+            'records': total_rows
+        }
+    
+    except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        print(f"上传任务错误: {error_msg}")
+        return {
+            'status': 'error',
+            'message': str(e)
+        }

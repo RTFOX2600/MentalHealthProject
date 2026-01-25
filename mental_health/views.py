@@ -28,7 +28,8 @@ def demo_page(request):
 @csrf_exempt
 def upload_file(request, file_type):
     """
-    上传文件接口
+    上传文件接口（异步版本）
+    提交任务到 Celery，返回任务ID
     file_type: canteen, school-gate, dorm-gate, network, grades
     """
     if request.method != 'POST':
@@ -39,44 +40,24 @@ def upload_file(request, file_type):
         return JsonResponse({'status': 'error', 'detail': '未找到上传的文件'}, status=400)
 
     try:
-        # 读取文件
-        if file.name.endswith('.csv'):
-            df = pd.read_csv(file, encoding='utf-8')
-        elif file.name.endswith(('.xlsx', '.xls')):
-            df = pd.read_excel(file)
-        else:
-            return JsonResponse({'status': 'error', 'detail': '只支持 CSV 或 Excel 文件'}, status=400)
-
-        # 获取或创建当前用户的数据集（每个用户独立管理数据）
-        dataset, created = UploadedDataSet.objects.get_or_create(
-            uploaded_by=request.user,
-            defaults={'session_id': str(uuid.uuid4())}
+        # 读取文件内容并转换为 base64
+        import base64
+        file_content = file.read()
+        file_b64 = base64.b64encode(file_content).decode('utf-8')
+        
+        # 提交异步任务
+        from .tasks import upload_task
+        task = upload_task.delay(
+            user_id=request.user.id,
+            file_type=file_type,
+            file_content=file_b64,
+            filename=file.name
         )
-
-        # 根据类型保存数据（分批提交，无需大事务）
-        if file_type == 'canteen':
-            _save_canteen_data(dataset, df)
-        elif file_type == 'school-gate':
-            _save_school_gate_data(dataset, df)
-        elif file_type == 'dorm-gate':
-            _save_dorm_gate_data(dataset, df)
-        elif file_type == 'network':
-            _save_network_data(dataset, df)
-        elif file_type == 'grades':
-            _save_grades_data(dataset, df)
-        else:
-            return JsonResponse({'status': 'error', 'detail': '未知的文件类型'}, status=400)
-
-        # 标记当前表格已上传
-        uploaded_tables = request.session.get('uploaded_tables', [])
-        if file_type not in uploaded_tables:
-            uploaded_tables.append(file_type)
-            request.session['uploaded_tables'] = uploaded_tables
-
+        
         return JsonResponse({
-            'status': 'success',
-            'message': f'{file_type} 上传成功',
-            'records': len(df)
+            'status': 'submitted',
+            'task_id': task.id,
+            'message': '上传任务已提交，正在处理中...'
         })
 
     except Exception as e:
@@ -92,6 +73,64 @@ def upload_file(request, file_type):
             'detail': str(e),
             'error_type': type(e).__name__
         }, status=500)
+
+
+@login_required
+def check_upload_status(request, task_id):
+    """
+    查询上传任务状态
+    返回任务进度和结果
+    """
+    from celery.result import AsyncResult
+    
+    task = AsyncResult(task_id)
+    
+    if task.state == 'PENDING':
+        response = {
+            'status': 'pending',
+            'current': 0,
+            'total': 100,
+            'message': '任务排队中...'
+        }
+    elif task.state == 'PARSING':
+        response = {
+            'status': 'processing',
+            'current': task.info.get('current', 10),
+            'total': task.info.get('total', 100),
+            'message': task.info.get('status', '正在解析文件...')
+        }
+    elif task.state == 'STORING':
+        response = {
+            'status': 'processing',
+            'current': task.info.get('current', 50),
+            'total': task.info.get('total', 100),
+            'message': task.info.get('status', '正在存储数据...')
+        }
+    elif task.state == 'SUCCESS':
+        result = task.result
+        if result.get('status') == 'success':
+            response = {
+                'status': 'success',
+                'message': result.get('message'),
+                'records': result.get('records')
+            }
+        else:
+            response = {
+                'status': 'error',
+                'message': result.get('message', '上传失败')
+            }
+    elif task.state == 'FAILURE':
+        response = {
+            'status': 'error',
+            'message': str(task.info)
+        }
+    else:
+        response = {
+            'status': task.state.lower(),
+            'message': '任务处理中...'
+        }
+    
+    return JsonResponse(response)
 
 
 def _save_canteen_data(dataset, df):
