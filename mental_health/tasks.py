@@ -151,18 +151,28 @@ def analyze_task(self, user_id, analysis_type, params=None):
             
             # 缓存结果文件（1小时过期）
             cache_key = f'analysis_result_{self.request.id}'
-            cache.set(cache_key, {
-                'filename': result['filename'],
-                'excel_data': result['excel_data']
-            }, timeout=3600)
+            try:
+                cache.set(cache_key, {
+                    'filename': result['filename'],
+                    'excel_data': result['excel_data']
+                }, timeout=3600)
+                print(f"✅ 缓存写入成功: {cache_key}")
+                
+                # 验证缓存是否可读
+                test_read = cache.get(cache_key)
+                if test_read:
+                    print(f"✅ 缓存读取验证成功")
+                else:
+                    print(f"❌ 缓存读取验证失败！")
+            except Exception as cache_error:
+                print(f"❌ 缓存操作失败: {cache_error}")
             
-            # 返回结果（同时包含 base64 数据作为备用）
+            # 返回结果（不包含 base64 数据，太大会导致 Celery 结果后端失败）
             return {
                 'status': 'success',
                 'filename': result['filename'],
                 'task_id': self.request.id,
-                'cache_key': cache_key,
-                'excel_b64': excel_b64  # 备用方案：直接从 Celery 结果后端读取
+                'cache_key': cache_key
             }
         else:
             return {

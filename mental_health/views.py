@@ -406,19 +406,11 @@ def download_result(request, task_id):
             )
             response['Content-Disposition'] = f'attachment; filename="{cached_data["filename"]}"'
             return response
+        else:
+            print(f"❌ Django 端缓存读取失败: {cache_key}")
     
-    # 缓存失败，从 Celery 结果中获取 base64 编码的数据
-    if 'excel_b64' in result:
-        excel_data = base64.b64decode(result['excel_b64'])
-        response = FileResponse(
-            io.BytesIO(excel_data),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = f'attachment; filename="{result["filename"]}"'
-        return response
-    
-    # 所有方式均失败
+    # 缓存失败，返回错误
     return JsonResponse({
         'status': 'error',
-        'detail': '文件数据不可用，请重新分析'
+        'detail': '文件缓存已过期，请重新分析'
     }, status=404)
