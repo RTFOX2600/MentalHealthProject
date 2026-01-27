@@ -17,22 +17,26 @@ body {
 }
 
 /* 通用过渡效果 */
-.card, .btn, input, select, .nav-links a, .nav-user {
+* {
     transition: background-color 0.4s ease, border-color 0.4s ease,
     color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
 }
 
 /* 链接样式 */
 .external-link {
-    color: var(--primary-color);
-    transition: color 0.2s;
-    font-weight: bold;
-    text-decoration: none;
+    color: var(--primary-color)!important;
+    transition: color 0.2s, text-decoration 0.2s!important;
+    font-weight: bold!important;
+    text-decoration: none!important;
 }
 
 .external-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
+    color: var(--primary-hover)!important;
+    text-decoration: underline!important;
+}
+
+.external-link:active {
+    color: var(--success-color)!important;
 }
 
 /* 基础容器 */
@@ -100,7 +104,7 @@ input:focus {
     background-color: var(--primary-color);
     color: white;
     padding: 0.75rem 1rem;
-    border: none;
+    border: 1px solid var(--primary-color);
     border-radius: 0.5rem;
     font-weight: 600;
     cursor: pointer;
@@ -111,28 +115,41 @@ input:focus {
 
 .btn:hover {
     background-color: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: var(--border-color);
+    border: 1px solid var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
 }
 
 .btn:active {
+    background-color: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
+    color: white !important;
     transform: translateY(0);
     box-shadow: none;
-    filter: brightness(0.9);
+    filter: opacity(0.9);
+}
+
+.btn-primary:active {
+    border: 1px solid var(--success-color) !important;
+    background-color: var(--success-color) !important;
+    color: white !important;
 }
 
 .btn-secondary {
-    background-color: var(--card-bg);
-    color: var(--primary-color);
-    border: 1px solid var(--primary-color);
+    background-color: var(--card-bg) !important;
+    color: var(--primary-color) !important;
 }
 
 .btn-secondary:hover {
-    background-color: var(--bg-color);
+    background-color: var(--bg-color) !important;
+    color: var(--primary-hover) !important;
 }
 
 .btn-secondary:active {
-    background-color: var(--border-color);
+    border: 1px solid var(--success-color) !important;
+    background-color: var(--success-color) !important;
+    color: white !important;
 }
 
 /* 表单辅助文字 (针对 Django as_p 渲染) */
@@ -173,7 +190,7 @@ form li {
 }
 
 .footer-text {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     text-align: center;
     font-size: 0.875rem;
     color: var(--muted-text);

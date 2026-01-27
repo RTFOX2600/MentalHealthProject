@@ -84,13 +84,13 @@
     top: 100%; /* 确保它紧贴着父容器底部 */
     right: 0;
     background-color: var(--card-bg);
-    min-width: 180px;
+    min-width: 150px;
     box-shadow: var(--card-shadow);
     border: 1px solid var(--border-color);
     border-radius: 0.75rem;
     z-index: 100;
     overflow: hidden;
-    padding: 0.5rem 0; /* 增加一点内边距，让菜单不那么拥挤 */
+    padding: 0 0; /* 可以增加一点内边距，让菜单不那么拥挤 */
 }
 
 .dropdown:hover .dropdown-content {

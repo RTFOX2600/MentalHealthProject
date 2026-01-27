@@ -57,7 +57,7 @@
                         <span class="icon" style="-webkit-mask-image: url('{% static 'icons/trash.svg' %}'); mask-image: url('{% static 'icons/trash.svg' %}');"></span>
                         注销账号
                     </a>
-                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 0;">
+                    <hr style="border: 0; border-top: 1px solid var(--primary-color); margin: 0;">
                     <form action="{% url 'logout' %}" method="post" id="logout-form" style="display:none;">
                         {% csrf_token %}
                     </form>
@@ -80,8 +80,12 @@
 	</div>
     {% endblock %}
 </div>
+<div class="footer-text">
+    <p>2026 · 武汉轻工大学 · 精准思政系统</p>
+</div>
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 {% block extra_js %}{% endblock %}
+<!--suppress JSUnusedLocalSymbols -->
 <script>
     // 隐藏加载动画的函数
     function hideLoader() {

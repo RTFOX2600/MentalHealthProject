@@ -24,7 +24,7 @@
 
 	<!-- 个人状态 -->
 	{% if user.is_authenticated %}
-		<div class="fade-in-up" style="animation-delay: 0.1s; margin-top: -2rem; margin-bottom: 3rem;">
+		<div class="fade-in-up" style="animation-delay: 0.2s; margin-top: -2rem; margin-bottom: 3rem;">
 			<div class="feature-card" style="text-align: left; max-width: 100%; margin-bottom: 0;">
 			    <h3 style="text-align: left;">个人状态</h3>
 			    <p>您好，<strong>{{ user.name|default:user.username }}</strong>！欢迎回来。</p>
@@ -34,13 +34,13 @@
 	{% endif %}
 
 	<!-- 简要介绍 -->
-	<div class="section-title fade-in-up" style="animation-delay: 0.2s;">
+	<div class="section-title fade-in-up" style="animation-delay: 0.3s;">
 	    <h2>核心服务</h2>
 	    <p>我们提供全方位的支持，确保学生的心理健康得到最专业的照顾。</p>
 	</div>
 
 	<div class="feature-grid">
-	    <div class="fade-in-up" style="animation-delay: 0.3s;">
+	    <div class="fade-in-up" style="animation-delay: 0.4s;">
             <div class="feature-card" style="height: 100%; margin-bottom: 0;">
                 <div class="feature-icon-wrapper">
                      <span class="icon" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-	    <div class="fade-in-up" style="animation-delay: 0.4s;">
+	    <div class="fade-in-up" style="animation-delay: 0.5s;">
             <div class="feature-card" style="height: 100%; margin-bottom: 0;">
                 <div class="feature-icon-wrapper">
                      <span class="icon" style="-webkit-mask-image: url('{% static 'icons/info.svg' %}'); mask-image: url('{% static 'icons/info.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
@@ -60,7 +60,7 @@
             </div>
         </div>
 
-	    <div class="fade-in-up" style="animation-delay: 0.5s;">
+	    <div class="fade-in-up" style="animation-delay: 0.6s;">
             <div class="feature-card" style="height: 100%; margin-bottom: 0;">
                 <div class="feature-icon-wrapper">
                      <span class="icon" style="-webkit-mask-image: url('{% static 'icons/shield.svg' %}'); mask-image: url('{% static 'icons/shield.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>

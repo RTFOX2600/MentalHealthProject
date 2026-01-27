@@ -13,13 +13,13 @@
 {% block content_wrapper %}
 <div class="mh-container">
     <!-- 头部 -->
-    <div class="mh-header">
+    <div class="mh-header fade-in-up" style="animation-delay: 0.1s;">
         <h1 class="display-4 fw-bold">精准思政分析系统</h1>
         <p class="lead text-muted">基于校园行为数据的精准思政分析平台（程序与算法可行性验证）</p>
     </div>
 
     <!-- 表格上传区 -->
-    <div class="mh-section">
+    <div class="mh-section fade-in-up" style="animation-delay: 0.2s;">
         <h2>
             <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></span>
             数据表格上传
@@ -32,114 +32,124 @@
 
         <div class="mh-upload-grid">
             <!-- 1. 食堂消费统计表 -->
-            <div class="mh-upload-item">
-                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}');"></span>
-                    1. 食堂消费统计表
-                </h3>
-                <p class="small text-muted mb-3">格式：学号, 年份-月份, 食堂消费额度（本月）</p>
-                <div class="upload-form" id="canteen-form">
-                    <div class="mh-upload-area mb-3" onclick="document.getElementById('canteen-file').click()">
-                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                        <input type="file" id="canteen-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'canteen')">
+            <div class="fade-in-up" style="animation-delay: 0.3s;">
+                <div class="mh-upload-item">
+                    <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                        <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}');"></span>
+                        1. 食堂消费统计表
+                    </h3>
+                    <p class="small text-muted mb-3">格式：学号, 年份-月份, 食堂消费额度（本月）</p>
+                    <div class="upload-form" id="canteen-form">
+                        <div class="mh-upload-area mb-3" onclick="document.getElementById('canteen-file').click()">
+                            <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                            <input type="file" id="canteen-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'canteen')">
+                        </div>
+                        <div id="canteen-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                        <button class="mh-btn mh-btn-primary" onclick="uploadFile('canteen')" id="btn-upload-canteen" disabled>上传表格</button>
+                        <div class="progress mt-3" id="canteen-progress" style="display: none; height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                        </div>
+                        <div class="mh-result mt-3" id="canteen-result"></div>
                     </div>
-                    <div id="canteen-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
-                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('canteen')" id="btn-upload-canteen" disabled>上传表格</button>
-                    <div class="progress mt-3" id="canteen-progress" style="display: none; height: 6px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-                    </div>
-                    <div class="mh-result mt-3" id="canteen-result"></div>
                 </div>
             </div>
 
             <!-- 2. 校门进出记录表 -->
-            <div class="mh-upload-item">
-                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}');"></span>
-                    2. 校门进出记录表
-                </h3>
-                <p class="small text-muted mb-3">格式：学号, 校门进出时间, 进出方向, 位置</p>
-                <div class="upload-form" id="school-gate-form">
-                    <div class="mh-upload-area mb-3" onclick="document.getElementById('school-gate-file').click()">
-                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                        <input type="file" id="school-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'school-gate')">
+            <div class="fade-in-up" style="animation-delay: 0.4s;">
+                <div class="mh-upload-item">
+                    <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                        <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}');"></span>
+                        2. 校门进出记录表
+                    </h3>
+                    <p class="small text-muted mb-3">格式：学号, 校门进出时间, 进出方向, 位置</p>
+                    <div class="upload-form" id="school-gate-form">
+                        <div class="mh-upload-area mb-3" onclick="document.getElementById('school-gate-file').click()">
+                            <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                            <input type="file" id="school-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'school-gate')">
+                        </div>
+                        <div id="school-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                        <button class="mh-btn mh-btn-primary" onclick="uploadFile('school-gate')" id="btn-upload-school-gate" disabled>上传表格</button>
+                        <div class="progress mt-3" id="school-gate-progress" style="display: none; height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                        </div>
+                        <div class="mh-result mt-3" id="school-gate-result"></div>
                     </div>
-                    <div id="school-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
-                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('school-gate')" id="btn-upload-school-gate" disabled>上传表格</button>
-                    <div class="progress mt-3" id="school-gate-progress" style="display: none; height: 6px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-                    </div>
-                    <div class="mh-result mt-3" id="school-gate-result"></div>
                 </div>
             </div>
 
             <!-- 3. 寝室门禁记录表 -->
-            <div class="mh-upload-item">
-                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}');"></span>
-                    3. 寝室门禁记录表
-                </h3>
-                <p class="small text-muted mb-3">格式：学号, 寝室进出时间, 进出方向, 楼栋</p>
-                <div class="upload-form" id="dorm-gate-form">
-                    <div class="mh-upload-area mb-3" onclick="document.getElementById('dorm-gate-file').click()">
-                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                        <input type="file" id="dorm-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'dorm-gate')">
+            <div class="fade-in-up" style="animation-delay: 0.5s;">
+                <div class="mh-upload-item">
+                    <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                        <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}');"></span>
+                        3. 寝室门禁记录表
+                    </h3>
+                    <p class="small text-muted mb-3">格式：学号, 寝室进出时间, 进出方向, 楼栋</p>
+                    <div class="upload-form" id="dorm-gate-form">
+                        <div class="mh-upload-area mb-3" onclick="document.getElementById('dorm-gate-file').click()">
+                            <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                            <input type="file" id="dorm-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'dorm-gate')">
+                        </div>
+                        <div id="dorm-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                        <button class="mh-btn mh-btn-primary" onclick="uploadFile('dorm-gate')" id="btn-upload-dorm-gate" disabled>上传表格</button>
+                        <div class="progress mt-3" id="dorm-gate-progress" style="display: none; height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                        </div>
+                        <div class="mh-result mt-3" id="dorm-gate-result"></div>
                     </div>
-                    <div id="dorm-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
-                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('dorm-gate')" id="btn-upload-dorm-gate" disabled>上传表格</button>
-                    <div class="progress mt-3" id="dorm-gate-progress" style="display: none; height: 6px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-                    </div>
-                    <div class="mh-result mt-3" id="dorm-gate-result"></div>
                 </div>
             </div>
 
             <!-- 4. 网络访问记录表 -->
-            <div class="mh-upload-item">
-                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}');"></span>
-                    4. 网络访问记录表
-                </h3>
-                <p class="small text-muted mb-3">格式：学号, 开始时间, 访问域名, 是否使用VPN</p>
-                <div class="upload-form" id="network-form">
-                    <div class="mh-upload-area mb-3" onclick="document.getElementById('network-file').click()">
-                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                        <input type="file" id="network-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'network')">
+            <div class="fade-in-up" style="animation-delay: 0.6s;">
+                <div class="mh-upload-item">
+                    <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                        <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}');"></span>
+                        4. 网络访问记录表
+                    </h3>
+                    <p class="small text-muted mb-3">格式：学号, 开始时间, 访问域名, 是否使用VPN</p>
+                    <div class="upload-form" id="network-form">
+                        <div class="mh-upload-area mb-3" onclick="document.getElementById('network-file').click()">
+                            <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                            <input type="file" id="network-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'network')">
+                        </div>
+                        <div id="network-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                        <button class="mh-btn mh-btn-primary" onclick="uploadFile('network')" id="btn-upload-network" disabled>上传表格</button>
+                        <div class="progress mt-3" id="network-progress" style="display: none; height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                        </div>
+                        <div class="mh-result mt-3" id="network-result"></div>
                     </div>
-                    <div id="network-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
-                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('network')" id="btn-upload-network" disabled>上传表格</button>
-                    <div class="progress mt-3" id="network-progress" style="display: none; height: 6px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-                    </div>
-                    <div class="mh-result mt-3" id="network-result"></div>
                 </div>
             </div>
 
             <!-- 5. 各科成绩表 -->
-            <div class="mh-upload-item">
-                <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}');"></span>
-                    5. 各科成绩表
-                </h3>
-                <p class="small text-muted mb-3">格式：学号, 年份-月份, 各课程成绩</p>
-                <div class="upload-form" id="grades-form">
-                    <div class="mh-upload-area mb-3" onclick="document.getElementById('grades-file').click()">
-                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                        <input type="file" id="grades-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'grades')">
+            <div class="fade-in-up" style="animation-delay: 0.7s;">
+                <div class="mh-upload-item">
+                    <h3 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                        <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}');"></span>
+                        5. 各科成绩表
+                    </h3>
+                    <p class="small text-muted mb-3">格式：学号, 年份-月份, 各课程成绩</p>
+                    <div class="upload-form" id="grades-form">
+                        <div class="mh-upload-area mb-3" onclick="document.getElementById('grades-file').click()">
+                            <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                            <input type="file" id="grades-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'grades')">
+                        </div>
+                        <div id="grades-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                        <button class="mh-btn mh-btn-primary" onclick="uploadFile('grades')" id="btn-upload-grades" disabled>上传表格</button>
+                        <div class="progress mt-3" id="grades-progress" style="display: none; height: 6px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                        </div>
+                        <div class="mh-result mt-3" id="grades-result"></div>
                     </div>
-                    <div id="grades-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
-                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('grades')" id="btn-upload-grades" disabled>上传表格</button>
-                    <div class="progress mt-3" id="grades-progress" style="display: none; height: 6px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
-                    </div>
-                    <div class="mh-result mt-3" id="grades-result"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 数据分析区 -->
-    <div class="mh-section">
+    <div class="mh-section fade-in-up" style="animation-delay: 0.8s;">
         <h2>
             <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/search.svg' %}'); mask-image: url('{% static 'icons/search.svg' %}');"></span>
             数据分析与处理

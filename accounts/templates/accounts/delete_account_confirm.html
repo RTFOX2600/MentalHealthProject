@@ -11,10 +11,10 @@
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn" style="background-color: var(--error-color);">确认注销</button>
+            <button type="submit" class="btn btn-primary" style="background-color: var(--error-color);">确认注销</button>
         </form>
         <div class="footer-text" style="margin-top: 1rem;">
-            <a class="external-link" href="{% url 'home' %}">取消并返回</a>
+            <a class="btn btn-secondary" href="{% url 'home' %}">取消并返回</a>
         </div>
     </div>
 {% endblock %}

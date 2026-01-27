@@ -7,7 +7,7 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn">登录</button>
+        <button type="submit" class="btn btn-primary">登录</button>
     </form>
     <div class="footer-text">
         还没有账号？<a class="external-link" href="{% url 'register' %}">立即注册</a>
