@@ -1,5 +1,6 @@
 from ninja import Router, Schema, File
 from ninja.files import UploadedFile
+from typing import Optional
 from django.http import JsonResponse, FileResponse
 from django.core.cache import cache
 from .tasks import upload_task, analyze_task
@@ -11,13 +12,13 @@ import io
 router = Router(tags=["分析 demo"])
 
 class StatusResponse(Schema):
-    status: str = "status"
-    current: int = 26
+    status: str = "error"
+    current: int = 0
     total: int = 100
-    message: str = "This is a msg."
-    filename: str = None
-    cache_key: str = None
-    records: int = None
+    message: str = ""
+    filename: Optional[str] = None
+    cache_key: Optional[str] = None
+    records: Optional[int] = None
 
 class AnalysisParams(Schema):
     # 综合分析参数
@@ -126,24 +127,35 @@ def check_upload_status(request, task_id: str):
     task = AsyncResult(task_id)
     
     if task.state == 'PENDING':
-        return {"status": "pending", "message": "任务排队中..."}
+        return {"status": "pending", "message": "任务排队中...", "current": 0}
+    
     elif task.state in ['PARSING', 'STORING']:
-        info = task.info or {}
+        info = task.info if isinstance(task.info, dict) else {}
         return {
             "status": "processing",
             "current": info.get('current', 10),
             "total": info.get('total', 100),
             "message": info.get('status', '正在处理数据...')
         }
+    
     elif task.state == 'SUCCESS':
         result = task.result
+        if not isinstance(result, dict):
+            return {"status": "error", "message": f"任务执行异常: {str(result)}", "current": 100}
+            
         return {
             "status": "success" if result.get('status') == 'success' else "error",
-            "message": result.get('message'),
+            "message": result.get('message', '上传完成'),
             "current": 100,
             "records": result.get('records')
         }
-    return {"status": "error", "message": str(task.info)}
+    
+    # FAILURE 或其他异常状态
+    return {
+        "status": "error", 
+        "message": str(task.info) if task.info else "任务执行失败", 
+        "current": 100
+    }
 
 
 @router.get("/task-status/{task_id}", response=StatusResponse)
@@ -156,25 +168,42 @@ def check_task_status(request, task_id: str):
     task = AsyncResult(task_id)
     
     if task.state == 'PENDING':
-        return {"status": "pending", "message": "任务排队中..."}
+        return {"status": "pending", "message": "任务排队中...", "current": 0}
+    
     elif task.state in ['PREPARING', 'LOADING', 'ANALYZING', 'GENERATING']:
-        info = task.info or {}
+        info = task.info if isinstance(task.info, dict) else {}
         return {
             "status": "processing",
             "current": info.get('current', 10),
             "total": info.get('total', 100),
             "message": info.get('status', '分析进行中...')
         }
+    
     elif task.state == 'SUCCESS':
         result = task.result
-        return {
-            "status": "success",
-            "filename": result.get('filename'),
-            "cache_key": result.get('cache_key'),
-            "message": "分析完成！",
-            "current": 100
-        }
-    return {"status": "error", "message": str(task.info)}
+        if not isinstance(result, dict):
+            return {"status": "error", "message": f"分析异常: {str(result)}", "current": 100}
+
+        if result.get('status') == 'success':
+            return {
+                "status": "success",
+                "filename": result.get('filename'),
+                "cache_key": result.get('cache_key'),
+                "message": "分析完成！",
+                "current": 100
+            }
+        else:
+            return {
+                "status": "error",
+                "message": result.get('message', '分析过程中出错'),
+                "current": 100
+            }
+            
+    return {
+        "status": "error", 
+        "message": str(task.info) if task.info else "任务分析失败", 
+        "current": 100
+    }
 
 
 @router.get("/download-result/{task_id}")
@@ -182,20 +211,26 @@ def download_result(request, task_id: str):
     """
     下载分析生成的 Excel 报告。
     """
-    task = AsyncResult(task_id)
-    if task.state != 'SUCCESS':
-        return JsonResponse({"status": "error", "detail": "任务尚未完成"}, status=400)
-    
-    result = task.result
-    cache_key = result.get('cache_key')
-    cached_data = cache.get(cache_key)
-    
-    if not cached_data:
-        return JsonResponse({"status": "error", "detail": "文件已过期"}, status=404)
+    try:
+        task = AsyncResult(task_id)
+        if task.state != 'SUCCESS':
+            return JsonResponse({"status": "error", "detail": "任务尚未完成"}, status=400)
         
-    response = FileResponse(
-        io.BytesIO(cached_data['excel_data']),
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename="{cached_data["filename"]}"'
-    return response
+        result = task.result
+        if not isinstance(result, dict):
+            return JsonResponse({"status": "error", "detail": "分析结果格式异常"}, status=500)
+            
+        cache_key = result.get('cache_key')
+        cached_data = cache.get(cache_key)
+        
+        if not cached_data:
+            return JsonResponse({"status": "error", "detail": "文件已过期，请重新分析"}, status=404)
+            
+        response = FileResponse(
+            io.BytesIO(cached_data['excel_data']),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{cached_data["filename"]}"'
+        return response
+    except Exception as e:
+        return JsonResponse({"status": "error", "detail": f"下载失败: {str(e)}"}, status=500)
