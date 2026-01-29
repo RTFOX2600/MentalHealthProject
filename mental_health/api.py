@@ -8,21 +8,21 @@ from celery.result import AsyncResult
 import base64
 import io
 
-router = Router(tags=["心理健康分析"])
+router = Router(tags=["分析 demo"])
 
 class StatusResponse(Schema):
-    status: str
-    current: int = 0
+    status: str = "status"
+    current: int = 26
     total: int = 100
-    message: str
-    filename: str = None
-    cache_key: str = None
+    message: str = "This is a msg."
+    filename: str = "filename"
+    cache_key: str = "cache_key"
 
 class AnalysisParams(Schema):
     # 综合分析参数
     contamination: float = 0.15
     night_start: int = 23
-    
+
     # 精准思政参数 (基于论文指标体系)
     positivity_high: float = 4.0
     positivity_low: float = -2.0
@@ -30,7 +30,7 @@ class AnalysisParams(Schema):
     intensity_low: float = 0.8
     radicalism_high: float = 4.0
     radicalism_low: float = 1.5
-    
+
     # 精准扶贫参数
     poverty_threshold: float = 300.0
     trend_threshold: float = -50.0
@@ -47,10 +47,11 @@ def upload_file(request, file_type: str, file: UploadedFile = File(...)):
     ### 数据文件异步上传接口
     将 CSV/Excel 文件（UTF-8）提交至后台进行异步解析。
 
+    支持的 file_type 有: `canteen`, `school-gate`, `dorm-gate`, `network`, `grades`
+
     **后台处理逻辑 (upload_task):**
     - **阶段流转**: `PARSING` (解析格式) -> `STORING` (分批入库) -> `SUCCESS`
     - **技术细节**: 使用 pandas 处理数据，并利用 Django `bulk_create` 进行每 500 条/批次的原子化入库。
-    - **支持类型**: `canteen`, `school-gate`, `dorm-gate`, `network`, `grades`
     """
     try:
         file_content = file.read()
@@ -76,12 +77,28 @@ def upload_file(request, file_type: str, file: UploadedFile = File(...)):
 def analyze_data(request, analysis_type: str, params: AnalysisParams = None):
     """
     ### 数据分析任务提交接口
-    触发后台分析引擎，支持综合、思政及扶贫三类分析。
+    触发后台分析引擎，支持 analysis_type 为 comprehensive（综合），ideology（思政），poverty（扶贫）三类分析。
 
     **后台处理逻辑 (analyze_task):**
     - **阶段流转**: `PREPARING` -> `LOADING` -> `ANALYZING` -> `GENERATING` -> `SUCCESS`
     - **数据获取**: 根据分析类型自动从数据库调取食堂、校门、寝室、网络、成绩等维度数据。
     - **结果输出**: 生成的 Excel 报告将存入 Redis 缓存，过期时间为 1 小时。
+
+    综合分析参数（只需要这两个）
+    - contamination: float = 0.15
+    - night_start: int = 23
+
+    精准思政参数 (基于论文指标体系)
+    - positivity_high: float = 4.0
+    - positivity_low: float = -2.0
+    - intensity_high: float = 1.2
+    - intensity_low: float = 0.8
+    - radicalism_high: float = 4.0
+    - radicalism_low: float = 1.5
+
+    精准扶贫参数
+    - poverty_threshold: float = 300.0
+    - trend_threshold: float = -50.0
     """
     dataset = UploadedDataSet.objects.filter(uploaded_by=request.user).first()
     if not dataset:
