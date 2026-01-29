@@ -7,6 +7,13 @@ from .forms import RegisterForm, UserProfileForm, DeleteAccountForm
 
 
 def register(request):
+    """
+    用户注册接口。
+    
+    支持 GET 和 POST 请求：
+    - GET: 返回注册页面。
+    - POST: 提交注册表单，验证成功后保存用户并自动登录，跳转至首页。
+    """
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
@@ -20,6 +27,13 @@ def register(request):
 
 @login_required
 def delete_account(request):
+    """
+    用户注销账号接口。
+    
+    需要登录。支持 GET 和 POST 请求：
+    - GET: 返回注销确认页面。
+    - POST: 提交注销表单，验证密码正确后执行注销逻辑，删除用户并重定向至首页。
+    """
     if request.method == 'POST':
         form = DeleteAccountForm(request.POST)
         if form.is_valid():
@@ -39,6 +53,13 @@ def delete_account(request):
 
 @login_required
 def profile_update(request):
+    """
+    更新用户信息接口。
+    
+    需要登录。支持 GET 和 POST 请求：
+    - GET: 返回个人信息修改页面，表单预填当前用户信息。
+    - POST: 提交修改后的用户信息，验证通过后保存并重定向至首页。
+    """
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=request.user)
         if form.is_valid():

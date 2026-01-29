@@ -8,3 +8,4 @@ pytz
 starlette
 celery
 redis
+django-ninja

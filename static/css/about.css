@@ -178,7 +178,7 @@
 .about-page-container footer {
     margin-top: 6rem;
     padding-top: 3rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 2px solid var(--border-color);
     text-align: center;
     color: var(--muted-text);
     font-size: 0.9rem;

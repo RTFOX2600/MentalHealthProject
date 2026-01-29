@@ -26,7 +26,15 @@ class MentalHealthAnalyzer:
             'night_start': 23
         }
         if params:
-            self.params.update(params)
+            # 强制类型转换，防止前端传入字符串导致 numpy 比较报错
+            for k, v in params.items():
+                try:
+                    if k == 'night_start':
+                        self.params[k] = int(v)
+                    else:
+                        self.params[k] = float(v)
+                except (ValueError, TypeError):
+                    pass
 
     def load_data_from_dict(self, data_dict: Dict):
         """
@@ -341,7 +349,7 @@ class MentalHealthAnalyzer:
         except:
             return 0
 
-    def identify_at_risk_students(self, threshold_method: str = "composite"):
+    def identify_at_risk_students(self):
         """
         识别需要关注的学生
         """
@@ -585,6 +593,7 @@ class MentalHealthAnalyzer:
         # 创建Excel文件在内存中
         output = io.BytesIO()
 
+        # noinspection PyTypeChecker
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             detailed_df.to_excel(writer, sheet_name='思想健康分析', index=False)
 

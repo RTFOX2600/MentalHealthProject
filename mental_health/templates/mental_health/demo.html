@@ -3,7 +3,7 @@
 
 {% block title %}精准思政分析系统 - 演示{% endblock %}
 
-{% block container_class %}container-fluid px-md-5{% endblock %}
+{% block container_class %}container-fluid px-3 px-lg-5{% endblock %}
 
 {% block extra_css %}
 <!--suppress ProblematicWhitespace -->
@@ -38,7 +38,7 @@
                         <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}');"></span>
                         1. 食堂消费统计表
                     </h3>
-                    <p class="small text-muted mb-3">格式：学号, 年份-月份, 食堂消费额度（本月）</p>
+                    <p class="small text-light-dimmed mb-3">格式：学号, 年份-月份, 食堂消费额度（本月）</p>
                     <div class="upload-form" id="canteen-form">
                         <div class="mh-upload-area mb-3" onclick="document.getElementById('canteen-file').click()">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -61,7 +61,7 @@
                         <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}');"></span>
                         2. 校门进出记录表
                     </h3>
-                    <p class="small text-muted mb-3">格式：学号, 校门进出时间, 进出方向, 位置</p>
+                    <p class="small text-light-dimmed mb-3">格式：学号, 校门进出时间, 进出方向, 位置</p>
                     <div class="upload-form" id="school-gate-form">
                         <div class="mh-upload-area mb-3" onclick="document.getElementById('school-gate-file').click()">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -84,7 +84,7 @@
                         <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}');"></span>
                         3. 寝室门禁记录表
                     </h3>
-                    <p class="small text-muted mb-3">格式：学号, 寝室进出时间, 进出方向, 楼栋</p>
+                    <p class="small text-light-dimmed mb-3">格式：学号, 寝室进出时间, 进出方向, 楼栋</p>
                     <div class="upload-form" id="dorm-gate-form">
                         <div class="mh-upload-area mb-3" onclick="document.getElementById('dorm-gate-file').click()">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -107,7 +107,7 @@
                         <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}');"></span>
                         4. 网络访问记录表
                     </h3>
-                    <p class="small text-muted mb-3">格式：学号, 开始时间, 访问域名, 是否使用VPN</p>
+                    <p class="small text-light-dimmed mb-3">格式：学号, 开始时间, 访问域名, 是否使用VPN</p>
                     <div class="upload-form" id="network-form">
                         <div class="mh-upload-area mb-3" onclick="document.getElementById('network-file').click()">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -130,7 +130,7 @@
                         <span class="mh-icon text-primary" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}');"></span>
                         5. 各科成绩表
                     </h3>
-                    <p class="small text-muted mb-3">格式：学号, 年份-月份, 各课程成绩</p>
+                    <p class="small text-light-dimmed mb-3">格式：学号, 年份-月份, 各课程成绩</p>
                     <div class="upload-form" id="grades-form">
                         <div class="mh-upload-area mb-3" onclick="document.getElementById('grades-file').click()">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
@@ -166,34 +166,112 @@
                 </h4>
                 <div class="mb-3">
 	                <label for="param-comp-contamination">风险关注比例</label>
-	                <input type="range" class="form-range" id="param-comp-contamination" min="0.05" max="0.3" step="0.05" value="0.15">
+	                <input type="range" class="form-range" id="param-comp-contamination" min="5" max="30" step="1" value="15">
                     <div class="d-flex justify-content-between small text-muted">
                         <span>5%</span><span>当前: <b id="val-comp-contamination">15%</b></span><span>30%</span>
                     </div>
                 </div>
                 <div>
-                    <label for="param-comp-night" class="form-label small">深夜起始点</label>
-                    <select class="form-select form-select-sm" id="param-comp-night">
-                        <option value="22">22:00</option>
-                        <option value="23" selected>23:00</option>
-                        <option value="0">00:00</option>
-                    </select>
+                    <label class="form-label small">深夜起始点</label>
+                    <div class="mh-custom-dropdown" id="dropdown-comp-night">
+                        <div class="mh-dropdown-trigger">
+                            <span class="selected-text">23:00</span>
+                            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+                        </div>
+                        <div class="mh-dropdown-menu">
+                            <div class="mh-dropdown-item" data-value="22">22:00</div>
+                            <div class="mh-dropdown-item selected" data-value="23">23:00</div>
+                            <div class="mh-dropdown-item" data-value="0">00:00</div>
+                        </div>
+                        <!-- 隐藏的 input 用于实际提交数据 -->
+                        <input type="hidden" id="param-comp-night" value="23">
+                    </div>
                 </div>
             </div>
 
-            <!-- 精准思政参数 -->
+            <!-- 精准思政参数 (基于论文指标体系) -->
             <div class="mh-param-card mh-param-ideo">
                 <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2" style="color: #d63384;">
                     <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/shield-heart.svg' %}'); mask-image: url('{% static 'icons/shield-heart.svg' %}');"></span>
                     精准思政参数
                 </h4>
-                <div class="mb-3">
-                    <label for="param-ideo-pos" class="form-label small">正向度敏感点</label>
-                    <input type="number" class="form-control form-control-sm" id="param-ideo-pos" value="3.0" step="0.5">
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label for="param-ideo-pos-high" class="form-label small mb-1">正向判定线</label>
+                        <div class="mh-numeric-stepper">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-pos-high', -0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                            </button>
+                            <input type="number" class="mh-stepper-input" id="param-ideo-pos-high" value="4.0" step="0.5">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-pos-high', 0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="param-ideo-pos-low" class="form-label small mb-1">负向判定线</label>
+                        <div class="mh-numeric-stepper">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-pos-low', -0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                            </button>
+                            <input type="number" class="mh-stepper-input" id="param-ideo-pos-low" value="-2.0" step="0.5">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-pos-low', 0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label for="param-ideo-emo" class="form-label small">情绪波动灵敏度</label>
-                    <input type="number" class="form-control form-control-sm" id="param-ideo-emo" value="1.2" step="0.1">
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label for="param-ideo-emo-high" class="form-label small mb-1">情绪强度(强)</label>
+                        <div class="mh-numeric-stepper">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-emo-high', -0.1)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                            </button>
+                            <input type="number" class="mh-stepper-input" id="param-ideo-emo-high" value="1.2" step="0.1">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-emo-high', 0.1)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="param-ideo-emo-low" class="form-label small mb-1">情绪强度(弱)</label>
+                        <div class="mh-numeric-stepper">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-emo-low', -0.1)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                            </button>
+                            <input type="number" class="mh-stepper-input" id="param-ideo-emo-low" value="0.8" step="0.1">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-emo-low', 0.1)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label for="param-ideo-rad-high" class="form-label small mb-1">激进度(强)</label>
+                        <div class="mh-numeric-stepper">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-rad-high', -0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                            </button>
+                            <input type="number" class="mh-stepper-input" id="param-ideo-rad-high" value="4.0" step="0.5">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-rad-high', 0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="param-ideo-rad-low" class="form-label small mb-1">激进度(弱)</label>
+                        <div class="mh-numeric-stepper">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-rad-low', -0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                            </button>
+                            <input type="number" class="mh-stepper-input" id="param-ideo-rad-low" value="1.5" step="0.5">
+                            <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-ideo-rad-low', 0.5)">
+                                <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -204,12 +282,29 @@
                     精准扶贫参数
                 </h4>
                 <div class="mb-3">
-                    <label for="param-pov-avg" class="form-label small">困难生月均基准 (元)</label>
-                    <input type="number" class="form-control form-control-sm" id="param-pov-avg" value="350" step="50">
+                    <label for="param-pov-threshold" class="form-label small">贫困消费阈值 (元)</label>
+                    <div class="mh-numeric-stepper">
+                        <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-pov-threshold', -50)">
+                            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                        </button>
+                        <input type="number" class="mh-stepper-input" id="param-pov-threshold" value="300" step="50">
+                        <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-pov-threshold', 50)">
+                            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                        </button>
+                    </div>
+                    <div class="form-text small text-light-dimmed" style="font-size: 0.7rem;">用于阶梯判定特别/一般困难</div>
                 </div>
                 <div>
-                    <label for="param-pov-low" class="form-label small">低消费判定线 (元)</label>
-                    <input type="number" class="form-control form-control-sm" id="param-pov-low" value="300" step="50">
+                    <label for="param-pov-trend" class="form-label small">趋势下降警戒线</label>
+                    <div class="mh-numeric-stepper">
+                        <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-pov-trend', -5)">
+                            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/minus.svg' %}'); mask-image: url('{% static 'icons/minus.svg' %}');"></span>
+                        </button>
+                        <input type="number" class="mh-stepper-input" id="param-pov-trend" value="-50" step="5">
+                        <button type="button" class="mh-stepper-btn" onclick="adjustStepper('param-pov-trend', 5)">
+                            <span class="mh-icon" style="-webkit-mask-image: url('{% static 'icons/plus.svg' %}'); mask-image: url('{% static 'icons/plus.svg' %}');"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -242,320 +337,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// 文件状态管理
-const uploadedFiles = { 'canteen': false, 'school-gate': false, 'dorm-gate': false, 'network': false, 'grades': false };
-const fileData = { 'canteen': null, 'school-gate': null, 'dorm-gate': null, 'network': null, 'grades': null };
-
-// 初始化拖拽上传
-document.querySelectorAll('.mh-upload-area').forEach(area => {
-    area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('dragover'); });
-    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
-    area.addEventListener('drop', (e) => {
-        e.preventDefault();
-        area.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            const type = area.parentElement.id.replace('-form', '');
-            const input = document.getElementById(`${type}-file`);
-            const dt = new DataTransfer(); dt.items.add(files[0]);
-            input.files = dt.files;
-            handleFileSelect(input, type);
-        }
-    });
-});
-
-function handleFileSelect(input, type) {
-    const file = input.files[0];
-    if (!file) return;
-    fileData[type] = file;
-    const info = document.getElementById(`${type}-file-info`);
-    info.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024).toFixed(1)} KB)`;
-    info.style.display = 'block';
-    document.getElementById(`btn-upload-${type}`).disabled = false;
-}
-
-// 获取 CSRF Token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-async function uploadFile(type) {
-    const btn = document.getElementById(`btn-upload-${type}`);
-    const progress = document.getElementById(`${type}-progress`);
-    const bar = progress.querySelector('.progress-bar');
-    const result = document.getElementById(`${type}-result`);
-    
-    btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<span class="loading-spinner"></span> 上传中...';
-    progress.style.display = 'flex';
-    bar.style.width = '0%';
-    bar.textContent = '0%';
-    
-    const formData = new FormData();
-    formData.append('file', fileData[type]);
-    
-    try {
-        // 提交异步任务
-        let uploadUrl = `/mental_health/upload/${type}/`;
-        const response = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.status === 'submitted') {
-            // 任务已提交，开始轮询
-            await pollUploadStatus(data.task_id, type, btn, progress, bar, result, originalText);
-        } else {
-            throw new Error(data.detail || '上传失败');
-        }
-    } catch (e) {
-        bar.style.width = '0%';
-        bar.textContent = '';
-        result.innerHTML = `<div class="small text-danger">✗ ${e.message}</div>`;
-        showToast(e.message, 'danger');
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        setTimeout(() => { 
-            progress.style.display = 'none';
-        }, 3000);
-    }
-}
-
-// 轮询上传任务状态
-async function pollUploadStatus(taskId, type, btn, progress, bar, result, originalText) {
-    const pollInterval = setInterval(async () => {
-        try {
-            const response = await fetch(`/mental_health/upload-status/${taskId}/`, {
-                method: 'GET',
-                headers: { 'X-CSRFToken': getCookie('csrftoken') }
-            });
-            
-            const data = await response.json();
-            
-            if (data.status === 'processing' || data.status === 'pending') {
-                // 更新进度信息
-                const progressPct = data.current ? Math.round((data.current / data.total) * 100) : 0;
-                bar.style.width = `${progressPct}%`;
-                bar.textContent = `${progressPct}%`;
-                btn.innerHTML = `<span class="loading-spinner"></span> ${data.message}`;
-            } else if (data.status === 'success') {
-                // 任务完成
-                clearInterval(pollInterval);
-                bar.style.width = '100%';
-                bar.textContent = '100%';
-                btn.innerHTML = '<span class="loading-spinner"></span> 完成!';
-                
-                uploadedFiles[type] = true;
-                result.innerHTML = `<div class="small text-success fw-bold">✓ 上传成功 (${data.records} 条记录)</div>`;
-                showToast(`上传成功: ${fileData[type].name} (${data.records} 条记录)`, 'success');
-                
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                setTimeout(() => { 
-                    progress.style.display = 'none';
-                    bar.style.width = '0%';
-                    bar.textContent = '';
-                }, 3000);
-            } else if (data.status === 'error') {
-                // 任务失败
-                clearInterval(pollInterval);
-                throw new Error(data.message || '上传失败');
-            }
-        } catch (e) {
-            clearInterval(pollInterval);
-            bar.style.width = '0%';
-            bar.textContent = '';
-            result.innerHTML = `<div class="small text-danger">✗ ${e.message}</div>`;
-            showToast(e.message, 'danger');
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            setTimeout(() => { 
-                progress.style.display = 'none';
-            }, 3000);
-        }
-    }, 1000); // 每 1 秒轮询一次（上传比分析快）
-}
-
-function getFormattedTimestamp() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-}
-
-async function startAnalysis(type) {
-    const btnId = type === 'comprehensive' ? 'btn-comp' : (type === 'ideology' ? 'btn-ideo' : 'btn-pov');
-    const typeLabel = type === 'comprehensive' ? '综合分析' : (type === 'ideology' ? '精准思政分析' : '精准扶贫分析');
-    const btn = document.getElementById(btnId);
-    const btnText = btn.querySelector('.btn-text');
-    const resultDiv = document.getElementById('analyse-result');
-    
-    const originalText = btnText.innerHTML;
-    btn.disabled = true;
-    btnText.innerHTML = '<span class="loading-spinner"></span> 正在提交任务...';
-    resultDiv.style.display = 'none';
-
-    // 获取参数
-    let params = {};
-    if (type === 'comprehensive') {
-        params = {
-            contamination: document.getElementById('param-comp-contamination').value,
-            night_start: document.getElementById('param-comp-night').value
-        };
-    } else if (type === 'ideology') {
-        params = {
-            pos_threshold: document.getElementById('param-ideo-pos').value,
-            emo_high_factor: document.getElementById('param-ideo-emo').value,
-            emo_low_factor: 1 / document.getElementById('param-ideo-emo').value
-        };
-    } else if (type === 'poverty') {
-        const avg = parseFloat(document.getElementById('param-pov-avg').value);
-        params = {
-            avg_threshold_hard: avg,
-            avg_threshold_special: avg - 100,
-            avg_threshold_general: avg + 100,
-            low_month_value: document.getElementById('param-pov-low').value
-        };
-    }
-
-    try {
-        // 提交异步任务
-        const response = await fetch(`/mental_health/analyze/${type}/`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify(params)
-        });
-
-        const data = await response.json();
-        
-        if (data.status === 'submitted') {
-            // 任务已提交，开始轮询
-            btnText.innerHTML = '<span class="loading-spinner"></span> 正在分析中...';
-            await pollTaskStatus(data.task_id, type, typeLabel, btnText, resultDiv, originalText, btn);
-        } else {
-            throw new Error(data.detail || '任务提交失败');
-        }
-    } catch (e) {
-        resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">✗ 分析失败</h5><p class="mb-0">${e.message}</p>`;
-        resultDiv.className = 'mh-result error';
-        resultDiv.style.display = 'block';
-        showToast(e.message, 'danger');
-        btnText.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}
-
-// 轮询任务状态
-async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv, originalText, btn) {
-    const pollInterval = setInterval(async () => {
-        try {
-            const response = await fetch(`/mental_health/task-status/${taskId}/`, {
-                method: 'GET',
-                headers: { 'X-CSRFToken': getCookie('csrftoken') }
-            });
-            
-            const data = await response.json();
-            
-            if (data.status === 'processing' || data.status === 'pending') {
-                // 更新进度信息
-                const progress = data.current ? Math.round((data.current / data.total) * 100) : 0;
-                btnText.innerHTML = `<span class="loading-spinner"></span> ${data.message} (${progress}%)`;
-            } else if (data.status === 'success') {
-                // 任务完成，下载文件
-                clearInterval(pollInterval);
-                btnText.innerHTML = '<span class="loading-spinner"></span> 正在下载...';
-                
-                await downloadResult(taskId, typeLabel);
-                
-                resultDiv.innerHTML = '<h5 class="mb-2 fw-bold">✓ 分析成功</h5><p class="mb-0">报告已生成并开始下载。</p>';
-                resultDiv.className = 'mh-result success';
-                resultDiv.style.display = 'block';
-                showToast('分析完成，报告已下载', 'success');
-                
-                btnText.innerHTML = originalText;
-                btn.disabled = false;
-            } else if (data.status === 'error') {
-                // 任务失败
-                clearInterval(pollInterval);
-                throw new Error(data.message || '分析失败');
-            }
-        } catch (e) {
-            clearInterval(pollInterval);
-            resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">✗ 分析失败</h5><p class="mb-0">${e.message}</p>`;
-            resultDiv.className = 'mh-result error';
-            resultDiv.style.display = 'block';
-            showToast(e.message, 'danger');
-            btnText.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }, 2000); // 每 2 秒轮询一次
-}
-
-// 下载结果文件
-async function downloadResult(taskId, typeLabel) {
-    try {
-        const response = await fetch(`/mental_health/download-result/${taskId}/`, {
-            method: 'GET',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') }
-        });
-        
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const timestamp = getFormattedTimestamp();
-            a.download = `${typeLabel}_${timestamp}.xlsx`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } else {
-            const data = await response.json();
-            throw new Error(data.detail || '文件下载失败');
-        }
-    } catch (e) {
-        throw new Error('文件下载失败：' + e.message);
-    }
-}
-
-function showToast(message, type = 'info') {
-    const toastEl = document.getElementById('mh-toast');
-    const toastBody = document.getElementById('mh-toast-body');
-    toastEl.className = `toast align-items-center border-0 text-white bg-${type}`;
-    toastBody.innerText = message;
-    const toast = new bootstrap.Toast(toastEl);
-    toast.show();
-}
-
-// 联动滑块值显示
-document.getElementById('param-comp-contamination').addEventListener('input', (e) => {
-    document.getElementById('val-comp-contamination').innerText = Math.round(e.target.value * 100) + '%';
-});
-</script>
+<script src="{% static 'js/mental_health_demo.js' %}"></script>
 {% endblock %}

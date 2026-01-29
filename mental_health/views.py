@@ -20,7 +20,11 @@ LOCAL_TZ = pytz.timezone('Asia/Shanghai')
 
 @login_required
 def demo_page(request):
-    """演示页面"""
+    """
+    心理健康分析系统演示页面。
+    
+    渲染并返回演示主页 (demo.html)，该页面包含文件上传区域和分析启动按钮。
+    """
     return render(request, 'mental_health/demo.html')
 
 
@@ -28,9 +32,18 @@ def demo_page(request):
 @csrf_exempt
 def upload_file(request, file_type):
     """
-    上传文件接口（异步版本）
-    提交任务到 Celery，返回任务ID
-    file_type: canteen, school-gate, dorm-gate, network, grades
+    数据文件异步上传接口。
+    
+    参数:
+    - file_type: 文件类型标识，包括 'canteen' (食堂), 'school-gate' (校门), 
+      'dorm-gate' (寝室), 'network' (网络), 'grades' (成绩)。
+    - file: POST 请求中的文件对象。
+    
+    返回:
+    - JsonResponse: 包含提交状态 'submitted' 和 Celery 任务 ID 'task_id'。
+    
+    说明:
+    该接口将文件内容转为 Base64 并分发给异步任务 upload_task 处理，避免主线程阻塞。
     """
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'detail': '仅支持POST请求'}, status=405)
@@ -78,8 +91,14 @@ def upload_file(request, file_type):
 @login_required
 def check_upload_status(request, task_id):
     """
-    查询上传任务状态
-    返回任务进度和结果
+    查询文件上传任务的执行状态。
+    
+    参数:
+    - task_id: Celery 任务的 UUID。
+    
+    返回:
+    - JsonResponse: 包含任务状态 ('pending', 'processing', 'success', 'error')、
+      当前进度 current、总进度 total 以及状态消息 message。
     """
     from celery.result import AsyncResult
     
@@ -286,9 +305,15 @@ def _save_grades_data(dataset, df):
 @csrf_exempt
 def analyze_data(request, analysis_type='comprehensive'):
     """
-    分析数据接口（异步版本）
-    提交任务到 Celery，返回任务ID
-    analysis_type: comprehensive, ideology, poverty
+    数据分析任务提交接口。
+    
+    参数:
+    - analysis_type: 分析模式，可选 'comprehensive' (综合分析), 
+      'ideology' (精准思政), 'poverty' (精准扶贫)。默认为 'comprehensive'。
+    - request.body: JSON 格式的分析参数。
+    
+    返回:
+    - JsonResponse: 包含任务提交状态 'submitted' 和 Celery 任务 ID 'task_id'。
     """
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'detail': '仅支持POST请求'}, status=405)
@@ -336,8 +361,14 @@ def analyze_data(request, analysis_type='comprehensive'):
 @login_required
 def check_task_status(request, task_id):
     """
-    查询任务状态
-    返回任务进度和结果
+    查询数据分析任务的执行状态。
+    
+    参数:
+    - task_id: Celery 任务的 UUID。
+    
+    返回:
+    - JsonResponse: 包含任务状态 ('pending', 'processing', 'success', 'error')、
+      当前进度及各个阶段的消息。任务成功后会返回 cache_key 以供下载。
     """
     from celery.result import AsyncResult
     
@@ -410,8 +441,17 @@ def check_task_status(request, task_id):
 @login_required
 def download_result(request, task_id):
     """
-    下载分析结果文件
-    直接从 Celery 结果后端读取
+    分析结果文件下载接口。
+    
+    参数:
+    - task_id: 关联的分析任务 ID。
+    
+    返回:
+    - FileResponse: 生成的 Excel 文件流。
+    - JsonResponse: 发生错误或文件已过期时的错误提示。
+    
+    说明:
+    后端会优先从 Redis 缓存中检索生成的二进制 Excel 数据，若缓存过期需重新分析。
     """
     from django.core.cache import cache
     from celery.result import AsyncResult

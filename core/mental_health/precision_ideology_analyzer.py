@@ -1,11 +1,10 @@
 import warnings
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List
 import io
 
 import numpy as np
 import pandas as pd
-
 
 warnings.filterwarnings('ignore')
 
@@ -19,18 +18,42 @@ class PrecisionIdeologyAnalyzer:
     def __init__(self, params=None):
         self.students_profile = {}
         self.data = {}
-        self.cohort_stats = {}  # 存储群体统计数据用于动态对齐
+        self.cohort_stats = {}
 
-        # 增强域名分类体系
+        # 默认参数（基于论文指标体系微调）
+        self.params = {
+            'night_start': 23,
+            'positivity_high': 4.0,  # 正向判定阈值
+            'positivity_low': -2.0,  # 负向判定阈值
+            'intensity_high': 1.2,  # 情绪强度“强”阈值
+            'intensity_low': 0.8,  # 情绪强度“弱”阈值
+            'radicalism_high': 4.0,  # 激进度“强”阈值
+            'radicalism_low': 1.5  # 激进度“弱”阈值
+        }
+        if params:
+            # 强制类型转换，防止前端传入字符串导致 numpy 比较报错
+            for k, v in params.items():
+                try:
+                    if k == 'night_start':
+                        self.params[k] = int(v)
+                    else:
+                        self.params[k] = float(v)
+                except (ValueError, TypeError):
+                    pass
+
+        # 域名分类体系（映射论文中的“典型场景”）
         self.domain_categories = {
-            '学习科研': ['github.com', 'www.csdn.net', 'stackoverflow.com', 'www.cnki.net', 'www.wikipedia.org', 'leetcode.com',
-                         'gitee.com'],
-            '搜索引擎': ['www.baidu.com', 'www.google.com', 'bing.com'],
-            '社交媒体': ['weibo.com', 'www.zhihu.com', 'www.douban.com', 'www.xiaohongshu.com', 'tieba.baidu.com', 'twitter.com'],
-            '视频娱乐': ['www.bilibili.com', 'www.douyin.com', 'www.youtube.com', 'v.qq.com', 'iqiyi.com'],
-            '电商购物': ['www.taobao.com', 'www.jd.com', 'pinduoduo.com', 'tmall.com'],
-            '生活服务': ['meituan.com', 'amap.com', '12306.cn', 'ctrip.com'],
-            '工具资讯': ['www.163.com', 'www.qq.com', 'pan.baidu.com', 'music.163.com', 'notion.so']
+            '学习科研': ['github.com', 'csdn.net', 'stackoverflow.com', 'cnki.net', 'wikipedia.org', 'leetcode.com'],
+            '微博': ['weibo.com'],
+            '知乎': ['zhihu.com'],
+            '豆瓣': ['douban.com'],
+            '小红书': ['xiaohongshu.com'],
+            '百度贴吧': ['tieba.baidu.com'],
+            'B站': ['bilibili.com'],
+            '抖音/直播': ['douyin.com', 'kuaishou.com', 'huya.com', 'douyu.com'],
+            '今日头条': ['toutiao.com', '163.com', 'qq.com'],
+            '境外平台': ['twitter.com', 'youtube.com', 'facebook.com', 'google.com'],
+            '评论区/匿名': ['treehole', 'shudong', 'comment']
         }
 
     def load_data_from_dict(self, data_dict: Dict):
@@ -54,7 +77,8 @@ class PrecisionIdeologyAnalyzer:
             self.cohort_stats['daily_avg_median'] = max(5, median_daily) if not pd.isna(median_daily) else 15
 
             # 计算群体夜间访问比例中位数
-            night_mask = (net['开始时间'].dt.hour >= 23) | (net['开始时间'].dt.hour < 6)
+            night_start = int(self.params.get('night_start', 23))
+            night_mask = (net['开始时间'].dt.hour >= night_start) | (net['开始时间'].dt.hour < 6)
             night_ratios = net.groupby('学号').apply(lambda x: (night_mask[x.index]).sum() / len(x))
             median_night = night_ratios.median()
             self.cohort_stats['night_ratio_median'] = max(0.05, median_night) if not pd.isna(median_night) else 0.1
@@ -67,82 +91,79 @@ class PrecisionIdeologyAnalyzer:
         return '其他'
 
     def _calculate_positivity(self, student_net: pd.DataFrame) -> str:
-        """计算正向度：基于分值的综合判定"""
+        """计算正向度：反映工作收益"""
         if student_net.empty: return '不显著'
 
         score = 0
-        # 1. 域名类别分值 (正向: 学习, 搜索引擎; 负向: 适度社交不加分, 过度社交扣分)
         cats = student_net['访问域名'].apply(self._classify_domain).value_counts(normalize=True)
-        score += cats.get('学习科研', 0) * 10
-        score += cats.get('搜索引擎', 0) * 5
-        score -= cats.get('视频娱乐', 0) * 3
 
-        # 2. VPN扣分
+        # 1. 学习/资讯类加分
+        score += cats.get('学习科研', 0) * 12
+        score += cats.get('今日头条', 0) * 3
+
+        # 2. 纯娱乐/碎片化适度扣分
+        score -= cats.get('抖音/直播', 0) * 4
+
+        # 3. 境外风险/VPN（论文中的负向指引）
         vpn_ratio = (student_net['是否使用VPN'] == '是').sum() / len(student_net)
-        score -= vpn_ratio * 8
+        score -= vpn_ratio * 10
+        score -= cats.get('境外平台', 0) * 5
 
-        # 3. 访问多样性加分 (视野开阔)
-        diversity = student_net['访问域名'].nunique() / len(student_net)
-        score += diversity * 5
+        high = float(self.params.get('positivity_high', 4.0))
+        low = float(self.params.get('positivity_low', -2.0))
 
-        if score > 3:
-            return '正向'
-        elif score < -1:
-            return '负向'
-        else:
-            return '不显著'
+        if score >= high: return '正向'
+        if score <= low: return '负向'
+        return '不显著'
 
     def _calculate_emotion_intensity(self, student_net: pd.DataFrame) -> str:
-        """计算情绪强度：基于偏离群体的程度"""
+        """计算情绪强度：反映工作难度"""
         if student_net.empty: return '不显著'
 
-        # 1. 计算日均次数与群体基准对比
+        # 偏离群体的访问频次
         daily_avg = len(student_net) / max(1, student_net['开始时间'].dt.date.nunique())
         count_factor = daily_avg / max(1, self.cohort_stats.get('daily_avg_median', 15))
 
-        # 2. 夜间访问
-        night_mask = (student_net['开始时间'].dt.hour >= 23) | (student_net['开始时间'].dt.hour < 6)
+        # 夜间沉迷程度
+        night_start = int(self.params.get('night_start', 23))
+        night_mask = (student_net['开始时间'].dt.hour >= night_start) | (student_net['开始时间'].dt.hour < 6)
         night_ratio = night_mask.sum() / len(student_net)
         night_factor = night_ratio / max(0.01, self.cohort_stats.get('night_ratio_median', 0.1))
 
-        intensity_score = count_factor * 0.6 + night_factor * 0.4
+        intensity_score = count_factor * 0.5 + night_factor * 0.5
 
-        if intensity_score > 1.4:
-            return '强'
-        elif intensity_score < 0.6:
-            return '弱'
-        else:
-            return '不显著'
+        high = float(self.params.get('intensity_high', 1.2))
+        low = float(self.params.get('intensity_low', 0.8))
+
+        if intensity_score >= high: return '强'
+        if intensity_score <= low: return '弱'
+        return '不显著'
 
     def _calculate_radicalism(self, student_net: pd.DataFrame, student_grades: pd.DataFrame) -> str:
-        """计算激进度：结合行为突变与外部压力"""
+        """计算激进度：反映潜在风险（关注超越性议题/政治敏感度）"""
         if student_net.empty: return '不显著'
 
         score = 0
-        # 1. VPN频繁使用
-        vpn_ratio = (student_net['是否使用VPN'] == '是').sum() / len(student_net)
-        if vpn_ratio > 0.4: score += 2
-
-        # 2. 社交媒体依赖
         cats = student_net['访问域名'].apply(self._classify_domain).value_counts(normalize=True)
-        if cats.get('社交媒体', 0) > 0.5: score += 2
 
-        # 3. 学业压力 (成绩波动大或明显下降)
+        # 1. 论文指出：激进通常与社交媒体、境外平台、键政类平台高度相关
+        score += cats.get('微博', 0) * 5
+        score += cats.get('境外平台', 0) * 8
+        score += (student_net['是否使用VPN'] == '是').sum() / len(student_net) * 10
+
+        # 2. 成绩波动作为激进度的压力源辅助判定
         if not student_grades.empty and 'subject_grades' in student_grades.columns:
             all_scores = []
             for g_dict in student_grades['subject_grades']:
                 all_scores.extend([float(v) for v in g_dict.values() if v is not None])
-            if all_scores:
-                std_dev = np.std(all_scores)
-                if std_dev > 10: score += 2  # 成绩波动较大
-                if np.mean(all_scores) < 65: score += 2  # 学业压力较大
+            if all_scores and np.std(all_scores) > 12: score += 2
 
-        if score >= 3:
-            return '强'
-        elif score <= 1:
-            return '弱'
-        else:
-            return '不显著'
+        high = float(self.params.get('radicalism_high', 4.0))
+        low = float(self.params.get('radicalism_low', 1.5))
+
+        if score >= high: return '强'
+        if score <= low: return '弱'
+        return '不显著'
 
     def _get_dynamic_scene(self, student_net: pd.DataFrame, profile_type: str) -> str:
         """根据学生最常访问的内容生成动态场景"""
@@ -162,32 +183,50 @@ class PrecisionIdeologyAnalyzer:
             return f"{primary}/{secondary}"
         return primary
 
-    def _determine_profile_type(self, pos: str, emo: str, rad: str) -> tuple:
+    @staticmethod
+    def _determine_profile_type(pos: str, emo: str, rad: str) -> tuple:
         """
-        确定画像类型与策略 (全矩阵覆盖)
+        完全对齐论文《基于大学生网络行为画像开展精准思政的逻辑进路和实施策略》 (表 2)
         """
-        # 建立画像矩阵映射
-        matrix = {
-            ('正向', '弱', '弱'): ('学术深耕型', '肯定激励', '学术论坛/图书馆'),
-            ('正向', '强', '弱'): ('活跃意见型', '引导正面传播', '专业社区'),
-            ('正向', '强', '强'): ('激进先锋型', '关注内容合规', '社交平台'),
-            ('不显著', '强', '强'): ('活跃激进型', '重点关注', '微博/贴吧'),
-            ('不显著', '不显著', '弱'): ('小心翼翼型', '关爱疏导', '社交软件'),
-            ('不显著', '弱', '弱'): ('沉溺当下型', '丰富课外生活', '短视频/生活App'),
-            ('负向', '强', '强'): ('潜在风险型', '预警研判', '境外平台/VPN'),
-            ('负向', '强', '弱'): ('匿名吐槽型', '解决实际困难', '校内树洞'),
-            ('负向', '弱', '弱'): ('消极退缩型', '心理疏导', '网游/小众社区'),
-            ('正向', '不显著', '不显著'): ('专业博主型', '支持创作', 'B站/知乎'),
-            ('不显著', '不显著', '不显著'): ('平稳普通型', '日常关注', '综合门户')
-        }
+        # (画像类型, 工作策略, 典型场景建议)
 
-        res = matrix.get((pos, emo, rad))
-        if res: return res
+        # 1. 活跃激进型 / 键政型 (正向或负向，强情绪，强激进)
+        if (pos in ['正向', '负向']) and emo == '强' and rad == '强':
+            return ('活跃激进型', '重点关注', '微博/今日头条')
 
-        # 模糊匹配默认项
-        if rad == '强': return ('激进倾向型', '加强监管', '社交媒体')
+        # 2. 境外同好型 (负向，强情绪，强激进)
+        if pos == '负向' and emo == '强' and rad == '强':
+            return ('境外同好型', '重点关注', '境外平台')
+
+        # 3. 相对剥夺型 (负向，强情绪，强激进 - 场景倾向评论区)
+        if pos == '负向' and emo == '强' and rad == '强':
+            # 注意：此处与 1,2 逻辑重合，在结果中会通过场景进一步区分，此处保留分类
+            return ('相对剥夺型', '关爱、重点关注', '新闻评论区')
+
+        # 4. 专业博主型 (正向高，弱情绪，不显著激进)
+        if pos == '正向' and emo == '弱' and rad == '不显著':
+            return ('专业博主型', '熟悉、了解', 'B站')
+
+        # 5. 阳春白雪型 / 匿名吐槽型 (不显著正向，强情绪，弱激进)
+        if pos == '不显著' and emo == '强' and rad == '弱':
+            return ('阳春白雪型', '熟悉、了解', '豆瓣/树洞')
+
+        # 6. 小心翼翼型 (不显著正向，不显著情绪，弱激进)
+        if pos == '不显著' and emo == '不显著' and rad == '弱':
+            return ('小心翼翼型', '关爱、诉求解决', '百度贴吧')
+
+        # 7. 沉溺当下型 / 深度思考型 (不显著正向，弱情绪，弱激进)
+        if pos == '不显著' and emo == '弱' and rad == '弱':
+            return ('沉溺当下型', '熟悉、了解', '小红书/知乎')
+
+        # 8. 流量利益型 (不显著正向，弱情绪，不显著激进)
+        if pos == '不显著' and emo == '弱' and rad == '不显著':
+            return ('流量利益型', '熟悉、了解', '抖音/直播')
+
+        # --- 默认降级匹配 ---
+        if rad == '强': return ('激进倾向型', '重点关注', '社交媒体')
+        if pos == '负向': return ('潜在风险型', '预警研判', '综合场景')
         if pos == '正向': return ('潜力骨干型', '培养选拔', '学术/资讯')
-        if pos == '负向': return ('重点关注型', '谈心谈话', '多元平台')
 
         return ('常规关注型', '定期了解', '综合场景')
 
@@ -222,9 +261,11 @@ class PrecisionIdeologyAnalyzer:
         self.students_profile = {r['学号']: r for r in results}
         return results
 
-    def generate_report_excel(self, analysis_results: List[Dict]) -> io.BytesIO:
+    @staticmethod
+    def generate_report_excel(analysis_results: List[Dict]) -> io.BytesIO:
         df = pd.DataFrame(analysis_results)
         output = io.BytesIO()
+        # noinspection PyTypeChecker
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='精准思政分析', index=False)
             ws = writer.sheets['精准思政分析']

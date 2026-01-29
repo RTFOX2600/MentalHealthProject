@@ -1,14 +1,10 @@
-import json
 import warnings
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List
 import io
 
 import numpy as np
 import pandas as pd
-from starlette.exceptions import HTTPException
-from sklearn.ensemble import IsolationForest
-from sklearn.preprocessing import StandardScaler
 
 
 warnings.filterwarnings('ignore')
@@ -23,6 +19,19 @@ class PrecisionPovertyAlleviationAnalyzer:
     def __init__(self, params=None):
         self.students_info = {}
         self.data = {}
+        
+        # 默认参数
+        self.params = {
+            'poverty_threshold': 300.0,  # 低于此金额判定为潜在困难
+            'trend_threshold': -50.0     # 消费趋势下降超过此值需警惕
+        }
+        if params:
+            # 强制类型转换，防止前端传入字符串导致 numpy 比较报错
+            for k, v in params.items():
+                try:
+                    self.params[k] = float(v)
+                except (ValueError, TypeError):
+                    pass
 
     def load_data_from_dict(self, data_dict: Dict):
         """从字典加载数据"""
@@ -55,8 +64,10 @@ class PrecisionPovertyAlleviationAnalyzer:
                 indicators['最低月消费'] = canteen_data['食堂消费额度（本月）'].min()
                 indicators['消费波动'] = canteen_data['食堂消费额度（本月）'].std()
 
-                # 低消费月份数（低于300元）
-                low_months = (canteen_data['食堂消费额度（本月）'] < 300).sum()
+                # 低消费月份数（基于参数阈值）
+                poverty_limit = float(self.params.get('poverty_threshold', 300))
+                low_months = (canteen_data['食堂消费额度（本月）'] < poverty_limit).sum()
+                # noinspection PyTypeChecker
                 indicators['低消费月份数'] = int(low_months)
 
                 # 消费趋势
@@ -67,6 +78,7 @@ class PrecisionPovertyAlleviationAnalyzer:
                     slope, _ = np.polyfit(x, values, 1)
                     indicators['消费趋势'] = slope
                 else:
+                    # noinspection PyTypeChecker
                     indicators['消费趋势'] = 0
 
         # 2. 校门进出分析（作为辅助指标）
@@ -81,6 +93,7 @@ class PrecisionPovertyAlleviationAnalyzer:
                 date_count = len(gate_data['校门进出时间'].dt.date.unique())
                 weekend_dates = len([d for d in gate_data['校门进出时间'].dt.date.unique()
                                      if pd.Timestamp(d).weekday() >= 5])
+                # noinspection PyTypeChecker
                 indicators['周末外出频率'] = len(weekend_out) / max(1, weekend_dates) if weekend_dates > 0 else 0
 
         return indicators
@@ -88,9 +101,6 @@ class PrecisionPovertyAlleviationAnalyzer:
     def _determine_poverty_level(self, indicators: Dict) -> tuple:
         """
         判定贫困等级
-        特别困难：月均<250 或 多个月<200
-        困难：月均<350
-        一般困难：月均<450
         """
         if '月均消费' not in indicators:
             return '无数据', []
@@ -99,38 +109,42 @@ class PrecisionPovertyAlleviationAnalyzer:
         min_consumption = indicators.get('最低月消费', avg_consumption)
         low_months = indicators.get('低消费月份数', 0)
         trend = indicators.get('消费趋势', 0)
+        
+        poverty_limit = float(self.params.get('poverty_threshold', 300))
+        trend_limit = float(self.params.get('trend_threshold', -50.0))
 
         reasons = []
         level = '正常'
 
-        # 特别困难判定
-        if avg_consumption < 250:
+        # 特别困难判定 (基于动态阈值的 80%)
+        if avg_consumption < (poverty_limit * 0.83): # 约 250
             level = '特别困难'
             reasons.append(f"月均消费仅{avg_consumption:.1f}元，远低于正常水平")
-        elif min_consumption < 200 and low_months >= 2:
+        elif min_consumption < (poverty_limit * 0.66) and low_months >= 2: # 约 200
             level = '特别困难'
-            reasons.append(f"有{low_months}个月消费低于300元，最低仅{min_consumption:.1f}元")
-        # 困难判定
-        elif avg_consumption < 350:
+            reasons.append(f"有{low_months}个月消费低于{poverty_limit}元，最低仅{min_consumption:.1f}元")
+        # 困难判定 (基于动态阈值的 1.16 倍)
+        elif avg_consumption < (poverty_limit * 1.16): # 约 350
             level = '困难'
             reasons.append(f"月均消费{avg_consumption:.1f}元，低于基本生活水平")
-        # 一般困难判定
-        elif avg_consumption < 450:
+        # 一般困难判定 (基于动态阈值的 1.5 倍)
+        elif avg_consumption < (poverty_limit * 1.5): # 约 450
             level = '一般困难'
             reasons.append(f"月均消费{avg_consumption:.1f}元，偏低")
 
         # 补充其他原因
         if level != '正常':
-            if trend < -30:
+            if trend < trend_limit:
                 reasons.append("消费呈明显下降趋势")
             if low_months >= 3:
-                reasons.append(f"有{low_months}个月消费低于300元")
+                reasons.append(f"有{low_months}个月消费低于{poverty_limit}元")
             if '周末外出频率' in indicators and indicators['周末外出频率'] < 1:
                 reasons.append("周末外出活动明显减少")
 
         return level, reasons
 
-    def _generate_assistance_suggestions(self, level: str, indicators: Dict) -> str:
+    @staticmethod
+    def _generate_assistance_suggestions(level: str, indicators: Dict) -> str:
         """生成帮助建议"""
         suggestions = []
 
@@ -184,7 +198,8 @@ class PrecisionPovertyAlleviationAnalyzer:
         self.students_info = {r['学号']: r for r in results}
         return results
 
-    def generate_report_excel(self, analysis_results: List[Dict]) -> io.BytesIO:
+    @staticmethod
+    def generate_report_excel(analysis_results: List[Dict]) -> io.BytesIO:
         """生成精准扶贫分析报告"""
         print("生成精准扶贫报告...")
 
@@ -199,6 +214,7 @@ class PrecisionPovertyAlleviationAnalyzer:
             df = pd.DataFrame(analysis_results)
 
         output = io.BytesIO()
+        # noinspection PyTypeChecker
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='精准扶贫分析', index=False)
 
