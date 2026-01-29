@@ -49,12 +49,12 @@ class MentalHealthAnalyzer:
             self.data['network'] = pd.DataFrame(data_dict.get('network', []))
             self.data['grades'] = pd.DataFrame(data_dict.get('grades', []))
 
-            print("数据加载完成！")
-            print(f"食堂消费记录: {len(self.data['canteen'])} 条")
-            print(f"校门进出记录: {len(self.data['school_gate'])} 条")
-            print(f"寝室门禁记录: {len(self.data['dorm_gate'])} 条")
-            print(f"校园网记录: {len(self.data['network'])} 条")
-            print(f"成绩记录: {len(self.data['grades'])} 条")
+            print(f"数据加载完成！"
+                  f"食堂消费记录: {len(self.data['canteen'])} 条；"
+                  f"校门进出记录: {len(self.data['school_gate'])} 条；"
+                  f"寝室门禁记录: {len(self.data['dorm_gate'])} 条；"
+                  f"校园网记录: {len(self.data['network'])} 条；"
+                  f"成绩记录: {len(self.data['grades'])} 条。")
 
             # 转换时间格式
             self._preprocess_data()
@@ -396,7 +396,6 @@ class MentalHealthAnalyzer:
         try:
             iso_forest = IsolationForest(
                 contamination=float(self.params.get('contamination', 0.1)),
-                random_state=42
             )
             labels = iso_forest.fit_predict(X_scaled)
             at_risk_indices = np.where(labels == -1)[0]
@@ -432,7 +431,6 @@ class MentalHealthAnalyzer:
         try:
             iso_forest = IsolationForest(
                 contamination=0.15,  # 异常比例
-                random_state=42
             )
             labels = iso_forest.fit_predict(X_scaled)
             at_risk_indices = np.where(labels == -1)[0]  # -1表示异常

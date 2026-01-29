@@ -1,12 +1,10 @@
-/* Custom UI Components Library */
-
-/* 1. Custom Dropdown */
-.mh-custom-dropdown {
+/* 自定义下拉菜单组件 */
+.custom-dropdown {
     position: relative;
     width: 100%;
 }
 
-.mh-dropdown-trigger {
+.dropdown-trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -17,35 +15,37 @@
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 0.875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
     color: var(--text-color);
 }
 
-.mh-dropdown-trigger:hover {
+.dropdown-trigger:hover {
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.mh-custom-dropdown.active .mh-dropdown-trigger {
+.custom-dropdown.active .dropdown-trigger {
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-.mh-dropdown-trigger .mh-icon {
+.dropdown-trigger .icon {
     width: 1rem;
     height: 1rem;
     transition: transform 0.3s ease;
     opacity: 0.6;
 }
 
-.mh-custom-dropdown.active .mh-dropdown-trigger .mh-icon {
+.custom-dropdown.active .dropdown-trigger .icon {
     transform: rotate(180deg);
     opacity: 1;
     color: var(--primary-color);
 }
 
-.mh-dropdown-menu {
+.dropdown-menu {
+    display: block !important; /* 覆盖 Bootstrap 的 display: none */
     position: absolute;
     top: calc(100% + 5px);
     left: 0;
@@ -63,13 +63,13 @@
     padding: 0.25rem;
 }
 
-.mh-custom-dropdown.active .mh-dropdown-menu {
+.custom-dropdown.active .dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
 }
 
-.mh-dropdown-item {
+.dropdown-item {
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     cursor: pointer;
@@ -78,19 +78,20 @@
     color: var(--text-color);
 }
 
-.mh-dropdown-item:hover {
+.dropdown-item:hover {
     background-color: var(--bg-color);
     color: var(--primary-color);
-    padding-left: 1.125rem;
+    font-weight: 600;
+    padding-left: 1.25rem; /* 悬停时轻微右移感 */
 }
 
-.mh-dropdown-item.selected {
-    background-color: rgba(79, 70, 229, 0.2);
+.dropdown-item.selected {
+    background-color: rgba(79, 70, 229, 0.15);
     color: var(--primary-color);
     font-weight: 600;
 }
 
-/* 2. Custom Range Slider */
+/* 深度定制滑块 (Range Slider) */
 .form-range {
     -webkit-appearance: none;
     appearance: none;
@@ -112,7 +113,6 @@
 .form-range:active::-webkit-slider-runnable-track {
     height: 10px;
     border-radius: 5px;
-    background: #cbd5e1;
 }
 
 .form-range::-webkit-slider-thumb {
@@ -130,7 +130,7 @@
 
 .form-range:hover::-webkit-slider-thumb,
 .form-range:active::-webkit-slider-thumb {
-    margin-top: -5px;
+    margin-top: -5px; /* 轨道变宽后，修正垂直中心点 (10px/2 - 20px/2) */
 }
 
 .form-range:hover::-webkit-slider-thumb {
@@ -143,8 +143,8 @@
     box-shadow: 0 0 0 8px rgba(79, 70, 229, 0.1);
 }
 
-/* 3. Custom Numeric Stepper */
-.mh-numeric-stepper {
+/* 自定义数字调整块 (Numeric Stepper) */
+.numeric-stepper {
     display: flex;
     align-items: center;
     background: var(--input-bg);
@@ -154,18 +154,18 @@
     transition: all 0.3s ease;
 }
 
-.mh-numeric-stepper:hover {
+.numeric-stepper:hover {
     border-color: var(--primary-color);
     transform: translateY(-2px);
 }
 
-.mh-numeric-stepper:focus-within {
+.numeric-stepper:focus-within {
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
-.mh-stepper-btn {
+.stepper-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -180,52 +180,130 @@
     padding: 0;
 }
 
-.mh-stepper-btn:hover {
+.stepper-btn:hover {
     opacity: 1;
     background-color: var(--bg-color);
     color: var(--text-color);
 }
 
-.mh-stepper-btn:active {
-    transform: scale(0.85);
+.stepper-btn:active {
+    transform: scale(0.85); /* 点击时的物理反馈 */
 }
 
-.mh-stepper-btn .mh-icon {
+.stepper-btn .icon {
     width: 0.875rem;
     height: 0.875rem;
 }
 
-.mh-stepper-input {
+.stepper-input {
     flex: 1;
     width: 100%;
     height: 2.25rem;
     border: none !important;
     background: transparent !important;
     text-align: center;
-    font-weight: 600;
-    color: var(--primary-color);
+    font-weight: 450;
+    color: var(--primary-color); /* 数值高亮 */
     padding: 0 !important;
     font-size: 0.95rem;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace; /* 代码感字体 */
 }
 
-.mh-stepper-input::-webkit-inner-spin-button,
-.mh-stepper-input::-webkit-outer-spin-button {
+/* 隐藏原生数字按钮 */
+.stepper-input::-webkit-inner-spin-button,
+.stepper-input::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* Global Helper: Icons */
-.mh-icon {
-    display: inline-block;
-    width: 1.25rem;
-    height: 1.25rem;
-    background-color: currentColor;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    vertical-align: middle;
+.mh-param-card input:focus,
+.mh-param-card select:focus {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+.upload-area p {
+    color: var(--primary-color);
+}
+
+.selected-file {
+    background: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color) !important;
+}
+
+.mh-upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.upload-item {
+    background: var(--input-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.upload-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow);
+    border-color: var(--primary-color);
+}
+
+/* 上传进度条样式 */
+.upload-item .progress {
+    min-height: 0.875rem;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    background: var(--bg-color);
+}
+
+.upload-item .progress-bar {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 1s ease;
+}
+
+.upload-area {
+    border: 2px dashed var(--primary-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+    background: var(--input-bg);
+}
+
+.upload-area.dragover {
+    background: rgba(79, 70, 229, 0.1);
+    border-style: solid;
+}
+
+/* Dark Mode Overrides */
+@media (prefers-color-scheme: dark) {
+    /* 深色模式下自定义下拉菜单项背景 */
+    .dropdown-item.selected {
+        background-color: rgba(99, 102, 241, 0.2);
+    }
+
+    /* 深色模式下滑块轨道稍微加深但保持清晰 */
+    .form-range::-webkit-slider-runnable-track {
+        background-color: #334155;
+    }
+
+    .upload-item {
+        background: var(--card-bg);
+    }
+
+    .text-muted {
+        color: #94a3b8 !important;
+    }
 }
