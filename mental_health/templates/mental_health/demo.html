@@ -26,7 +26,7 @@
         </h2>
         <div class="alert alert-info border-0 shadow-sm mb-4">
             <p class="mb-0" style="color: #0f172a">
-                可以<strong>直接</strong>点击底部的分析按钮使用已有数据；或<strong>依次</strong>上传以下五个表格文件以覆盖旧数据。
+                可以直接点击底部的分析按钮<strong>使用已有数据</strong>；或上传以下五个表格文件以<strong>覆盖旧数据</strong>。
             </p>
         </div>
 
@@ -40,9 +40,9 @@
                     </h3>
                     <p class="small text-light-dimmed mb-3">格式：学号, 年份-月份, 食堂消费额度（本月）</p>
                     <div class="upload-form" id="canteen-form">
-                        <div class="upload-area mb-3" onclick="document.getElementById('canteen-file').click()">
+                        <div class="upload-area mb-3">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                            <input type="file" id="canteen-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'canteen')">
+                            <input type="file" id="canteen-file" class="d-none" accept=".csv,.xlsx,.xls">
                         </div>
                         <div id="canteen-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
                         <button class="mh-btn mh-btn-primary" onclick="uploadFile('canteen')" id="btn-upload-canteen" disabled>上传表格</button>
@@ -63,9 +63,9 @@
                     </h3>
                     <p class="small text-light-dimmed mb-3">格式：学号, 校门进出时间, 进出方向, 位置</p>
                     <div class="upload-form" id="school-gate-form">
-                        <div class="upload-area mb-3" onclick="document.getElementById('school-gate-file').click()">
+                        <div class="upload-area mb-3">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                            <input type="file" id="school-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'school-gate')">
+                            <input type="file" id="school-gate-file" class="d-none" accept=".csv,.xlsx,.xls">
                         </div>
                         <div id="school-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
                         <button class="mh-btn mh-btn-primary" onclick="uploadFile('school-gate')" id="btn-upload-school-gate" disabled>上传表格</button>
@@ -86,9 +86,9 @@
                     </h3>
                     <p class="small text-light-dimmed mb-3">格式：学号, 寝室进出时间, 进出方向, 楼栋</p>
                     <div class="upload-form" id="dorm-gate-form">
-                        <div class="upload-area mb-3" onclick="document.getElementById('dorm-gate-file').click()">
+                        <div class="upload-area mb-3">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                            <input type="file" id="dorm-gate-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'dorm-gate')">
+                            <input type="file" id="dorm-gate-file" class="d-none" accept=".csv,.xlsx,.xls">
                         </div>
                         <div id="dorm-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
                         <button class="mh-btn mh-btn-primary" onclick="uploadFile('dorm-gate')" id="btn-upload-dorm-gate" disabled>上传表格</button>
@@ -109,9 +109,9 @@
                     </h3>
                     <p class="small text-light-dimmed mb-3">格式：学号, 开始时间, 访问域名, 是否使用VPN</p>
                     <div class="upload-form" id="network-form">
-                        <div class="upload-area mb-3" onclick="document.getElementById('network-file').click()">
+                        <div class="upload-area mb-3">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                            <input type="file" id="network-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'network')">
+                            <input type="file" id="network-file" class="d-none" accept=".csv,.xlsx,.xls">
                         </div>
                         <div id="network-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
                         <button class="mh-btn mh-btn-primary" onclick="uploadFile('network')" id="btn-upload-network" disabled>上传表格</button>
@@ -132,9 +132,9 @@
                     </h3>
                     <p class="small text-light-dimmed mb-3">格式：学号, 年份-月份, 各课程成绩</p>
                     <div class="upload-form" id="grades-form">
-                        <div class="upload-area mb-3" onclick="document.getElementById('grades-file').click()">
+                        <div class="upload-area mb-3">
                             <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
-                            <input type="file" id="grades-file" class="d-none" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(this, 'grades')">
+                            <input type="file" id="grades-file" class="d-none" accept=".csv,.xlsx,.xls">
                         </div>
                         <div id="grades-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
                         <button class="mh-btn mh-btn-primary" onclick="uploadFile('grades')" id="btn-upload-grades" disabled>上传表格</button>
