@@ -40,7 +40,6 @@ class MentalHealthAnalyzer:
         """
         从字典加载数据（替代从文件加载）
         """
-        print("从字典加载数据...")
         try:
             # 从字典加载各个表格
             self.data['canteen'] = pd.DataFrame(data_dict.get('canteen', []))
@@ -49,12 +48,12 @@ class MentalHealthAnalyzer:
             self.data['network'] = pd.DataFrame(data_dict.get('network', []))
             self.data['grades'] = pd.DataFrame(data_dict.get('grades', []))
 
-            print(f"数据加载完成！"
-                  f"食堂消费记录: {len(self.data['canteen'])} 条；"
-                  f"校门进出记录: {len(self.data['school_gate'])} 条；"
-                  f"寝室门禁记录: {len(self.data['dorm_gate'])} 条；"
-                  f"校园网记录: {len(self.data['network'])} 条；"
-                  f"成绩记录: {len(self.data['grades'])} 条。")
+            print(f"{self.__class__.__name__} 数据加载完成！"
+                  f"食堂消费记录: {len(self.data.get('canteen', []))} 条。"
+                  f"校门进出记录: {len(self.data.get('school_gate', []))} 条。"
+                  f"寝室门禁记录: {len(self.data.get('dorm_gate', []))} 条。"
+                  f"校园网记录: {len(self.data.get('network', []))} 条。"
+                  f"成绩记录: {len(self.data.get('grades', []))} 条。")
 
             # 转换时间格式
             self._preprocess_data()
@@ -97,8 +96,6 @@ class MentalHealthAnalyzer:
 
     def analyze_student_behavior(self):
         """分析学生行为模式"""
-        print("\n开始分析学生行为模式...")
-
         # 获取所有学生
         all_students = set()
         for table_name, table_data in self.data.items():
@@ -106,7 +103,6 @@ class MentalHealthAnalyzer:
                 all_students.update(table_data['学号'].unique())
 
         all_students = list(all_students)
-        print(f"总学生数: {len(all_students)}")
 
         # 为每个学生计算行为指标
         student_metrics = {}
@@ -353,8 +349,6 @@ class MentalHealthAnalyzer:
         """
         识别需要关注的学生
         """
-        print("\n识别需要关注的学生...")
-
         if not self.students_info:
             self.analyze_student_behavior()
 
@@ -383,7 +377,7 @@ class MentalHealthAnalyzer:
         available_cols = [col for col in feature_cols if col in df_metrics.columns]
 
         if not available_cols:
-            print("没有可用的特征列！")
+            print(f"{self.__class__.__name__} 没有可用的特征列！")
             return []
 
         X = df_metrics[available_cols]
@@ -549,13 +543,11 @@ class MentalHealthAnalyzer:
         else:
             return "低风险"
 
-    def generate_detailed_analysis_excel(self) -> io.BytesIO:
+    def _generate_detailed_analysis_excel(self) -> io.BytesIO:
         """
         生成学生思想健康详细分析Excel文件
         返回BytesIO对象供前端下载
         """
-        print("\n生成详细分析报告...")
-
         if not self.at_risk_students:
             # 如果没有识别到风险学生，创建空报告
             detailed_results = [{
@@ -640,10 +632,10 @@ class MentalHealthAnalyzer:
 
         return "；".join(list(set(points))[:3])  # 最多3个重点
 
-    def analyze_comprehensive(self, data_dict: Dict) -> Dict:
+    def start_analyze(self, data_dict: Dict) -> Dict:
         """
-        综合分析入口函数
-        返回分析结果摘要和Excel文件数据
+        分析入口
+        返回分析结果摘要和 Excel 文件数据
         """
         try:
             # 1. 加载数据
@@ -668,7 +660,7 @@ class MentalHealthAnalyzer:
             }
 
             # 5. 生成Excel文件
-            excel_file = self.generate_detailed_analysis_excel()
+            excel_file = self._generate_detailed_analysis_excel()
 
             return {
                 'status': 'success',

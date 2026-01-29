@@ -15,8 +15,9 @@ class StatusResponse(Schema):
     current: int = 26
     total: int = 100
     message: str = "This is a msg."
-    filename: str = "filename"
-    cache_key: str = "cache_key"
+    filename: str = None
+    cache_key: str = None
+    records: int = None
 
 class AnalysisParams(Schema):
     # 综合分析参数
@@ -139,7 +140,8 @@ def check_upload_status(request, task_id: str):
         return {
             "status": "success" if result.get('status') == 'success' else "error",
             "message": result.get('message'),
-            "current": 100
+            "current": 100,
+            "records": result.get('records')
         }
     return {"status": "error", "message": str(task.info)}
 

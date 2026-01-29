@@ -136,7 +136,7 @@ def analyze_task(self, user_id, analysis_type, params=None):
                 'message': '未知的分析类型'
             }
         
-        result = analyzer.analyze_comprehensive(data_dict)
+        result = analyzer.start_analyze(data_dict)
         
         # 更新任务状态：生成报告
         self.update_state(
@@ -157,13 +157,6 @@ def analyze_task(self, user_id, analysis_type, params=None):
                     'excel_data': result['excel_data']
                 }, timeout=3600)
                 print(f"✅ 缓存写入成功: {cache_key}")
-                
-                # 验证缓存是否可读
-                test_read = cache.get(cache_key)
-                if test_read:
-                    print(f"✅ 缓存读取验证成功")
-                else:
-                    print(f"❌ 缓存读取验证失败！")
             except Exception as cache_error:
                 print(f"❌ 缓存操作失败: {cache_error}")
             
@@ -286,7 +279,10 @@ def upload_task(self, user_id, file_type, file_content, filename):
         batch_size = 500
         records = []
         processed = 0
-                
+
+        direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
+        idx: int
+        row: pd.Series
         for idx, row in df.iterrows():
             try:
                 # 构建记录对象
@@ -301,7 +297,6 @@ def upload_task(self, user_id, file_type, file_content, filename):
                     dt = pd.to_datetime(row['校门进出时间'])
                     if dt.tzinfo is None:
                         dt = timezone.make_aware(dt, LOCAL_TZ)
-                    direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
                     raw_dir = str(row['进出方向']).strip()
                     direction = direction_map.get(raw_dir, raw_dir)
                     record = SchoolGateRecord(
@@ -315,7 +310,6 @@ def upload_task(self, user_id, file_type, file_content, filename):
                     dt = pd.to_datetime(row['寝室进出时间'])
                     if dt.tzinfo is None:
                         dt = timezone.make_aware(dt, LOCAL_TZ)
-                    direction_map = {'进入': '进', 'in': '进', '出去': '出', 'out': '出', '离开': '出'}
                     raw_dir = str(row['进出方向']).strip()
                     direction = direction_map.get(raw_dir, raw_dir)
                     record = DormGateRecord(
@@ -337,7 +331,7 @@ def upload_task(self, user_id, file_type, file_content, filename):
                         domain=str(row.get('访问域名', '')),
                         use_vpn=use_vpn
                     )
-                elif file_type == 'grades':
+                else:  # file_type == 'grades':
                     grade_columns = [col for col in df.columns if col not in ['学号', '年份-月份']]
                     subject_grades = {}
                     for col in grade_columns:

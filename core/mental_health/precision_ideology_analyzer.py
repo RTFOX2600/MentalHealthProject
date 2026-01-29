@@ -58,9 +58,11 @@ class PrecisionIdeologyAnalyzer:
 
     def load_data_from_dict(self, data_dict: Dict):
         """加载数据并计算群体基准"""
-        print("加载精准思政分析数据...")
         self.data['network'] = pd.DataFrame(data_dict.get('network', []))
         self.data['grades'] = pd.DataFrame(data_dict.get('grades', []))
+        print(f"{self.__class__.__name__} 数据加载完成！"
+              f"校园网记录: {len(self.data.get('network', []))} 条。"
+              f"成绩记录: {len(self.data.get('grades', []))} 条。")
 
         if not self.data['network'].empty:
             # 转换时间并强制转换为本地时区 (核心修复)
@@ -262,7 +264,7 @@ class PrecisionIdeologyAnalyzer:
         return results
 
     @staticmethod
-    def generate_report_excel(analysis_results: List[Dict]) -> io.BytesIO:
+    def _generate_report_excel(analysis_results: List[Dict]) -> io.BytesIO:
         df = pd.DataFrame(analysis_results)
         output = io.BytesIO()
         # noinspection PyTypeChecker
@@ -274,9 +276,14 @@ class PrecisionIdeologyAnalyzer:
         output.seek(0)
         return output
 
-    def analyze_comprehensive(self, data_dict: Dict) -> Dict:
+    def start_analyze(self, data_dict: Dict) -> Dict:
+        """分析入口"""
         try:
             self.load_data_from_dict(data_dict)
+
+            print(f"数据加载完成！"
+                  f"校园网记录: {len(self.data.get('network', []))} 条。")
+
             results = self.analyze_students()
 
             summary = {
@@ -289,7 +296,7 @@ class PrecisionIdeologyAnalyzer:
             return {
                 'status': 'success',
                 'summary': summary,
-                'excel_data': self.generate_report_excel(results).getvalue(),
+                'excel_data': self._generate_report_excel(results).getvalue(),
                 'filename': f'精准思政多维分析报告_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
             }
         except Exception as e:

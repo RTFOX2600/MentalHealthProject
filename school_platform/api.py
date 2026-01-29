@@ -1,6 +1,9 @@
 from ninja import NinjaAPI
 from django.contrib.admin.views.decorators import staff_member_required
 
+from mental_health.api import router as mental_health_router
+
+
 # 创建 API 实例，设置标题和版本
 # docs_url="/docs" 意味着 Swagger 文档将直接出现在 /api/docs
 api = NinjaAPI(
@@ -10,8 +13,4 @@ api = NinjaAPI(
 )
 
 # 注册各个模块的 router
-from mental_health.api import router as mental_health_router
-from accounts.api import router as accounts_router
-
 api.add_router("/mental-health/", mental_health_router)
-api.add_router("/accounts/", accounts_router)

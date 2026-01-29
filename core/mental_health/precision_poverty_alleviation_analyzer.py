@@ -35,7 +35,6 @@ class PrecisionPovertyAlleviationAnalyzer:
 
     def load_data_from_dict(self, data_dict: Dict):
         """从字典加载数据"""
-        print("加载精准扶贫分析数据...")
         self.data['canteen'] = pd.DataFrame(data_dict.get('canteen', []))
         self.data['school_gate'] = pd.DataFrame(data_dict.get('school_gate', []))
 
@@ -50,7 +49,9 @@ class PrecisionPovertyAlleviationAnalyzer:
                 self.data['school_gate']['校门进出时间'], errors='coerce'
             )
 
-        print(f"食堂消费记录: {len(self.data['canteen'])} 条")
+        print(f"{self.__class__.__name__} 数据加载完成！"
+              f"食堂消费记录: {len(self.data.get('canteen', []))} 条。"
+              f"校门进出记录: {len(self.data.get('school_gate', []))} 条。")
 
     def _calculate_poverty_indicators(self, student_id: str) -> Dict:
         """计算学生的贫困指标"""
@@ -164,8 +165,6 @@ class PrecisionPovertyAlleviationAnalyzer:
 
     def analyze_students(self) -> List[Dict]:
         """分析所有学生的经济状况"""
-        print("开始精准扶贫分析...")
-
         if self.data['canteen'].empty:
             return []
 
@@ -199,10 +198,8 @@ class PrecisionPovertyAlleviationAnalyzer:
         return results
 
     @staticmethod
-    def generate_report_excel(analysis_results: List[Dict]) -> io.BytesIO:
+    def _generate_report_excel(analysis_results: List[Dict]) -> io.BytesIO:
         """生成精准扶贫分析报告"""
-        print("生成精准扶贫报告...")
-
         if not analysis_results:
             df = pd.DataFrame([{
                 '学号': '无需帮助学生',
@@ -229,8 +226,8 @@ class PrecisionPovertyAlleviationAnalyzer:
         output.seek(0)
         return output
 
-    def analyze_comprehensive(self, data_dict: Dict) -> Dict:
-        """综合分析入口"""
+    def start_analyze(self, data_dict: Dict) -> Dict:
+        """分析入口"""
         try:
             self.load_data_from_dict(data_dict)
             results = self.analyze_students()
@@ -251,7 +248,7 @@ class PrecisionPovertyAlleviationAnalyzer:
                 '帮助覆盖率': f"{len(results) / max(1, total_students) * 100:.1f}%"
             }
 
-            excel_file = self.generate_report_excel(results)
+            excel_file = self._generate_report_excel(results)
 
             return {
                 'status': 'success',

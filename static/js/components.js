@@ -190,7 +190,7 @@ async function performUpload(options) {
 async function pollUploadStatus(taskId, urlPrefix, btn, progress, bar, result, originalText, onSuccess) {
     const pollInterval = setInterval(async () => {
         try {
-            const response = await fetch(`${urlPrefix}${taskId}/`, {
+            const response = await fetch(`${urlPrefix}${taskId}`, {
                 method: 'GET',
                 headers: { 'X-CSRFToken': getCookie('csrftoken') }
             });

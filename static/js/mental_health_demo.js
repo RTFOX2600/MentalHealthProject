@@ -13,8 +13,8 @@ async function uploadFile(type) {
 
     await performUpload({
         file: file,
-        url: `/mental-health/upload/${type}/`,
-        statusUrlPrefix: '/mental-health/upload-status/',
+        url: `/api/mental-health/upload/${type}`,
+        statusUrlPrefix: '/api/mental-health/upload-status/',
         btn: btn,
         progressBar: progress,
         resultDiv: result,
@@ -76,7 +76,7 @@ async function startAnalysis(type) {
     }
 
     try {
-        const response = await fetch(`/mental-health/analyze/${type}/`, {
+        const response = await fetch(`/api/mental-health/analyze/${type}`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ async function startAnalysis(type) {
 async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv, originalText, btn) {
     const pollInterval = setInterval(async () => {
         try {
-            const response = await fetch(`/mental-health/task-status/${taskId}/`, {
+            const response = await fetch(`/api/mental-health/task-status/${taskId}`, {
                 method: 'GET',
                 headers: { 'X-CSRFToken': getCookie('csrftoken') }
             });
@@ -147,7 +147,7 @@ async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv, origi
 
 async function downloadResult(taskId, typeLabel) {
     try {
-        const response = await fetch(`/mental-health/download-result/${taskId}/`, {
+        const response = await fetch(`/api/mental-health/download-result/${taskId}`, {
             method: 'GET',
             headers: { 'X-CSRFToken': getCookie('csrftoken') }
         });
