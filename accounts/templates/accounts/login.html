@@ -3,7 +3,14 @@
 {% block title %}登录 - 思想关怀系统{% endblock %}
 
 {% block content %}
-    <h2>欢迎回来</h2>
+    <h2>登录</h2>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

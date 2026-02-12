@@ -66,8 +66,9 @@ function initDropdowns() {
         items.forEach(item => {
             item.addEventListener('click', () => {
                 const value = item.getAttribute('data-value');
-                const text = item.innerText;
-                if (selectedText) selectedText.innerText = text;
+                // 获取纯文本（移除图标）
+                const text = item.textContent.trim();
+                if (selectedText) selectedText.textContent = text;
                 if (hiddenInput) hiddenInput.value = value;
                 items.forEach(i => i.classList.remove('selected'));
                 item.classList.add('selected');

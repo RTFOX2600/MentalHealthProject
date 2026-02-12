@@ -70,6 +70,8 @@
 }
 
 .dropdown-item {
+    display: flex;
+    align-items: center;
     padding: 0.625rem 0.875rem;
     font-size: 0.875rem;
     cursor: pointer;

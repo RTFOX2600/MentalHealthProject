@@ -193,6 +193,75 @@ form li {
     margin-bottom: 1rem;
 }
 
+/* Bootstrap Alert 适配暗色模式 */
+.alert {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.alert-danger, .alert-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #d97706;
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #2563eb;
+}
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #059669;
+}
+
+/* 暗色模式下的 Alert */
+@media (prefers-color-scheme: dark) {
+    .alert-danger, .alert-error {
+        background-color: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+    }
+    
+    .alert-warning {
+        background-color: rgba(245, 158, 11, 0.15);
+        border-color: rgba(245, 158, 11, 0.4);
+        color: #fbbf24;
+    }
+    
+    .alert-info {
+        background-color: rgba(59, 130, 246, 0.15);
+        border-color: rgba(59, 130, 246, 0.4);
+        color: #93c5fd;
+    }
+    
+    .alert-success {
+        background-color: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.4);
+        color: #6ee7b7;
+    }
+}
+
+/* 表单错误提示样式 */
+.text-danger {
+    color: #dc2626 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .text-danger {
+        color: #fca5a5 !important;
+    }
+}
+
 .footer-text {
     margin-top: 1rem;
     text-align: center;

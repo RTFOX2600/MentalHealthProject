@@ -49,7 +49,7 @@ class PrecisionPovertyAlleviationAnalyzer:
                 self.data['school_gate']['校门进出时间'], errors='coerce'
             )
 
-        print(f"{self.__class__.__name__} 数据加载完成！"
+        print(f"✅ {self.__class__.__name__} 数据加载完成！"
               f"食堂消费记录: {len(self.data.get('canteen', []))} 条。"
               f"校门进出记录: {len(self.data.get('school_gate', []))} 条。")
 

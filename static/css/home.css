@@ -143,6 +143,7 @@ body {
     transform: translateY(-8px);
     box-shadow: var(--card-shadow);
     border-color: var(--primary-color);
+    border-style: dashed;
 }
 
 .feature-icon-wrapper {
@@ -176,6 +177,41 @@ body {
     text-align: left;
     color: var(--muted-text);
     line-height: 1.6;
+}
+
+.status-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    padding: 2rem 2rem 1rem 2rem;
+    margin-bottom: 3rem;
+    border-radius: 1.25rem;
+    text-align: center;
+    align-items: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow);
+}
+
+.status-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--card-shadow);
+    border-color: var(--primary-color);
+}
+
+.status-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.status-card div {
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    text-align: left;
+    color: var(--muted-text);
+    margin: 0 auto 8px;
 }
 
 @keyframes fadeIn {

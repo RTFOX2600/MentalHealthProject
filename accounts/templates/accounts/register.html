@@ -1,15 +1,121 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}注册 - 思想关怀系统{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/input_components.css' %}">
+{% endblock %}
 
 {% block content %}
     <h2>创建账号</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
+        
+        <!-- 用户名 -->
+        <div class="mb-3">
+            <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger small">{{ form.username.errors }}</div>
+            {% endif %}
+            {% if form.username.help_text %}
+                <div class="form-text">{{ form.username.help_text }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 姓 -->
+        <div class="mb-3">
+            <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <div class="text-danger small">{{ form.last_name.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 名 -->
+        <div class="mb-3">
+            <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="text-danger small">{{ form.first_name.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 角色选择（自定义下拉菜单） -->
+        <div class="mb-3">
+            <label class="form-label">{{ form.role.label }}</label>
+            <div class="custom-dropdown">
+                <div class="dropdown-trigger">
+                    <span class="selected-text">请选择角色</span>
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+                </div>
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" data-value="student">学生</div>
+                    <div class="dropdown-item" data-value="counselor">辅导员</div>
+                    <div class="dropdown-item" data-value="admin">系统管理员</div>
+                </div>
+                <input type="hidden" id="{{ form.role.id_for_label }}" name="{{ form.role.html_name }}" value="">
+            </div>
+            {% if form.role.errors %}
+                <div class="text-danger small">{{ form.role.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 电子邮箱 -->
+        <div class="mb-3">
+            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="text-danger small">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 电话号码 -->
+        <div class="mb-3">
+            <label for="{{ form.phone_number.id_for_label }}" class="form-label">{{ form.phone_number.label }}</label>
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}
+                <div class="text-danger small">{{ form.phone_number.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 密码 -->
+        <div class="mb-3">
+            <label for="{{ form.password1.id_for_label }}" class="form-label">{{ form.password1.label }}</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+                <div class="text-danger small">{{ form.password1.errors }}</div>
+            {% endif %}
+            {% if form.password1.help_text %}
+                <div class="form-text">{{ form.password1.help_text }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 确认密码 -->
+        <div class="mb-3">
+            <label for="{{ form.password2.id_for_label }}" class="form-label">{{ form.password2.label }}</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+                <div class="text-danger small">{{ form.password2.errors }}</div>
+            {% endif %}
+            {% if form.password2.help_text %}
+                <div class="form-text">{{ form.password2.help_text }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- 非字段错误（如表单级别错误） -->
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        
         <button type="submit" class="btn btn-primary">注册</button>
     </form>
     <div class="footer-text">
         已有账号？<a class="external-link" href="{% url 'login' %}">直接登录</a>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/input_components.js' %}"></script>
 {% endblock %}

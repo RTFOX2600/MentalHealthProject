@@ -377,7 +377,8 @@ def upload_task(self, user_id, file_type, file_content, filename):
                     meta={
                         'current': progress,
                         'total': 100,
-                        'status': f'已存储 {processed}/{total_rows} 条记录...'
+                        'status': f'已存储 {processed}/{total_rows} 条记录...',
+                        'records': processed
                     }
                 )
         

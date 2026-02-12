@@ -15,7 +15,7 @@ class StatusResponse(Schema):
     status: str = "error"
     current: int = 0
     total: int = 100
-    message: str = ""
+    message: str = "task 返回值异常"
     filename: Optional[str] = None
     cache_key: Optional[str] = None
     records: Optional[int] = None
@@ -49,11 +49,11 @@ def upload_file(request, file_type: str, file: UploadedFile = File(...)):
     ### 数据文件异步上传接口
     将 CSV/Excel 文件（UTF-8）提交至后台进行异步解析。
 
-    支持的 file_type 有: `canteen`, `school-gate`, `dorm-gate`, `network`, `grades`
+    支持的`file_type`有: `canteen`（食堂）, `school-gate`（校门）, `dorm-gate`（寝室门）, `network`（网络）, `grades`（成绩）
 
-    **后台处理逻辑 (upload_task):**
-    - **阶段流转**: `PARSING` (解析格式) -> `STORING` (分批入库) -> `SUCCESS`
-    - **技术细节**: 使用 pandas 处理数据，并利用 Django `bulk_create` 进行每 500 条/批次的原子化入库。
+    后台处理逻辑 (upload_task):
+    - 阶段: `PARSING` (解析格式) -> `STORING` (分批入库) -> `SUCCESS`
+    - 技术细节: 使用 pandas 处理数据，并利用 Django `bulk_create` 进行每 500 条/批次的原子化入库。
     """
     try:
         file_content = file.read()
@@ -79,12 +79,14 @@ def upload_file(request, file_type: str, file: UploadedFile = File(...)):
 def analyze_data(request, analysis_type: str, params: AnalysisParams = None):
     """
     ### 数据分析任务提交接口
-    触发后台分析引擎，支持 analysis_type 为 comprehensive（综合），ideology（思政），poverty（扶贫）三类分析。
+    触发后台分析引擎。
 
-    **后台处理逻辑 (analyze_task):**
-    - **阶段流转**: `PREPARING` -> `LOADING` -> `ANALYZING` -> `GENERATING` -> `SUCCESS`
-    - **数据获取**: 根据分析类型自动从数据库调取食堂、校门、寝室、网络、成绩等维度数据。
-    - **结果输出**: 生成的 Excel 报告将存入 Redis 缓存，过期时间为 1 小时。
+    支持的`analysis_type`有：`comprehensive`（综合），`ideology`（思政），`poverty`（扶贫）
+
+    后台处理逻辑 (analyze_task):
+    - 阶段流转: `PREPARING` -> `LOADING` -> `ANALYZING` -> `GENERATING` -> `SUCCESS`
+    - 数据获取: 根据分析类型自动从数据库调取食堂、校门、寝室、网络、成绩等维度数据。
+    - 结果输出: 生成的 Excel 报告将存入 Redis 缓存，过期时间为 1 小时。
 
     综合分析参数（只需要这两个）
     - contamination: float = 0.15
@@ -119,6 +121,7 @@ def analyze_data(request, analysis_type: str, params: AnalysisParams = None):
     }
 
 
+# noinspection PyUnusedLocal
 @router.get("/upload-status/{task_id}", response=StatusResponse)
 def check_upload_status(request, task_id: str):
     """
@@ -133,9 +136,10 @@ def check_upload_status(request, task_id: str):
         info = task.info if isinstance(task.info, dict) else {}
         return {
             "status": "processing",
-            "current": info.get('current', 10),
+            "current": info.get('current', 0),
             "total": info.get('total', 100),
-            "message": info.get('status', '正在处理数据...')
+            "message": info.get('status', '状态获取失败'),
+            "records": info.get('records', 0)
         }
     
     elif task.state == 'SUCCESS':
@@ -158,6 +162,7 @@ def check_upload_status(request, task_id: str):
     }
 
 
+# noinspection PyUnusedLocal
 @router.get("/task-status/{task_id}", response=StatusResponse)
 def check_task_status(request, task_id: str):
     """
@@ -174,7 +179,7 @@ def check_task_status(request, task_id: str):
         info = task.info if isinstance(task.info, dict) else {}
         return {
             "status": "processing",
-            "current": info.get('current', 10),
+            "current": info.get('current', 0),
             "total": info.get('total', 100),
             "message": info.get('status', '分析进行中...')
         }
@@ -206,6 +211,7 @@ def check_task_status(request, task_id: str):
     }
 
 
+# noinspection PyUnusedLocal
 @router.get("/download-result/{task_id}")
 def download_result(request, task_id: str):
     """

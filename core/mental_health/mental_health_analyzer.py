@@ -48,7 +48,7 @@ class MentalHealthAnalyzer:
             self.data['network'] = pd.DataFrame(data_dict.get('network', []))
             self.data['grades'] = pd.DataFrame(data_dict.get('grades', []))
 
-            print(f"{self.__class__.__name__} 数据加载完成！"
+            print(f"✅ {self.__class__.__name__} 数据加载完成！"
                   f"食堂消费记录: {len(self.data.get('canteen', []))} 条。"
                   f"校门进出记录: {len(self.data.get('school_gate', []))} 条。"
                   f"寝室门禁记录: {len(self.data.get('dorm_gate', []))} 条。"

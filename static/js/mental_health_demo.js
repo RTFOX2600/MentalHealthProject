@@ -3,7 +3,7 @@ const uploadedFiles = { 'canteen': false, 'school-gate': false, 'dorm-gate': fal
 
 /**
  * 业务特定的文件上传触发
- * 调用 components.js 中的 performUpload 通用函数
+ * 调用 input_components.js 中的 performUpload 通用函数
  */
 async function uploadFile(type) {
     const file = document.getElementById(`${type}-file`).files[0];
@@ -94,7 +94,7 @@ async function startAnalysis(type) {
             throw new Error(data.detail || '任务提交失败');
         }
     } catch (e) {
-        resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">✗ 分析失败</h5><p class="mb-0">${e.message}</p>`;
+        resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">分析失败</h5><p class="mb-0">${e.message}</p>`;
         resultDiv.className = 'mh-result error';
         resultDiv.style.display = 'block';
         showToast(e.message, 'danger');
@@ -122,7 +122,7 @@ async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv, origi
                 
                 await downloadResult(taskId, typeLabel);
                 
-                resultDiv.innerHTML = '<h5 class="mb-2 fw-bold">✓ 分析成功</h5><p class="mb-0">报告已生成并开始下载。</p>';
+                resultDiv.innerHTML = '<h5 class="mb-2 fw-bold">分析成功</h5><p class="mb-0">报告已生成并开始下载。</p>';
                 resultDiv.className = 'mh-result success';
                 resultDiv.style.display = 'block';
                 showToast('分析完成，报告已下载', 'success');
@@ -135,7 +135,7 @@ async function pollTaskStatus(taskId, type, typeLabel, btnText, resultDiv, origi
             }
         } catch (e) {
             clearInterval(pollInterval);
-            resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">✗ 分析失败</h5><p class="mb-0">${e.message}</p>`;
+            resultDiv.innerHTML = `<h5 class="mb-2 fw-bold">分析失败</h5><p class="mb-0">${e.message}</p>`;
             resultDiv.className = 'mh-result error';
             resultDiv.style.display = 'block';
             showToast(e.message, 'danger');

@@ -60,7 +60,7 @@ class PrecisionIdeologyAnalyzer:
         """加载数据并计算群体基准"""
         self.data['network'] = pd.DataFrame(data_dict.get('network', []))
         self.data['grades'] = pd.DataFrame(data_dict.get('grades', []))
-        print(f"{self.__class__.__name__} 数据加载完成！"
+        print(f"✅ {self.__class__.__name__} 数据加载完成！"
               f"校园网记录: {len(self.data.get('network', []))} 条。"
               f"成绩记录: {len(self.data.get('grades', []))} 条。")
 
@@ -281,7 +281,7 @@ class PrecisionIdeologyAnalyzer:
         try:
             self.load_data_from_dict(data_dict)
 
-            print(f"数据加载完成！"
+            print(f"✅ 数据加载完成！"
                   f"校园网记录: {len(self.data.get('network', []))} 条。")
 
             results = self.analyze_students()
