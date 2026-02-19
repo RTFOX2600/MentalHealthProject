@@ -98,7 +98,14 @@ def profile_update(request):
         
         # 处理基本信息表单
         if form_type == 'basic_info':
+            # ⚠️ 重要：在创建表单之前，先保存当前用户的原始基本信息值
+            # 因为 Django 的 ModelForm 在绑定 instance 后会修改实例的属性
             old_role = request.user.role
+            original_first_name = request.user.first_name
+            original_last_name = request.user.last_name
+            original_email = request.user.email
+            original_phone_number = request.user.phone_number
+            
             basic_form = UserProfileForm(request.POST, instance=request.user)
             org_form = OrganizationInfoForm(instance=request.user)  # 不变
             
@@ -116,13 +123,13 @@ def profile_update(request):
                     messages.info(request, f'您的身份变更请求已提交（「{dict(request.user.ROLE_CHOICES).get(old_role)}」→「{dict(request.user.ROLE_CHOICES).get(new_role)}」），请等待管理员审核。')
                     return redirect('profile_update')
                 else:
-                    # 检查基本信息是否有变化
+                    # 检查基本信息是否有变化（使用保存的原始值）
                     basic_info_changed = False
                     
-                    if (basic_form.cleaned_data.get('first_name') != request.user.first_name or
-                        basic_form.cleaned_data.get('last_name') != request.user.last_name or
-                        basic_form.cleaned_data.get('email') != request.user.email or
-                        basic_form.cleaned_data.get('phone_number') != request.user.phone_number):
+                    if (basic_form.cleaned_data.get('first_name') != original_first_name or
+                        basic_form.cleaned_data.get('last_name') != original_last_name or
+                        basic_form.cleaned_data.get('email') != original_email or
+                        basic_form.cleaned_data.get('phone_number') != original_phone_number):
                         basic_info_changed = True
                     
                     if basic_info_changed:
