@@ -403,17 +403,12 @@ select.form-select option {
     border-radius: 0.5rem;
     transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
-    margin: 0 0 0.75rem 0; /* 使用margin-bottom代替gap，确保一致间距 */
+    margin: 0 0 0.5rem 0; /* 减小间距：0.75rem → 0.5rem */
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-color);
     user-select: none;
     line-height: normal;
-}
-
-/* 最后一个label不需要margin-bottom */
-.checkbox-group-scrollable .options-container label:last-child {
-    margin-bottom: 0;
 }
 
 .checkbox-group-scrollable .options-container label:hover {
