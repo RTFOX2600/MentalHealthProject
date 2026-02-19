@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
     <link rel="stylesheet" href="{% static 'css/input_components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
@@ -22,11 +23,11 @@
 <nav class="navbar">
 	<a href="{% url 'home' %}" class="navbar-brand">精准思政系统</a>
 	<div class="nav-links">
-		<a href="{% url 'home' %}">
+		<a href="{% url 'home' %}" class="{% if current_page == 'home' %}active{% endif %}">
             <span class="icon" style="-webkit-mask-image: url('{% static 'icons/home.svg' %}'); mask-image: url('{% static 'icons/home.svg' %}');"></span>
             首页
         </a>
-        <a href="{% url 'about' %}">
+        <a href="{% url 'about' %}" class="{% if current_page == 'about' %}active{% endif %}">
             <span class="icon" style="-webkit-mask-image: url('{% static 'icons/info.svg' %}'); mask-image: url('{% static 'icons/info.svg' %}');"></span>
             关于
         </a>
@@ -35,6 +36,12 @@
 				<a href="{% url 'admin:index' %}" target="_blank">
                     <span class="icon" style="-webkit-mask-image: url('{% static 'icons/shield.svg' %}'); mask-image: url('{% static 'icons/shield.svg' %}');"></span>
                     管理后台
+                </a>
+			{% endif %}
+			{% if user.role == 'counselor' or user.role == 'admin' %}
+				<a href="{% url 'staff_dashboard:home' %}" class="{% if navbar_page == 'dashboard' %}active{% endif %}">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/briefcase.svg' %}'); mask-image: url('{% static 'icons/briefcase.svg' %}');"></span>
+                    工作台
                 </a>
 			{% endif %}
             <div class="dropdown">
@@ -69,11 +76,39 @@
                 </div>
             </div>
 		{% else %}
-			<a href="{% url 'login' %}">登录</a>
-			<a href="{% url 'register' %}">注册</a>
+			<a href="{% url 'login' %}">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/login.svg' %}'); mask-image: url('{% static 'icons/login.svg' %}');"></span>
+                登录
+            </a>
+			<a href="{% url 'register' %}">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/user-plus.svg' %}'); mask-image: url('{% static 'icons/user-plus.svg' %}');"></span>
+                注册
+            </a>
 		{% endif %}
 	</div>
 </nav>
+<!-- 全局消息提示区域 -->
+<div class="messages-container" id="messages-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert-message alert-{{ message.tags }}" role="alert">
+                <span class="alert-icon">
+                    {% if message.tags == 'success' %}✔{% endif %}
+                    {% if message.tags == 'error' or message.tags == 'danger' %}✖{% endif %}
+                    {% if message.tags == 'warning' %}⚠{% endif %}
+                    {% if message.tags == 'info' %}ⓘ{% endif %}
+                </span>
+                <span class="alert-text">{{ message }}</span>
+                <button class="alert-close" onclick="closeMessage(this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 <div class="{% block container_class %}container{% endblock %}">
     {% block content_wrapper %}
 	<div class="card">
@@ -81,6 +116,20 @@
 	</div>
     {% endblock %}
 </div>
+
+<!-- 全局确认对话框 -->
+<div id="globalConfirmDialog" class="global-confirm-dialog">
+    <div class="dialog-overlay"></div>
+    <div class="dialog-content">
+        <h3 id="dialogTitle" class="dialog-title"></h3>
+        <p id="dialogMessage" class="dialog-message"></p>
+        <div class="dialog-buttons">
+            <button type="button" id="dialogSecondaryBtn" class="btn btn-secondary"></button>
+            <button type="button" id="dialogPrimaryBtn" class="btn btn-primary"></button>
+        </div>
+    </div>
+</div>
+
 <div class="footer-text">
     <p>2026 · 武汉轻工大学 · 精准思政系统</p>
 </div>
@@ -89,6 +138,137 @@
 {% block extra_js %}{% endblock %}
 <!--suppress JSUnusedLocalSymbols -->
 <script>
+    // ==============================================
+    // 关闭消息函数（带退出动画）
+    // ==============================================
+    function closeMessage(button) {
+        const message = button.parentElement;
+        message.classList.add('fade-out');
+        setTimeout(function() {
+            message.remove();
+        }, 300); // 等待动画完成
+    }
+
+    // ==============================================
+    // 消息提示自动消失逻辑（支持悬停暂停）
+    // ==============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.alert-message');
+        
+        messages.forEach(function(message, index) {
+            // 为每个消息设置延迟显示，实现逐个弹出效果
+            message.style.animationDelay = (index * 0.1) + 's';
+            
+            let timeoutId = null;
+            let remainingTime = 5000 + (index * 100);
+            let startTime = Date.now();
+            
+            // 启动自动消失定时器
+            function startTimer() {
+                startTime = Date.now();
+                timeoutId = setTimeout(function() {
+                    message.classList.add('fade-out');
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }, remainingTime);
+            }
+            
+            // 暂停定时器
+            function pauseTimer() {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    remainingTime -= (Date.now() - startTime);
+                }
+            }
+            
+            // 恢复定时器
+            function resumeTimer() {
+                if (remainingTime > 0) {
+                    startTimer();
+                }
+            }
+            
+            // 鼠标悬停时暂停
+            message.addEventListener('mouseenter', pauseTimer);
+            
+            // 鼠标离开时恢复
+            message.addEventListener('mouseleave', resumeTimer);
+            
+            // 启动初始定时器
+            startTimer();
+        });
+    });
+
+    // ==============================================
+    // 全局确认对话框函数
+    // ==============================================
+    /**
+     * 显示全局确认对话框
+     * @param {Object} options - 配置选项
+     * @param {string} options.title - 对话框标题
+     * @param {string} options.message - 对话框消息内容
+     * @param {string} options.primaryText - 主要按钮文本（为空则隐藏）
+     * @param {string} options.secondaryText - 次要按钮文本（为空则隐藏）
+     * @param {Function} options.onPrimary - 主要按钮点击回调
+     * @param {Function} options.onSecondary - 次要按钮点击回调
+     */
+    function showConfirmDialog(options) {
+        const dialog = document.getElementById('globalConfirmDialog');
+        const title = document.getElementById('dialogTitle');
+        const message = document.getElementById('dialogMessage');
+        const primaryBtn = document.getElementById('dialogPrimaryBtn');
+        const secondaryBtn = document.getElementById('dialogSecondaryBtn');
+        
+        // 设置标题和消息
+        title.textContent = options.title || '';
+        message.textContent = options.message || '';
+        
+        // 配置主要按钮
+        if (options.primaryText) {
+            primaryBtn.textContent = options.primaryText;
+            primaryBtn.style.display = 'block';
+            primaryBtn.onclick = function() {
+                hideConfirmDialog();
+                if (options.onPrimary) options.onPrimary();
+            };
+        } else {
+            primaryBtn.style.display = 'none';
+        }
+        
+        // 配置次要按钮
+        if (options.secondaryText) {
+            secondaryBtn.textContent = options.secondaryText;
+            secondaryBtn.style.display = 'block';
+            secondaryBtn.onclick = function() {
+                hideConfirmDialog();
+                if (options.onSecondary) options.onSecondary();
+            };
+        } else {
+            secondaryBtn.style.display = 'none';
+        }
+        
+        // 显示对话框
+        dialog.classList.add('dialog-visible');
+        document.body.style.overflow = 'hidden'; // 禁止页面滚动
+    }
+
+    /**
+     * 隐藏全局确认对话框
+     */
+    function hideConfirmDialog() {
+        const dialog = document.getElementById('globalConfirmDialog');
+        dialog.classList.remove('dialog-visible');
+        document.body.style.overflow = ''; // 恢复页面滚动
+    }
+
+    // 点击蒙版关闭对话框
+    document.querySelector('.dialog-overlay')?.addEventListener('click', hideConfirmDialog);
+
+    // 暴露到全局，供各页面调用
+    window.showConfirmDialog = showConfirmDialog;
+    window.hideConfirmDialog = hideConfirmDialog;
+
     // 隐藏加载动画的函数
     function hideLoader() {
         const loader = document.getElementById('loader-wrapper');

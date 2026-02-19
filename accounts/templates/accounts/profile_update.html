@@ -4,90 +4,622 @@
 {% block title %}修改个人信息 - 思想关怀系统{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/input_components.css' %}">
+	<!--suppress ProblematicWhitespace -->
+	<link rel="stylesheet" href="{% static 'css/input_components.css' %}">
 {% endblock %}
 
 {% block content %}
-    <h2>修改个人信息</h2>
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        
-        <!-- 姓 -->
-        <div class="mb-3">
-            <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
-            {{ form.last_name }}
-            {% if form.last_name.errors %}
-                <div class="text-danger small">{{ form.last_name.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- 名 -->
-        <div class="mb-3">
-            <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
-            {{ form.first_name }}
-            {% if form.first_name.errors %}
-                <div class="text-danger small">{{ form.first_name.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- 角色选择（自定义下拉菜单） -->
-        <div class="mb-3">
-            <label class="form-label">{{ form.role.label }}</label>
-            <div class="custom-dropdown">
-                <div class="dropdown-trigger">
+	<h2>个人信息管理</h2>
+	{% if messages %}
+		{% for message in messages %}
+			<div class="alert alert-{{ message.tags }}" role="alert">
+				{{ message }}
+			</div>
+		{% endfor %}
+	{% endif %}
+
+	<!-- 基本信息 -->
+	<hr style="margin-top: 0;">
+	<h5 style="margin-bottom: 1.5rem; color: var(--heading-color); font-weight: 600;">基本信息</h5>
+	<form method="post" id="profileUpdateForm">
+		{% csrf_token %}
+		<input type="hidden" name="form_type" value="basic_info">
+
+		<!-- 姓 -->
+		<div class="mb-3">
+			<label for="{{ basic_form.last_name.id_for_label }}" class="form-label">{{ basic_form.last_name.label }}</label>
+			{{ basic_form.last_name }}
+			{% if basic_form.last_name.errors %}
+				<div class="text-danger small">{{ basic_form.last_name.errors }}</div>
+			{% endif %}
+		</div>
+
+		<!-- 名 -->
+		<div class="mb-3">
+			<label for="{{ basic_form.first_name.id_for_label }}" class="form-label">{{ basic_form.first_name.label }}</label>
+			{{ basic_form.first_name }}
+			{% if basic_form.first_name.errors %}
+				<div class="text-danger small">{{ basic_form.first_name.errors }}</div>
+			{% endif %}
+		</div>
+
+		<!-- 角色选择（自定义下拉菜单） -->
+		<div class="mb-3">
+			<label class="form-label">{{ basic_form.role.label }}</label>
+			<div class="custom-dropdown">
+				<div class="dropdown-trigger">
                     <span class="selected-text">
-                        {% if form.role.value == 'student' %}学生
-                        {% elif form.role.value == 'counselor' %}辅导员
-                        {% elif form.role.value == 'admin' %}系统管理员
+                        {% if basic_form.role.value == 'student' %}学生
+                        {% elif basic_form.role.value == 'counselor' %}辅导员
+                        {% elif basic_form.role.value == 'admin' %}系统管理员
                         {% else %}请选择角色
                         {% endif %}
                     </span>
-                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-item {% if form.role.value == 'student' %}selected{% endif %}" data-value="student">学生</div>
-                    <div class="dropdown-item {% if form.role.value == 'counselor' %}selected{% endif %}" data-value="counselor">辅导员</div>
-                    <div class="dropdown-item {% if form.role.value == 'admin' %}selected{% endif %}" data-value="admin">系统管理员</div>
-                </div>
-                <input type="hidden" id="{{ form.role.id_for_label }}" name="{{ form.role.html_name }}" value="{{ form.role.value }}">
-            </div>
-            {% if form.role.errors %}
-                <div class="text-danger small">{{ form.role.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- 电子邮箱 -->
-        <div class="mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
-            {{ form.email }}
-            {% if form.email.errors %}
-                <div class="text-danger small">{{ form.email.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <!-- 电话号码 -->
-        <div class="mb-3">
-            <label for="{{ form.phone_number.id_for_label }}" class="form-label">{{ form.phone_number.label }}</label>
-            {{ form.phone_number }}
-            {% if form.phone_number.errors %}
-                <div class="text-danger small">{{ form.phone_number.errors }}</div>
-            {% endif %}
-        </div>
-        
-        <button type="submit" class="btn btn-primary">保存修改</button>
-    </form>
-    <div class="footer-text">
-        <a class="btn btn-secondary" href="{% url 'home' %}">返回首页</a>
-    </div>
+					<span class="icon"
+					      style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+				</div>
+				<div class="dropdown-menu">
+					<div class="dropdown-item {% if basic_form.role.value == 'student' %}selected{% endif %}" data-value="student">学生
+					</div>
+					<div class="dropdown-item {% if basic_form.role.value == 'counselor' %}selected{% endif %}" data-value="counselor">
+						辅导员
+					</div>
+					<div class="dropdown-item {% if basic_form.role.value == 'admin' %}selected{% endif %}" data-value="admin">系统管理员
+					</div>
+				</div>
+				<input type="hidden" id="{{ basic_form.role.id_for_label }}" name="{{ basic_form.role.html_name }}"
+				       value="{{ basic_form.role.value }}">
+			</div>
+			{% if basic_form.role.errors %}
+				<div class="text-danger small">{{ basic_form.role.errors }}</div>
+			{% endif %}
+		</div>
+
+		<!-- 电子邮箱 -->
+		<div class="mb-3">
+			<label for="{{ basic_form.email.id_for_label }}" class="form-label">{{ basic_form.email.label }}</label>
+			{{ basic_form.email }}
+			{% if basic_form.email.errors %}
+				<div class="text-danger small">{{ basic_form.email.errors }}</div>
+			{% endif %}
+		</div>
+
+		<!-- 电话号码 -->
+		<div class="mb-3">
+			<label for="{{ basic_form.phone_number.id_for_label }}" class="form-label">{{ basic_form.phone_number.label }}</label>
+			{{ basic_form.phone_number }}
+			{% if basic_form.phone_number.errors %}
+				<div class="text-danger small">{{ basic_form.phone_number.errors }}</div>
+			{% endif %}
+		</div>
+
+		<button type="submit" class="btn btn-primary">保存基本信息</button>
+	</form>
+
+	<hr>
+	<!-- 组织信息卡片（同级卡片） -->
+	<h5 style="margin-bottom: 1.5rem; color: var(--heading-color); font-weight: 600;">组织信息<span
+			style="font-size: 0.875rem; font-weight: 400; color: var(--muted-text); margin-left: 0.5rem;">（修改后需管理员审核）</span></h5>
+	<form method="post" id="organizationForm">
+		{% csrf_token %}
+		<input type="hidden" name="form_type" value="organization_info">
+
+		<!-- 学生组织信息 -->
+		<div id="studentOrgInfo" style="display: none;">
+			<!-- 所属学院 -->
+			<div class="mb-3">
+				<label class="form-label">{{ org_form.student_college.label }}</label>
+				<div class="custom-dropdown">
+					<div class="dropdown-trigger">
+                        <span class="selected-text" data-placeholder="请选择学院">
+                            {% if user.student_college %}
+	                            {{ user.student_college.name }}
+                            {% else %}
+	                            请选择学院
+                            {% endif %}
+                        </span>
+						<span class="icon"
+						      style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+					</div>
+					<div class="dropdown-menu">
+						<div class="dropdown-item {% if not user.student_college %}selected{% endif %}" data-value="">请选择学院</div>
+						{% for college in org_form.student_college.field.queryset %}
+							<div class="dropdown-item {% if user.student_college.id == college.id %}selected{% endif %}"
+							     data-value="{{ college.id }}">{{ college.name }}</div>
+						{% endfor %}
+					</div>
+					<input type="hidden" id="{{ org_form.student_college.id_for_label }}" name="{{ org_form.student_college.html_name }}"
+					       value="{{ user.student_college.id|default:'' }}">
+				</div>
+				<small class="form-text text-muted">{{ org_form.student_college.help_text }}</small>
+				{% if org_form.student_college.errors %}
+					<div class="text-danger small">{{ org_form.student_college.errors }}</div>
+				{% endif %}
+			</div>
+
+			<!-- 所属专业 -->
+			<div class="mb-3">
+				<label class="form-label">{{ org_form.student_major.label }}</label>
+				<div class="custom-dropdown">
+					<div class="dropdown-trigger">
+                        <span class="selected-text" data-placeholder="请选择专业">
+                            {% if user.student_major %}
+	                            {{ user.student_major.name }}
+                            {% else %}
+	                            请选择专业
+                            {% endif %}
+                        </span>
+						<span class="icon"
+						      style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+					</div>
+					<div class="dropdown-menu">
+						<div class="dropdown-item {% if not user.student_major %}selected{% endif %}" data-value="">请选择专业</div>
+						{% for major in org_form.student_major.field.queryset %}
+							<div class="dropdown-item {% if user.student_major.id == major.id %}selected{% endif %}"
+							     data-value="{{ major.id }}">{{ major.name }}</div>
+						{% endfor %}
+					</div>
+					<input type="hidden" id="{{ org_form.student_major.id_for_label }}" name="{{ org_form.student_major.html_name }}"
+					       value="{{ user.student_major.id|default:'' }}">
+				</div>
+				<small class="form-text text-muted">{{ org_form.student_major.help_text }}</small>
+				{% if org_form.student_major.errors %}
+					<div class="text-danger small">{{ org_form.student_major.errors }}</div>
+				{% endif %}
+			</div>
+
+			<!-- 所属年级 -->
+			<div class="mb-3">
+				<label class="form-label">{{ org_form.student_grade.label }}</label>
+				<div class="custom-dropdown">
+					<div class="dropdown-trigger">
+                        <span class="selected-text" data-placeholder="请选择年级">
+                            {% if user.student_grade %}
+	                            {{ user.student_grade.name }}
+                            {% else %}
+	                            请选择年级
+                            {% endif %}
+                        </span>
+						<span class="icon"
+						      style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+					</div>
+					<div class="dropdown-menu">
+						<div class="dropdown-item {% if not user.student_grade %}selected{% endif %}" data-value="">请选择年级</div>
+						{% for grade in org_form.student_grade.field.queryset %}
+							<div class="dropdown-item {% if user.student_grade.id == grade.id %}selected{% endif %}"
+							     data-value="{{ grade.id }}">{{ grade.name }}</div>
+						{% endfor %}
+					</div>
+					<input type="hidden" id="{{ org_form.student_grade.id_for_label }}" name="{{ org_form.student_grade.html_name }}"
+					       value="{{ user.student_grade.id|default:'' }}">
+				</div>
+				<small class="form-text text-muted">{{ org_form.student_grade.help_text }}</small>
+				{% if org_form.student_grade.errors %}
+					<div class="text-danger small">{{ org_form.student_grade.errors }}</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<!-- 辅导员/管理员组织信息 -->
+		<div id="managerOrgInfo" style="display: none;">
+			<div class="mb-3">
+				<label class="form-label">{{ org_form.managed_colleges.label }}</label>
+				<div class="checkbox-group-scrollable">
+					<div class="options-container">
+						{{ org_form.managed_colleges }}
+					</div>
+				</div>
+				<small class="form-text text-muted">{{ org_form.managed_colleges.help_text }}</small>
+				{% if org_form.managed_colleges.errors %}
+					<div class="text-danger small">{{ org_form.managed_colleges.errors }}</div>
+				{% endif %}
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label">{{ org_form.managed_majors.label }}</label>
+				<div class="checkbox-group-scrollable">
+					<div class="options-container" id="managed-majors-container">
+						{{ org_form.managed_majors }}
+					</div>
+				</div>
+				<small class="form-text text-muted">{{ org_form.managed_majors.help_text }}</small>
+				{% if org_form.managed_majors.errors %}
+					<div class="text-danger small">{{ org_form.managed_majors.errors }}</div>
+				{% endif %}
+			</div>
+
+			<div class="mb-3">
+				<label class="form-label">{{ org_form.managed_grades.label }}</label>
+				<div class="checkbox-group-scrollable">
+					<div class="options-container">
+						{{ org_form.managed_grades }}
+					</div>
+				</div>
+				<small class="form-text text-muted">{{ org_form.managed_grades.help_text }}</small>
+				{% if org_form.managed_grades.errors %}
+					<div class="text-danger small">{{ org_form.managed_grades.errors }}</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">保存组织信息</button>
+	</form>
+
+	<div class="footer-text">
+		<a class="btn btn-secondary" href="{% url 'home' %}">返回首页</a>
+	</div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/input_components.js' %}"></script>
+	<script src="{% static 'js/input_components.js' %}"></script>
+	<script>
+        // 等待 DOM 完全加载后再执行
+        window.addEventListener('DOMContentLoaded', function () {
+            // 获取用户当前实际角色（从模板传入）
+            const currentUserRole = '{{ user.role }}';
+            let isConfirmedRole = false; // 标记用户是否已确认角色变更
+            let isConfirmedOrg = false; // 标记用户是否已确认组织信息变更
+
+            // 使用更精确的选择器监听表单提交
+            const mainForm = document.getElementById('profileUpdateForm');
+            const orgForm = document.getElementById('organizationForm');
+
+            // 根据当前角色显示对应的组织信息表单
+            function toggleOrgInfo(role) {
+                const studentOrgInfo = document.getElementById('studentOrgInfo');
+                const managerOrgInfo = document.getElementById('managerOrgInfo');
+
+                if (role === 'student') {
+                    studentOrgInfo.style.display = 'block';
+                    managerOrgInfo.style.display = 'none';
+                } else if (role === 'counselor' || role === 'admin') {
+                    studentOrgInfo.style.display = 'none';
+                    managerOrgInfo.style.display = 'block';
+                } else {
+                    studentOrgInfo.style.display = 'none';
+                    managerOrgInfo.style.display = 'none';
+                }
+            }
+
+            // 初始化时根据当前角色显示组织信息
+            toggleOrgInfo(currentUserRole);
+
+            // 监听角色选择变化
+            const roleInput = document.getElementById('{{ basic_form.role.id_for_label }}');
+            if (roleInput) {
+                // 监听自定义下拉框的变化
+                const observer = new MutationObserver(function (mutations) {
+                    toggleOrgInfo(roleInput.value);
+                });
+                observer.observe(roleInput, {attributes: true, attributeFilter: ['value']});
+            }
+
+            // 监听主表单提交（角色变更警告）
+            if (mainForm) {
+                mainForm.addEventListener('submit', function (e) {
+                    const roleInput = document.getElementById('{{ basic_form.role.id_for_label }}');
+                    const selectedRole = roleInput ? roleInput.value : '';
+
+                    // 如果选择的角色与当前角色不同，且用户尚未确认，先显示提示对话框
+                    if (selectedRole && selectedRole !== currentUserRole && !isConfirmedRole) {
+                        e.preventDefault(); // 阻止表单直接提交
+
+                        // 显示确认对话框
+                        showConfirmDialog({
+                            title: '角色变更需要审核',
+                            message: '您修改了角色，新角色需要管理员审核通过后才会生效。是否继续提交？',
+                            primaryText: '继续提交',
+                            secondaryText: '返回',
+                            onPrimary: function () {
+                                // 用户确认后设置标记并提交表单
+                                isConfirmedRole = true;
+                                mainForm.submit();
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 监听组织信息表单提交
+            if (orgForm) {
+                // 记录原始值
+                const originalValues = {
+                    student_college: '{{ user.student_college.id|default:"" }}',
+                    student_major: '{{ user.student_major.id|default:"" }}',
+                    student_grade: '{{ user.student_grade.id|default:"" }}',
+                    managed_colleges: getCheckedValues('{{ org_form.managed_colleges.html_name }}'),
+                    managed_majors: getCheckedValues('{{ org_form.managed_majors.html_name }}'),
+                    managed_grades: getCheckedValues('{{ org_form.managed_grades.html_name }}')
+                };
+
+                orgForm.addEventListener('submit', function (e) {
+                    // 检查是否有变更
+                    let hasChanges = false;
+
+                    if (currentUserRole === 'student') {
+                        // 检查学生组织信息
+                        const collegeInput = document.getElementById('{{ org_form.student_college.id_for_label }}');
+                        const majorInput = document.getElementById('{{ org_form.student_major.id_for_label }}');
+                        const gradeInput = document.getElementById('{{ org_form.student_grade.id_for_label }}');
+
+                        if ((collegeInput && collegeInput.value !== originalValues.student_college) ||
+                            (majorInput && majorInput.value !== originalValues.student_major) ||
+                            (gradeInput && gradeInput.value !== originalValues.student_grade)) {
+                            hasChanges = true;
+                        }
+                    } else if (currentUserRole === 'counselor' || currentUserRole === 'admin') {
+                        // 检查辅导员/管理员组织信息
+                        const currentColleges = getCheckedValues('{{ org_form.managed_colleges.html_name }}');
+                        const currentMajors = getCheckedValues('{{ org_form.managed_majors.html_name }}');
+                        const currentGrades = getCheckedValues('{{ org_form.managed_grades.html_name }}');
+
+                        if (!arraysEqual(currentColleges, originalValues.managed_colleges) ||
+                            !arraysEqual(currentMajors, originalValues.managed_majors) ||
+                            !arraysEqual(currentGrades, originalValues.managed_grades)) {
+                            hasChanges = true;
+                        }
+                    }
+
+                    // 如果有变更且用户尚未确认，显示确认对话框
+                    if (hasChanges && !isConfirmedOrg) {
+                        e.preventDefault(); // 阻止表单直接提交
+
+                        // 显示确认对话框
+                        showConfirmDialog({
+                            title: '组织信息变更需要审核',
+                            message: '您修改了组织信息，变更需要管理员审核通过后才会生效。是否继续提交？',
+                            primaryText: '继续提交',
+                            secondaryText: '返回',
+                            onPrimary: function () {
+                                // 用户确认后设置标记并提交表单
+                                isConfirmedOrg = true;
+                                orgForm.submit();
+                            }
+                        });
+                    }
+                });
+            }
+
+            // 辅助函数：获取复选框组的选中值
+            function getCheckedValues(name) {
+                const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+                return Array.from(checkboxes).map(cb => cb.value).sort();
+            }
+
+            // 辅助函数：比较两个数组是否相等
+            function arraysEqual(arr1, arr2) {
+                if (arr1.length !== arr2.length) return false;
+                for (let i = 0; i < arr1.length; i++) {
+                    if (arr1[i] !== arr2[i]) return false;
+                }
+                return true;
+            }
+
+            // ========== 学院-专业级联筛选功能 ==========
+
+            // 学生的学院-专业联动
+            const collegeInput = document.getElementById('{{ org_form.student_college.id_for_label }}');
+            const majorDropdownTrigger = document.querySelector('#studentOrgInfo .mb-3:nth-child(2) .dropdown-trigger');
+            const majorDropdownMenu = document.querySelector('#studentOrgInfo .mb-3:nth-child(2) .dropdown-menu');
+            const majorInput = document.getElementById('{{ org_form.student_major.id_for_label }}');
+            const majorSelectedText = document.querySelector('#studentOrgInfo .mb-3:nth-child(2) .selected-text');
+
+            if (collegeInput && majorDropdownMenu) {
+                // 监听学院选择变化
+                const collegeObserver = new MutationObserver(function (mutations) {
+                    const selectedCollegeId = collegeInput.value;
+
+                    if (selectedCollegeId) {
+                        // 获取该学院的专业列表
+                        fetch(`/accounts/api/majors/${selectedCollegeId}/`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // 清空专业下拉菜单
+                                    majorDropdownMenu.innerHTML = '<div class="dropdown-item" data-value="">请选择专业</div>';
+
+                                    // 添加新的专业选项
+                                    data.majors.forEach(major => {
+                                        const item = document.createElement('div');
+                                        item.className = 'dropdown-item';
+                                        item.setAttribute('data-value', major.id);
+                                        item.textContent = major.name;
+                                        majorDropdownMenu.appendChild(item);
+                                    });
+
+                                    // 重置专业选择
+                                    majorInput.value = '';
+                                    majorSelectedText.textContent = '请选择专业';
+
+                                    // 重新初始化专业下拉框的点击事件
+                                    initDropdownForElement(majorDropdownTrigger.closest('.custom-dropdown'));
+                                }
+                            })
+                            .catch(error => {
+                                console.error('获取专业列表失败:', error);
+                            });
+                    } else {
+                        // 如果没有选择学院，清空专业列表
+                        majorDropdownMenu.innerHTML = '<div class="dropdown-item" data-value="">请先选择学院</div>';
+                        majorInput.value = '';
+                        majorSelectedText.textContent = '请先选择学院';
+                    }
+                });
+
+                collegeObserver.observe(collegeInput, {attributes: true, attributeFilter: ['value']});
+            }
+
+            // 辅导员/管理员的负责学院-负责专业联动
+            const managedCollegesCheckboxes = document.querySelectorAll('input[name="{{ org_form.managed_colleges.html_name }}"]');
+            const managedMajorsContainer = document.querySelector('#managed-majors-container');
+
+            // 保存用户当前已选择的专业ID（在页面加载时获取）
+            let currentSelectedMajors = [];
+            if (managedMajorsContainer) {
+                const existingCheckboxes = managedMajorsContainer.querySelectorAll('input[type="checkbox"]:checked');
+                currentSelectedMajors = Array.from(existingCheckboxes).map(cb => cb.value);
+            }
+
+            // 定义在外部作用域，以便 toggleOrgInfo 可以调用
+            window.updateManagedMajors = function () {
+                if (!managedCollegesCheckboxes || !managedMajorsContainer) return;
+
+                // 保存当前所有选中的专业（在更新前）
+                const beforeUpdateSelectedMajors = [];
+                const currentMajorCheckboxes = managedMajorsContainer.querySelectorAll('input[type="checkbox"]:checked');
+                currentMajorCheckboxes.forEach(cb => {
+                    beforeUpdateSelectedMajors.push(cb.value);
+                });
+
+                // 获取所有选中的学院ID
+                const selectedCollegeIds = Array.from(managedCollegesCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+                console.log('选中的学院ID:', selectedCollegeIds);
+
+                if (selectedCollegeIds.length === 0) {
+                    // 如果没有选择学院，显示提示信息并清空选中的专业
+                    managedMajorsContainer.innerHTML = '<p style="color: var(--muted-text); font-size: 0.875rem; margin: 0;">请先选择负责的学院</p>';
+                    currentSelectedMajors = []; // 清空记录
+                    return;
+                }
+
+                // 显示加载提示
+                managedMajorsContainer.innerHTML = '<p style="color: var(--muted-text); font-size: 0.875rem; margin: 0;">正在加载专业列表...</p>';
+
+                // 收集所有选中学院的专业
+                const majorPromises = selectedCollegeIds.map(collegeId => {
+                    return fetch(`/accounts/api/majors/${collegeId}/`)
+                        .then(response => {
+                            console.log(`学院${collegeId}的响应:`, response.status);
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log(`学院${collegeId}的数据:`, data);
+                            if (data.success) {
+                                return data.majors;
+                            }
+                            return [];
+                        })
+                        .catch(error => {
+                            console.error(`获取学院${collegeId}的专业列表失败:`, error);
+                            return [];
+                        });
+                });
+
+                // 等待所有请求完成
+                Promise.all(majorPromises).then(majorArrays => {
+                    console.log('所有专业数据:', majorArrays);
+
+                    // 合并所有专业并去重
+                    const allMajors = [];
+                    const majorIds = new Set();
+                    const availableMajorIds = new Set(); // 当前可用的专业ID集合
+
+                    majorArrays.forEach(majors => {
+                        majors.forEach(major => {
+                            availableMajorIds.add(String(major.id));
+                            if (!majorIds.has(major.id)) {
+                                majorIds.add(major.id);
+                                allMajors.push(major);
+                            }
+                        });
+                    });
+
+                    console.log('合并后的专业列表:', allMajors);
+                    console.log('可用专业ID集合:', Array.from(availableMajorIds));
+
+                    // 更新 currentSelectedMajors，只保留仍然可用的专业
+                    currentSelectedMajors = beforeUpdateSelectedMajors.filter(majorId =>
+                        availableMajorIds.has(String(majorId))
+                    );
+                    console.log('过滤后保留的选中专业:', currentSelectedMajors);
+
+                    // 按名称排序
+                    allMajors.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+
+                    // 创建新的复选框列表
+                    if (allMajors.length === 0) {
+                        managedMajorsContainer.innerHTML = '<p style="color: var(--muted-text); font-size: 0.875rem; margin: 0;">所选学院暂无专业</p>';
+                    } else {
+                        managedMajorsContainer.innerHTML = ''; // 清空容器
+
+                        // 直接创建 label 包含 checkbox 的结构（适合 checkbox-group-scrollable）
+                        allMajors.forEach(major => {
+                            const label = document.createElement('label');
+
+                            const checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.name = '{{ org_form.managed_majors.html_name }}';
+                            checkbox.value = major.id;
+                            checkbox.id = `id_managed_majors_${major.id}`;
+
+                            // 恢复之前的选中状态(只恢复仍然可用的)
+                            if (currentSelectedMajors.includes(String(major.id))) {
+                                checkbox.checked = true;
+                            }
+
+                            label.appendChild(checkbox);
+                            label.appendChild(document.createTextNode(' ' + major.name));
+                            managedMajorsContainer.appendChild(label);
+                        });
+
+                        console.log('专业列表已更新，共', allMajors.length, '个专业');
+                    }
+                }).catch(error => {
+                    console.error('更新专业列表时出错:', error);
+                    managedMajorsContainer.innerHTML = '<p style="color: var(--error-color); font-size: 0.875rem; margin: 0;">加载专业列表失败，请刷新页面重试</p>';
+                });
+            };
+
+            if (managedCollegesCheckboxes.length > 0 && managedMajorsContainer) {
+                // 监听负责学院复选框变化
+                managedCollegesCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function () {
+                        updateManagedMajors();
+                    });
+                });
+
+                // 页面加载时立即执行初始化
+                setTimeout(() => {
+                    if (currentUserRole === 'counselor' || currentUserRole === 'admin') {
+                        updateManagedMajors();
+                    }
+                }, 150);
+            }
+
+            // 辅助函数：为单个下拉框元素重新初始化事件
+            function initDropdownForElement(dropdown) {
+                if (!dropdown) return;
+
+                const trigger = dropdown.querySelector('.dropdown-trigger');
+                const menu = dropdown.querySelector('.dropdown-menu');
+                const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+                const selectedText = dropdown.querySelector('.selected-text');
+
+                if (!trigger || !menu || !hiddenInput) return;
+
+                // 移除旧的点击事件监听器（通过克隆节点实现）
+                const items = menu.querySelectorAll('.dropdown-item');
+                items.forEach(item => {
+                    item.addEventListener('click', function () {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+
+                        // 更新选中状态
+                        items.forEach(i => i.classList.remove('selected'));
+                        this.classList.add('selected');
+
+                        // 更新隐藏输入框和显示文本
+                        hiddenInput.value = value;
+                        selectedText.textContent = text;
+
+                        // 关闭下拉菜单
+                        dropdown.classList.remove('active');
+                    });
+                });
+            }
+        });
+	</script>
 {% endblock %}

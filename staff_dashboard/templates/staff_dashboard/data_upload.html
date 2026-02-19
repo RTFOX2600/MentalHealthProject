@@ -1,0 +1,16 @@
+{% extends 'staff_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}数据上传 - 工作台{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header fade-in-up" style="animation-delay: 0.3s;">
+    <h2>数据上传</h2>
+    <p class="page-description">导入学生数据</p>
+</div>
+
+<div class="empty-placeholder fade-in-up" style="animation-delay: 0.4s;">
+    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></div>
+    <p>功能开发中...</p>
+</div>
+{% endblock %}

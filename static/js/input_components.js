@@ -239,7 +239,51 @@ function handleUploadError(msg, btn, progress, result, originalText) {
     if (progress) setTimeout(() => { progress.style.display = 'none'; }, 3000);
 }
 
-// Global click handler to close dropdowns
+// 6. Checkbox Group with Auto-Sort (checked items on top)
+function initCheckboxGroups() {
+    document.querySelectorAll('.checkbox-group-scrollable').forEach(group => {
+        if (group.dataset.initialized) return;
+        
+        const container = group.querySelector('.options-container');
+        if (!container) return;
+        
+        // 查找 Django 渲染的外层 div (id以"id_"开头)
+        const djangoContainer = container.querySelector('div[id^="id_"]');
+        const targetContainer = djangoContainer || container;
+        
+        // 监听所有 checkbox 的变化
+        const checkboxes = targetContainer.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                sortCheckboxOptions(targetContainer);
+            });
+        });
+        
+        // 初始化时排序一次
+        sortCheckboxOptions(targetContainer);
+        
+        group.dataset.initialized = "true";
+    });
+}
+
+function sortCheckboxOptions(container) {
+    const labels = Array.from(container.querySelectorAll('label'));
+    
+    // 按选中状态排序：选中的在前，未选中的在后
+    labels.sort((a, b) => {
+        const checkboxA = a.querySelector('input[type="checkbox"]');
+        const checkboxB = b.querySelector('input[type="checkbox"]');
+        
+        if (checkboxA.checked && !checkboxB.checked) return -1;
+        if (!checkboxA.checked && checkboxB.checked) return 1;
+        return 0;
+    });
+    
+    // 重新添加到 DOM 中
+    labels.forEach(label => {
+        container.appendChild(label);
+    });
+}
 document.addEventListener('click', () => {
     document.querySelectorAll('.custom-dropdown.active').forEach(dropdown => {
         dropdown.classList.remove('active');
@@ -251,4 +295,5 @@ window.addEventListener('DOMContentLoaded', () => {
     initDropdowns();
     initRangeSliders();
     initUploadComponents();
+    initCheckboxGroups();
 });

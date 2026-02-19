@@ -13,7 +13,11 @@
 	    </p>
 	    <div class="hero-cta">
 	        {% if user.is_authenticated %}
-	            <a href="{% url 'mental_health:demo' %}" class="btn btn-light">进入工作台</a>
+	            {% if user.role == 'counselor' or user.role == 'admin' %}
+	                <a href="{% url 'staff_dashboard:home' %}" class="btn btn-light">进入工作台</a>
+	            {% else %}
+	                <a href="{% url 'about' %}" class="btn btn-light">了解系统</a>
+	            {% endif %}
 	            <a href="{% url 'about' %}" class="btn btn-outline-light">了解更多</a>
 	        {% else %}
 	            <a href="{% url 'login' %}" class="btn btn-light">立即登录</a>
@@ -29,13 +33,19 @@
 			    <h3 style="text-align: left;">个人状态</h3>
 			    <div>您好，<strong>{{ user.last_name }}{{ user.first_name }}{% if not user.last_name and not user.first_name %}{{ user.username }}{% endif %}</strong>！欢迎回来。</div>
 			    <div>当前角色：<span class="badge bg-primary" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ user.role_display }}</span></div>
-			    {% if user.requested_role %}
+			    {% if pending_role_request %}
 			    <div style="padding: 1rem;border-radius: 0.75rem;background-color: var(--bg-color);text-align: left;color: var(--muted-text);line-height: 1.6;">
-			        请求身份：<span class="badge bg-warning" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">⏳ {{ user.requested_role_display }} (待审核)</span>
-			        <form action="{% url 'cancel_request' %}" method="post" style="display: inline-block; margin-left: 0.5rem;">
+			        请求身份：<span class="badge bg-warning" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ pending_role_request.requested_role_display }} (待审核)</span>
+			        <form id="cancelRequestForm" action="{% url 'cancel_request' %}" method="post" style="display: inline-block; margin-left: 0.5rem;">
 			            {% csrf_token %}
-			            <button type="submit" class="btn btn-sm btn-outline-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.85rem;"
-			                    onclick="return confirm('确定要取消身份变更请求吗？')">
+			            <button type="button" class="btn btn-sm btn-outline-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.85rem;"
+			                    onclick="showConfirmDialog({
+			                        title: '确认取消请求',
+			                        message: '确定要取消「{{ pending_role_request.requested_role_display }}」身份变更请求吗？',
+			                        primaryText: '确认取消',
+			                        secondaryText: '我再想想',
+			                        onPrimary: function() { document.getElementById('cancelRequestForm').submit(); }
+			                    })">
 			                取消请求
 			            </button>
 			        </form>

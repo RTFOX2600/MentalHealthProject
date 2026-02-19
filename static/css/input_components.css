@@ -8,7 +8,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.5rem 0.875rem;
+    padding: 0.625rem 0.875rem;
     background-color: var(--input-bg);
     border: 2px solid var(--border-color);
     border-radius: 0.5rem;
@@ -59,7 +59,8 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
+    overflow-y: auto; /* 添加垂直滚动条 */
+    max-height: 280px; /* 最大高度 */
     padding: 0.25rem;
 }
 
@@ -308,4 +309,173 @@
     .text-muted {
         color: #94a3b8 !important;
     }
+}
+
+/* 原生 select 下拉框样式增强 */
+select.form-control,
+select.form-select {
+    width: 100%;
+    padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+    color: var(--text-color);
+    background-color: var(--input-bg);
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234f46e5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+select.form-control:hover,
+select.form-select:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+select.form-control:focus,
+select.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    background-color: var(--input-bg);
+}
+
+select.form-control option,
+select.form-select option {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 0.5rem;
+}
+
+/* 暗色模式下的下拉箭头 */
+@media (prefers-color-scheme: dark) {
+    select.form-control,
+    select.form-select {
+        background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%236366f1' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    }
+}
+
+/* ==============================================
+   多选组件 - Checkbox Group with Scrolling
+   ============================================== */
+
+/* 可滚动的复选框组容器 */
+.checkbox-group-scrollable {
+    background: var(--input-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    max-height: 230px; /* 固定最大高度 */
+    overflow-y: auto; /* 内部可滚动 */
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+}
+
+/* 选项容器 */
+.checkbox-group-scrollable .options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* 移除gap，避免选中和未选中之间有额外间距 */
+}
+
+/* Django渲染的结构：.options-container > div#id_xxx */
+.checkbox-group-scrollable .options-container > div[id^="id_"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* 移除gap */
+}
+
+/* 单个选项标签 */
+.checkbox-group-scrollable .options-container label {
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    margin: 0 0 0.75rem 0; /* 使用margin-bottom代替gap，确保一致间距 */
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-color);
+    user-select: none;
+    line-height: normal;
+}
+
+/* 最后一个label不需要margin-bottom */
+.checkbox-group-scrollable .options-container label:last-child {
+    margin-bottom: 0;
+}
+
+.checkbox-group-scrollable .options-container label:hover {
+    border-color: var(--success-color);
+    background: var(--input-bg);
+}
+
+.checkbox-group-scrollable .options-container label:focus-within {
+    border-color: var(--success-color);
+    background: var(--input-bg);
+}
+
+/* 复选框样式 */
+.checkbox-group-scrollable input[type="checkbox"] {
+    width: 1.125rem;
+    height: 1.125rem;
+    min-width: 1.125rem;
+    margin-right: 0.75rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 2px solid var(--border-color);
+    border-radius: 0.25rem;
+    background-color: transparent;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.checkbox-group-scrollable input[type="checkbox"]:hover {
+    border-color: var(--success-color);
+}
+
+.checkbox-group-scrollable input[type="checkbox"]:focus {
+    outline: none;
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.checkbox-group-scrollable input[type="checkbox"]:checked {
+    border-color: var(--success-color);
+    background-color: transparent;
+}
+
+/* 复选框对勾 */
+.checkbox-group-scrollable input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 8px;
+    border: solid var(--success-color);
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -60%) rotate(45deg);
+}
+
+/* 选中状态的 label */
+.checkbox-group-scrollable .options-container label:has(input[type="checkbox"]:checked) {
+    color: var(--success-color);
+    font-weight: 600;
+    border-color: var(--success-color);
+    order: -1; /* 置顶：将选中的项排到最前面 */
 }

@@ -3,6 +3,38 @@ html {
     scrollbar-gutter: stable!important; /* 预留滚动条空间，防止页面跳转时宽度抖动导致错位 */
 }
 
+/* 全局滚动条样式 */
+/* WebKit 内核浏览器（Chrome、Safari、Edge） */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color); /* 轨道使用页面背景色 */
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--input-bg); /* 滑块使用输入框背景色 */
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: var(--primary-hover);
+}
+
+/* Firefox 浏览器 */
+* {
+    scrollbar-width: auto; /* 使用标准宽度而不是thin */
+    scrollbar-color: var(--input-bg) var(--bg-color); /* 滑块色 轨道色 */
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background-color: var(--bg-color);
@@ -20,6 +52,13 @@ body {
 * {
     transition: background-color 0.4s ease, border-color 0.4s ease,
     color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+hr {
+    border: none;
+    border-top: 2px solid var(--border-color)!important;
+    margin: 2rem 0;
+    opacity: 0.7;
 }
 
 /* 链接样式 */
@@ -88,13 +127,16 @@ input[type="text"], input[type="password"], input[type="email"], select {
     border-radius: 0.5rem;
     background-color: var(--input-bg);
     color: var(--text-color);
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    font-weight: normal;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
 }
 
 input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    transform: translateY(-2px);
 }
 
 /* 按钮组件 */
@@ -137,6 +179,7 @@ input:focus {
 }
 
 .btn-secondary {
+    border: var(--primary-color) solid 2px !important;
     background-color: var(--card-bg) !important;
     color: var(--primary-color) !important;
 }
@@ -317,5 +360,124 @@ form li {
 
     h2 {
         font-size: 1.5rem;
+    }
+}
+
+/* ==============================================
+   全局确认对话框样式
+   ============================================== */
+.global-confirm-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    pointer-events: none;
+    /* visibility 需要延迟隐藏，等待子元素动画完成 */
+    transition: visibility 0s linear 0.3s;
+}
+
+.global-confirm-dialog.dialog-visible {
+    visibility: visible;
+    pointer-events: auto;
+    /* 显示时立即可见，无延迟 */
+    transition: visibility 0s linear 0s;
+}
+
+/* 模糊蒙版（使用 opacity 渐显，模糊效果固定） */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px); /* 模糊效果固定，不参与过渡 */
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 2001;
+    opacity: 0; /* 初始透明，通过 opacity 控制显示 */
+    transition: opacity 0.3s ease; /* 只过渡透明度 */
+}
+
+/* 当对话框显示时，蒙版渐显 */
+.global-confirm-dialog.dialog-visible .dialog-overlay {
+    opacity: 1;
+}
+
+@media (prefers-color-scheme: light) {
+    .dialog-overlay {
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* 对话框内容 */
+.dialog-content {
+    position: relative;
+    z-index: 2002;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* 对话框显示时的动画 */
+.global-confirm-dialog.dialog-visible .dialog-content {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* 对话框标题 */
+.dialog-title {
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+}
+
+/* 对话框消息内容 */
+.dialog-message {
+    text-align: center;
+    color: var(--muted-text);
+    margin: 0 0 2rem 0;
+    line-height: 1.6;
+}
+
+/* 对话框按钮容器 */
+.dialog-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.dialog-buttons .btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .dialog-content {
+        padding: 1.5rem;
+    }
+
+    .dialog-buttons .btn {
+        width: 100%;
     }
 }

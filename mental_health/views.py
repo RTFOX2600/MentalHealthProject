@@ -1,8 +1,9 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def demo_page(request):
+def demo_page(request) -> HttpResponse:
     """
     心理健康分析系统演示页面。
     

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkbox Group 组件示例</title>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/input_components.css">
+</head>
+<body>
+    <div class="container" style="max-width: 600px; margin: 2rem auto;">
+        <h2>可滚动多选组件示例</h2>
+        <p class="text-muted">选中的选项会自动置顶</p>
+        
+        <div class="mb-3">
+            <label class="form-label">选择专业</label>
+            <div class="checkbox-group-scrollable">
+                <div class="options-container">
+                    <label>
+                        <input type="checkbox" name="major" value="1">
+                        计算机科学与技术
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="2">
+                        软件工程
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="3">
+                        数据科学与大数据技术
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="4">
+                        人工智能
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="5">
+                        信息安全
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="6">
+                        网络工程
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="7">
+                        物联网工程
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="8">
+                        电子信息工程
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="9">
+                        通信工程
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="10">
+                        自动化
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="11">
+                        机械设计制造及其自动化
+                    </label>
+                    <label>
+                        <input type="checkbox" name="major" value="12">
+                        电气工程及其自动化
+                    </label>
+                </div>
+            </div>
+            <small class="form-text text-muted">可多选，选中的选项会自动排到最前面</small>
+        </div>
+    </div>
+    
+    <script src="/static/js/input_components.js"></script>
+</body>
+</html>

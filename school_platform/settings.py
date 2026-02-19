@@ -34,6 +34,32 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.rtfox.top'
 ]
 
+# ========================================
+# 生产环境安全配置
+# ========================================
+
+if not DEBUG:
+    # 强制 HTTPS 重定向（如果前端有 Nginx 处理可设为 False）
+    SECURE_SSL_REDIRECT = True
+    
+    # Cookie 安全设置：仅通过 HTTPS 传输
+    SESSION_COOKIE_SECURE = True  # 自动将 HTTP 请求重定向到 HTTPS
+    CSRF_COOKIE_SECURE = True  # 确保 CSRF Cookie 仅通过 HTTPS 传输
+    
+    # HTTP 严格传输安全（HSTS）
+    SECURE_HSTS_SECONDS = 31536000  # 1 年内只用 HTTPS 访问
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # HSTS 策略包括子域名
+    SECURE_HSTS_PRELOAD = True  # 预加载
+    
+    # 防止浏览器猜测内容类型
+    SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止浏览器猜测内容类型
+    
+    # 启用浏览器 XSS 过滤器
+    SECURE_BROWSER_XSS_FILTER = True  # 启用浏览器 XSS 过滤器 （防止 XSS-跨站脚本攻击）
+    
+    # 代理 SSL 头（如果使用 Nginx 反向代理）
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Application definition
 
@@ -46,6 +72,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'mental_health',
+    'staff_dashboard',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,16 @@
+{% extends 'staff_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}舆论监控 - 工作台{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header fade-in-up" style="animation-delay: 0.3s;">
+    <h2>舆论监控</h2>
+    <p class="page-description">网络舆论监控与 AI 总结</p>
+</div>
+
+<div class="empty-placeholder fade-in-up" style="animation-delay: 0.4s;">
+    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/eye.svg' %}'); mask-image: url('{% static 'icons/eye.svg' %}');"></div>
+    <p>功能开发中...</p>
+</div>
+{% endblock %}

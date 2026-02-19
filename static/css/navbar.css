@@ -30,7 +30,7 @@
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
 }
 
 .nav-links a {
@@ -40,10 +40,33 @@
     display: flex;
     align-items: center;
     transition: color 0.2s, background-color 0.4s ease;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    position: relative;
 }
 
 .nav-links a:hover {
     color: var(--primary-color);
+    background-color: rgba(79, 70, 229, 0.08);
+}
+
+/* 当前页面高亮样式 */
+.nav-links a.active {
+    color: var(--primary-color);
+    background-color: rgba(79, 70, 229, 0.2);
+    font-weight: 600;
+}
+
+.nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background: var(--primary-color);
+    border-radius: 2px 2px 0 0;
 }
 
 /* 用户下拉菜单 */
@@ -137,6 +160,16 @@
     color: var(--primary-color);
 }
 
+@media (max-width: 768px) {
+    .navbar {
+        justify-content: center;
+    }
+
+    .navbar-brand {
+        display: none;
+    }
+}
+
 /* 导航栏响应式 */
 @media (max-width: 640px) {
     .navbar {
@@ -149,13 +182,14 @@
         margin-top: 0 !important;    /* 消除任何可能的边距 */
     }
 
-    .navbar-brand {
-        display: none;
-    }
-
     .nav-links {
-        gap: 1rem;
+        gap: 0.25rem;
         flex-wrap: wrap;
         justify-content: center;
+    }
+
+    /* 移动端隐藏导航图标 */
+    .nav-links > a .icon {
+        display: none;
     }
 }

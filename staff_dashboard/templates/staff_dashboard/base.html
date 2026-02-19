@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
+{% endblock %}
+
+{% block container_class %}dashboard-container{% endblock %}
+
+{% block content_wrapper %}
+<div class="dashboard-wrapper">
+    <!-- 左侧导航栏 -->
+    <aside class="dashboard-sidebar fade-in" style="animation-delay: 0.1s;">
+        <nav class="sidebar-nav">
+            <a href="{% url 'staff_dashboard:data_upload' %}" 
+               class="sidebar-item {% if current_page == 'data_upload' %}active{% endif %}">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></span>
+                数据上传
+            </a>
+            <a href="{% url 'staff_dashboard:data_analysis' %}" 
+               class="sidebar-item {% if current_page == 'data_analysis' %}active{% endif %}">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chart.svg' %}'); mask-image: url('{% static 'icons/chart.svg' %}');"></span>
+                数据分析
+            </a>
+            <a href="{% url 'staff_dashboard:public_opinion' %}" 
+               class="sidebar-item {% if current_page == 'public_opinion' %}active{% endif %}">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/eye.svg' %}'); mask-image: url('{% static 'icons/eye.svg' %}');"></span>
+                舆论监控
+            </a>
+        </nav>
+    </aside>
+
+    <!-- 右侧内容区 -->
+    <main class="dashboard-main fade-in-up" style="animation-delay: 0.2s;">
+        <div class="dashboard-content">
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% endblock %}

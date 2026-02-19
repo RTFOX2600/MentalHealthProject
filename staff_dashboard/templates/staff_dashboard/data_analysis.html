@@ -1,0 +1,26 @@
+{% extends 'staff_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}数据分析 - 工作台{% endblock %}
+
+{% block dashboard_content %}
+	<div class="page-header fade-in-up" style="animation-delay: 0.3s;">
+	    <h2>数据分析</h2>
+	    <p class="page-description">三种分析模式、自定义排序与条件筛选功能</p>
+	</div>
+
+	<div class="empty-placeholder fade-in-up" style="animation-delay: 0.4s;">
+	    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/chart.svg' %}'); mask-image: url('{% static 'icons/chart.svg' %}');"></div>
+	    <p>功能开发中...</p>
+	</div>
+
+	<div class="empty-placeholder fade-in-up" style="animation-delay: 0.5s;">
+	    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/chart.svg' %}'); mask-image: url('{% static 'icons/chart.svg' %}');"></div>
+	    <p>功能开发中...</p>
+	</div>
+
+	<div class="empty-placeholder fade-in-up" style="animation-delay: 0.6s;">
+	    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/chart.svg' %}'); mask-image: url('{% static 'icons/chart.svg' %}');"></div>
+	    <p>功能开发中...</p>
+	</div>
+{% endblock %}
