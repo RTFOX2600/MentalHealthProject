@@ -1,9 +1,10 @@
 from django.shortcuts import render
+from typing import Any
 
 
 def home_view(request):
     """首页视图"""
-    context = {
+    context: dict[str, Any] = {
         'current_page': 'home',
     }
     
@@ -79,7 +80,7 @@ def home_view(request):
                             'type': '组织信息变更',
                             'items': items
                         })
-            
+
             context['pending_requests'] = request_details
     
     return render(request, 'home.html', context)

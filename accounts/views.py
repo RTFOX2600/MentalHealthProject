@@ -246,6 +246,7 @@ def custom_login(request):
             ).first()
             
             if pending_role_request:
+                # noinspection PyUnresolvedReferences
                 role_choices = dict(user.ROLE_CHOICES)
                 requested_role_display = role_choices.get(pending_role_request.requested_role, '未知')
                 messages.warning(request, f'您有一个待审核的身份请求（「{requested_role_display}」），请耐心等待管理员审核。您可以以当前身份登录。')
@@ -294,6 +295,7 @@ class CustomPasswordChangeView(PasswordChangeView):
     
     def form_invalid(self, form):
         # 将表单错误转换为消息提示
+        # noinspection PyUnresolvedReferences
         for field, errors in form.errors.items():
             for error in errors:
                 if field == '__all__':

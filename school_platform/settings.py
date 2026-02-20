@@ -10,29 +10,44 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 加载环境变量（如果存在 .env 文件）
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except ImportError:
+    # python-dotenv 未安装，直接使用系统环境变量
+    pass
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-53j_bl9ycppk9-c%@n_e5_q&e*l2u#=%m%he5jq1bg=%a^vh8l'
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-dev-key-change-this-in-production-53j_bl9ycppk9-c%@n_e5_q'
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # 允许的主机名（必须配置）
-ALLOWED_HOSTS = ['rtfox.top', 'www.rtfox.top', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1'
+).split(',')
 
 # CSRF 信任的来源（关键配置）
-CSRF_TRUSTED_ORIGINS = [
-    'https://rtfox.top',
-    'https://www.rtfox.top'
-]
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:8000,http://127.0.0.1:8000'
+).split(',')
 
 # ========================================
 # 生产环境安全配置
@@ -170,10 +185,10 @@ LOGOUT_REDIRECT_URL = 'login'
 # ========================================
 
 # Celery Broker URL（使用 Redis）
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
 # Celery 结果存储后端
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
 # 任务序列化格式
 CELERY_TASK_SERIALIZER = 'json'
@@ -198,7 +213,7 @@ CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4分钟软限制
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',  # 使用数据库 1（与 Celery 隔离）
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0').replace('/0', '/1'),  # 使用数据库 1（与 Celery 隔离）
         'TIMEOUT': 3600,  # 默认缓存 1 小时
     }
 }
