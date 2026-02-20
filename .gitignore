@@ -36,4 +36,7 @@ secrets.json
 # Project specific
 static/downloads/*
 !static/downloads/.gitkeep
+!static/downloads/certificates/
+static/downloads/certificates/*
+!static/downloads/certificates/.gitkeep
 diagnose_upload.py
