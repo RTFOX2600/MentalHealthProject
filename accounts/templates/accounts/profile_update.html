@@ -18,12 +18,12 @@
 		{% endfor %}
 	{% endif %}
 
-	<!-- 基本信息 -->
-	<hr style="margin-top: 0;">
-	<h5 style="margin-bottom: 1.5rem; color: var(--heading-color); font-weight: 600;">基本信息</h5>
 	<form method="post" id="profileUpdateForm">
 		{% csrf_token %}
-		<input type="hidden" name="form_type" value="basic_info">
+
+		<!-- 基本信息 -->
+		<hr style="margin-top: 0;">
+		<h5 style="margin-bottom: 1.5rem; color: var(--heading-color); font-weight: 600;">基本信息</h5>
 
 		<!-- 姓 -->
 		<div class="mb-3">
@@ -92,17 +92,11 @@
 				<div class="text-danger small">{{ basic_form.phone_number.errors }}</div>
 			{% endif %}
 		</div>
-
-		<button type="submit" class="btn btn-primary">保存基本信息</button>
-	</form>
-
-	<hr>
-	<!-- 组织信息卡片（同级卡片） -->
-	<h5 style="margin-bottom: 1.5rem; color: var(--heading-color); font-weight: 600;">组织信息<span
-			style="font-size: 0.875rem; font-weight: 400; color: var(--muted-text); margin-left: 0.5rem;">（修改后需管理员审核）</span></h5>
-	<form method="post" id="organizationForm">
-		{% csrf_token %}
-		<input type="hidden" name="form_type" value="organization_info">
+	
+		<hr>
+		<!-- 组织信息（合并到同一表单） -->
+		<h5 style="margin-bottom: 1.5rem; color: var(--heading-color); font-weight: 600;">组织信息<span
+				style="font-size: 0.875rem; font-weight: 400; color: var(--muted-text); margin-left: 0.5rem;">(修改后需管理员审核)</span></h5>
 
 		<!-- 学生组织信息 -->
 		<div id="studentOrgInfo" style="display: none;">
@@ -242,7 +236,7 @@
 			</div>
 		</div>
 
-		<button type="submit" class="btn btn-primary">保存组织信息</button>
+		<button type="submit" class="btn btn-primary">保存信息</button>
 	</form>
 
 	<div class="footer-text">
@@ -258,23 +252,38 @@
             // 获取用户当前实际角色（从模板传入）
             const currentUserRole = '{{ user.role }}';
             let isConfirmedRole = false; // 标记用户是否已确认角色变更
-            let isConfirmedOrg = false; // 标记用户是否已确认组织信息变更
 
             // 使用更精确的选择器监听表单提交
             const mainForm = document.getElementById('profileUpdateForm');
-            const orgForm = document.getElementById('organizationForm');
 
-            // 根据当前角色显示对应的组织信息表单
+            // 根据当前角色显社对应的组织信息表单
             function toggleOrgInfo(role) {
                 const studentOrgInfo = document.getElementById('studentOrgInfo');
                 const managerOrgInfo = document.getElementById('managerOrgInfo');
-
+            
                 if (role === 'student') {
                     studentOrgInfo.style.display = 'block';
                     managerOrgInfo.style.display = 'none';
+                                
+                    // 切换到学生角色时，触发学院-专业筛选初始化
+                    setTimeout(() => {
+                        if (typeof filterMajorsByCollege === 'function') {
+                            const collegeInput = document.getElementById('{{ org_form.student_college.id_for_label }}');
+                            if (collegeInput && collegeInput.value) {
+                                filterMajorsByCollege();
+                            }
+                        }
+                    }, 100);
                 } else if (role === 'counselor' || role === 'admin') {
                     studentOrgInfo.style.display = 'none';
                     managerOrgInfo.style.display = 'block';
+                                
+                    // 切换到辅导员/管理员角色时，触发负责学院-专业筛选初始化
+                    setTimeout(() => {
+                        if (typeof updateManagedMajors === 'function') {
+                            updateManagedMajors();
+                        }
+                    }, 100);
                 } else {
                     studentOrgInfo.style.display = 'none';
                     managerOrgInfo.style.display = 'none';
@@ -320,81 +329,6 @@
                 });
             }
 
-            // 监听组织信息表单提交
-            if (orgForm) {
-                // 记录原始值
-                const originalValues = {
-                    student_college: '{{ user.student_college.id|default:"" }}',
-                    student_major: '{{ user.student_major.id|default:"" }}',
-                    student_grade: '{{ user.student_grade.id|default:"" }}',
-                    managed_colleges: getCheckedValues('{{ org_form.managed_colleges.html_name }}'),
-                    managed_majors: getCheckedValues('{{ org_form.managed_majors.html_name }}'),
-                    managed_grades: getCheckedValues('{{ org_form.managed_grades.html_name }}')
-                };
-
-                orgForm.addEventListener('submit', function (e) {
-                    // 检查是否有变更
-                    let hasChanges = false;
-
-                    if (currentUserRole === 'student') {
-                        // 检查学生组织信息
-                        const collegeInput = document.getElementById('{{ org_form.student_college.id_for_label }}');
-                        const majorInput = document.getElementById('{{ org_form.student_major.id_for_label }}');
-                        const gradeInput = document.getElementById('{{ org_form.student_grade.id_for_label }}');
-
-                        if ((collegeInput && collegeInput.value !== originalValues.student_college) ||
-                            (majorInput && majorInput.value !== originalValues.student_major) ||
-                            (gradeInput && gradeInput.value !== originalValues.student_grade)) {
-                            hasChanges = true;
-                        }
-                    } else if (currentUserRole === 'counselor' || currentUserRole === 'admin') {
-                        // 检查辅导员/管理员组织信息
-                        const currentColleges = getCheckedValues('{{ org_form.managed_colleges.html_name }}');
-                        const currentMajors = getCheckedValues('{{ org_form.managed_majors.html_name }}');
-                        const currentGrades = getCheckedValues('{{ org_form.managed_grades.html_name }}');
-
-                        if (!arraysEqual(currentColleges, originalValues.managed_colleges) ||
-                            !arraysEqual(currentMajors, originalValues.managed_majors) ||
-                            !arraysEqual(currentGrades, originalValues.managed_grades)) {
-                            hasChanges = true;
-                        }
-                    }
-
-                    // 如果有变更且用户尚未确认，显示确认对话框
-                    if (hasChanges && !isConfirmedOrg) {
-                        e.preventDefault(); // 阻止表单直接提交
-
-                        // 显示确认对话框
-                        showConfirmDialog({
-                            title: '组织信息变更需要审核',
-                            message: '您修改了组织信息，变更需要管理员审核通过后才会生效。是否继续提交？',
-                            primaryText: '继续提交',
-                            secondaryText: '返回',
-                            onPrimary: function () {
-                                // 用户确认后设置标记并提交表单
-                                isConfirmedOrg = true;
-                                orgForm.submit();
-                            }
-                        });
-                    }
-                });
-            }
-
-            // 辅助函数：获取复选框组的选中值
-            function getCheckedValues(name) {
-                const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
-                return Array.from(checkboxes).map(cb => cb.value).sort();
-            }
-
-            // 辅助函数：比较两个数组是否相等
-            function arraysEqual(arr1, arr2) {
-                if (arr1.length !== arr2.length) return false;
-                for (let i = 0; i < arr1.length; i++) {
-                    if (arr1[i] !== arr2[i]) return false;
-                }
-                return true;
-            }
-
             // ========== 学院-专业级联筛选功能 ==========
 
             // 学生的学院-专业联动
@@ -404,49 +338,79 @@
             const majorInput = document.getElementById('{{ org_form.student_major.id_for_label }}');
             const majorSelectedText = document.querySelector('#studentOrgInfo .mb-3:nth-child(2) .selected-text');
 
+            // 定义筛选专业的函数（提升到全局作用域）
+            window.filterMajorsByCollege = function() {
+                if (!collegeInput || !majorDropdownMenu) return;
+                
+                const selectedCollegeId = collegeInput.value;
+                const currentMajorId = majorInput.value; // 保存当前选中的专业ID
+
+                if (selectedCollegeId) {
+                    // 获取该学院的专业列表
+                    fetch(`/accounts/api/majors/${selectedCollegeId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // 清空专业下拉菜单
+                                majorDropdownMenu.innerHTML = '<div class="dropdown-item" data-value="">请选择专业</div>';
+
+                                // 检查当前选中的专业是否在新列表中
+                                let isMajorStillValid = false;
+
+                                // 添加新的专业选项
+                                data.majors.forEach(major => {
+                                    const item = document.createElement('div');
+                                    item.className = 'dropdown-item';
+                                    if (currentMajorId && String(major.id) === String(currentMajorId)) {
+                                        item.classList.add('selected');
+                                        isMajorStillValid = true;
+                                    }
+                                    item.setAttribute('data-value', major.id);
+                                    item.textContent = major.name;
+                                    majorDropdownMenu.appendChild(item);
+                                });
+
+                                // 如果当前选中的专业不在新列表中，重置专业选择
+                                if (!isMajorStillValid) {
+                                    majorInput.value = '';
+                                    majorSelectedText.textContent = '请选择专业';
+                                } else {
+                                    // 如果专业仍然有效，保持当前选中状态
+                                    const selectedMajor = data.majors.find(m => String(m.id) === String(currentMajorId));
+                                    if (selectedMajor) {
+                                        majorSelectedText.textContent = selectedMajor.name;
+                                    }
+                                }
+
+                                // 重新初始化专业下拉框的点击事件
+                                initDropdownForElement(majorDropdownTrigger.closest('.custom-dropdown'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('获取专业列表失败:', error);
+                        });
+                } else {
+                    // 如果没有选择学院，清空专业列表
+                    majorDropdownMenu.innerHTML = '<div class="dropdown-item" data-value="">请先选择学院</div>';
+                    majorInput.value = '';
+                    majorSelectedText.textContent = '请先选择学院';
+                }
+            };
+
             if (collegeInput && majorDropdownMenu) {
                 // 监听学院选择变化
                 const collegeObserver = new MutationObserver(function (mutations) {
-                    const selectedCollegeId = collegeInput.value;
-
-                    if (selectedCollegeId) {
-                        // 获取该学院的专业列表
-                        fetch(`/accounts/api/majors/${selectedCollegeId}/`)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    // 清空专业下拉菜单
-                                    majorDropdownMenu.innerHTML = '<div class="dropdown-item" data-value="">请选择专业</div>';
-
-                                    // 添加新的专业选项
-                                    data.majors.forEach(major => {
-                                        const item = document.createElement('div');
-                                        item.className = 'dropdown-item';
-                                        item.setAttribute('data-value', major.id);
-                                        item.textContent = major.name;
-                                        majorDropdownMenu.appendChild(item);
-                                    });
-
-                                    // 重置专业选择
-                                    majorInput.value = '';
-                                    majorSelectedText.textContent = '请选择专业';
-
-                                    // 重新初始化专业下拉框的点击事件
-                                    initDropdownForElement(majorDropdownTrigger.closest('.custom-dropdown'));
-                                }
-                            })
-                            .catch(error => {
-                                console.error('获取专业列表失败:', error);
-                            });
-                    } else {
-                        // 如果没有选择学院，清空专业列表
-                        majorDropdownMenu.innerHTML = '<div class="dropdown-item" data-value="">请先选择学院</div>';
-                        majorInput.value = '';
-                        majorSelectedText.textContent = '请先选择学院';
-                    }
+                    filterMajorsByCollege();
                 });
 
                 collegeObserver.observe(collegeInput, {attributes: true, attributeFilter: ['value']});
+
+                // 页面加载时立即执行一次筛选（如果已有学院选中）
+                setTimeout(() => {
+                    if (currentUserRole === 'student' && collegeInput.value) {
+                        filterMajorsByCollege();
+                    }
+                }, 200);
             }
 
             // 辅导员/管理员的负责学院-负责专业联动

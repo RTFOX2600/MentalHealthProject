@@ -203,7 +203,9 @@ body {
     font-weight: 700;
 }
 
-.status-card div {
+/* 基本信息行样式：问候语和角色显示 */
+.status-card > div:nth-child(2),
+.status-card > div:nth-child(3) {
     padding: 1rem;
     border-radius: 0.75rem;
     background-color: var(--bg-color);

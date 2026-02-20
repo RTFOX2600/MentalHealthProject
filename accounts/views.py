@@ -94,136 +94,109 @@ def profile_update(request):
     注：学院、专业、年级信息的修改需要管理员审核。
     """
     if request.method == 'POST':
-        form_type = request.POST.get('form_type')
-        
-        # 处理基本信息表单
-        if form_type == 'basic_info':
-            # ⚠️ 重要：在创建表单之前，先保存当前用户的原始基本信息值
-            # 因为 Django 的 ModelForm 在绑定 instance 后会修改实例的属性
-            old_role = request.user.role
-            original_first_name = request.user.first_name
-            original_last_name = request.user.last_name
-            original_email = request.user.email
-            original_phone_number = request.user.phone_number
+        # ✅ 保存原始基本信息值
+        old_role = request.user.role
+        original_first_name = request.user.first_name
+        original_last_name = request.user.last_name
+        original_email = request.user.email
+        original_phone_number = request.user.phone_number
             
-            basic_form = UserProfileForm(request.POST, instance=request.user)
-            org_form = OrganizationInfoForm(instance=request.user)  # 不变
+        # ✅ 保存原始组织信息值
+        original_college_id, original_major_id, original_grade_id = None, None, None
+        original_colleges, original_majors, original_grades = set(), set(), set()
             
-            if basic_form.is_valid():
-                new_role = basic_form.cleaned_data.get('role')
+        if request.user.role == 'student':
+            original_college_id = request.user.student_college.id if request.user.student_college else None
+            original_major_id = request.user.student_major.id if request.user.student_major else None
+            original_grade_id = request.user.student_grade.id if request.user.student_grade else None
+        elif request.user.role in ['counselor', 'admin']:
+            original_colleges = set(request.user.managed_colleges.all())
+            original_majors = set(request.user.managed_majors.all())
+            original_grades = set(request.user.managed_grades.all())
+            
+        # 创建表单实例
+        basic_form = UserProfileForm(request.POST, instance=request.user)
+        org_form = OrganizationInfoForm(request.POST, instance=request.user)
+            
+        # 验证表单
+        if basic_form.is_valid() and org_form.is_valid():
+            new_role = basic_form.cleaned_data.get('role')
                 
-                # 如果角色发生变化
-                if old_role != new_role:
-                    # 创建角色变更请求
-                    ProfileChangeRequest.objects.create(
-                        user=request.user,
-                        change_type='role_change',
-                        requested_role=new_role
-                    )
-                    messages.info(request, f'您的身份变更请求已提交（「{dict(request.user.ROLE_CHOICES).get(old_role)}」→「{dict(request.user.ROLE_CHOICES).get(new_role)}」），请等待管理员审核。')
-                    return redirect('profile_update')
-                else:
-                    # 检查基本信息是否有变化（使用保存的原始值）
-                    basic_info_changed = False
-                    
-                    if (basic_form.cleaned_data.get('first_name') != original_first_name or
-                        basic_form.cleaned_data.get('last_name') != original_last_name or
-                        basic_form.cleaned_data.get('email') != original_email or
-                        basic_form.cleaned_data.get('phone_number') != original_phone_number):
-                        basic_info_changed = True
-                    
-                    if basic_info_changed:
-                        # 只保存基本信息，不触及组织信息
-                        user = basic_form.save(commit=False)
-                        user.save(update_fields=['first_name', 'last_name', 'email', 'phone_number'])
-                        messages.success(request, "基本信息已成功更新。")
-                        return redirect('profile_update')
-                    else:
-                        messages.info(request, '基本信息未发生变化。')
-                        return redirect('profile_update')
-        
-        # 处理组织信息表单
-        elif form_type == 'organization_info':
-            basic_form = UserProfileForm(instance=request.user)  # 不变
-            
-            # ⚠️ 重要：在创建表单之前，先保存当前用户的原始组织信息值
-            # 因为 Django 的 ModelForm 在绑定 instance 后会修改实例的属性
-            original_college_id, original_major_id, original_grade_id = None, None, None
+            # ✅ 步骤 1：检测所有变更类型
+            role_changed = (old_role != new_role)
+            basic_info_changed = False
+            org_info_changed = False
+            change_type = None
+                            
+            # 检测基本信息变更
+            if (basic_form.cleaned_data.get('first_name') != original_first_name or
+                basic_form.cleaned_data.get('last_name') != original_last_name or
+                basic_form.cleaned_data.get('email') != original_email or
+                basic_form.cleaned_data.get('phone_number') != original_phone_number):
+                basic_info_changed = True
+                            
+            # 检测组织信息变更
             if request.user.role == 'student':
-                original_college_id = request.user.student_college.id if request.user.student_college else None
-                original_major_id = request.user.student_major.id if request.user.student_major else None
-                original_grade_id = request.user.student_grade.id if request.user.student_grade else None
+                new_college = org_form.cleaned_data.get('student_college')
+                new_major = org_form.cleaned_data.get('student_major')
+                new_grade = org_form.cleaned_data.get('student_grade')
+                                
+                new_college_id = new_college.id if new_college else None
+                new_major_id = new_major.id if new_major else None
+                new_grade_id = new_grade.id if new_grade else None
+                                
+                if (original_college_id != new_college_id or
+                    original_major_id != new_major_id or
+                    original_grade_id != new_grade_id):
+                    org_info_changed = True
+                    change_type = 'student_info'
+            elif request.user.role in ['counselor', 'admin']:
+                new_colleges = set(org_form.cleaned_data.get('managed_colleges', []))
+                new_majors = set(org_form.cleaned_data.get('managed_majors', []))
+                new_grades = set(org_form.cleaned_data.get('managed_grades', []))
+                                
+                if (original_colleges != new_colleges or
+                    original_majors != new_majors or
+                    original_grades != new_grades):
+                    org_info_changed = True
+                    change_type = 'manager_info'
+                            
+            # ✅ 步骤 2：独立处理每个变更（不互相阻断）
+            messages_list = []
+                        
+            # 处理基本信息变更
+            if basic_info_changed:
+                user = basic_form.save(commit=False)
+                user.save(update_fields=['first_name', 'last_name', 'email', 'phone_number'])
+                messages_list.append(('基本信息已成功更新。', 'success'))
+                        
+            # 处理角色变更
+            if role_changed:
+                ProfileChangeRequest.objects.create(
+                    user=request.user,
+                    change_type='role_change',
+                    requested_role=new_role
+                )
+                messages_list.append((f'您的身份变更请求已提交（「{dict(request.user.ROLE_CHOICES).get(old_role)}」→「{dict(request.user.ROLE_CHOICES).get(new_role)}」），请等待管理员审核。', 'info'))
+                        
+            # 处理组织信息变更
+            if org_info_changed:
+                _create_profile_change_request(request.user, change_type, org_form)
+                messages_list.append(('您的组织信息变更请求已提交，请等待管理员审核。', 'info'))
+                        
+            # 显示所有消息
+            if messages_list:
+                for msg, level in messages_list:
+                    if level == 'success':
+                        messages.success(request, msg)
+                    elif level == 'info':
+                        messages.info(request, msg)
+                    elif level == 'warning':
+                        messages.warning(request, msg)
             else:
-                original_colleges = set(request.user.managed_colleges.all())
-                original_majors = set(request.user.managed_majors.all())
-                original_grades = set(request.user.managed_grades.all())
-            
-            org_form = OrganizationInfoForm(request.POST, instance=request.user)
-            
-            if org_form.is_valid():
-                # 调试输出
-                print(f"\n=== 组织信息变更检测 ===")
-                print(f"用户角色: {request.user.role}")
-                
-                # 检查组织信息是否有变化
-                org_info_changed = False
-                change_type = None
-                
-                if request.user.role == 'student':
-                    # 学生组织信息变更
-                    new_college = org_form.cleaned_data.get('student_college')
-                    new_major = org_form.cleaned_data.get('student_major')
-                    new_grade = org_form.cleaned_data.get('student_grade')
-                    
-                    # 使用之前保存的原始值，而不是 request.user 的当前值
-                    current_college_id = original_college_id
-                    current_major_id = original_major_id
-                    current_grade_id = original_grade_id
-                    
-                    new_college_id = new_college.id if new_college else None
-                    new_major_id = new_major.id if new_major else None
-                    new_grade_id = new_grade.id if new_grade else None
-                    
-                    # 调试输出
-                    print(f"当前学院ID: {current_college_id}, 新学院ID: {new_college_id}")
-                    print(f"当前专业ID: {current_major_id}, 新专业ID: {new_major_id}")
-                    print(f"当前年级ID: {current_grade_id}, 新年级ID: {new_grade_id}")
-                    
-                    if (current_college_id != new_college_id or
-                        current_major_id != new_major_id or
-                        current_grade_id != new_grade_id):
-                        org_info_changed = True
-                        change_type = 'student_info'
-                        print(f"检测到变更！")
-                elif request.user.role in ['counselor', 'admin']:
-                    # 辅导员/管理员组织信息变更
-                    # 使用之前保存的原始值
-                    current_colleges = original_colleges
-                    current_majors = original_majors
-                    current_grades = original_grades
-                    
-                    new_colleges = set(org_form.cleaned_data.get('managed_colleges', []))
-                    new_majors = set(org_form.cleaned_data.get('managed_majors', []))
-                    new_grades = set(org_form.cleaned_data.get('managed_grades', []))
-                    
-                    if (current_colleges != new_colleges or
-                        current_majors != new_majors or
-                        current_grades != new_grades):
-                        org_info_changed = True
-                        change_type = 'manager_info'
-                
-                # 如果组织信息发生变化
-                if org_info_changed:
-                    _create_profile_change_request(request.user, change_type, org_form)
-                    messages.info(request, '您的组织信息变更请求已提交，请等待管理员审核。')
-                    return redirect('profile_update')
-                else:
-                    messages.info(request, '组织信息未发生变化。')
-                    return redirect('profile_update')
-        else:
-            # 没有 form_type，返回空表单
-            basic_form = UserProfileForm(instance=request.user)
-            org_form = OrganizationInfoForm(instance=request.user)
+                messages.info(request, '信息未发生变化。')
+                        
+            return redirect('profile_update')
     else:
         basic_form = UserProfileForm(instance=request.user)
         org_form = OrganizationInfoForm(instance=request.user)
@@ -289,26 +262,24 @@ def custom_login(request):
 @login_required
 def cancel_request(request):
     """
-    取消角色变更请求。
+    取消用户的所有待审核请求。
     
     需要登录。仅支持 POST 请求：
-    - POST: 取消待审核的角色变更请求。
+    - POST: 取消所有待审核的变更请求。
     """
     if request.method == 'POST':
-        # 查找待审核的角色变更请求
-        pending_role_request = ProfileChangeRequest.objects.filter(
+        # 查找所有待审核的请求
+        pending_requests = ProfileChangeRequest.objects.filter(
             user=request.user,
-            change_type='role_change',
             status='pending'
-        ).first()
+        )
         
-        if pending_role_request:
-            role_choices = dict(request.user.ROLE_CHOICES)
-            requested_role_display = role_choices.get(pending_role_request.requested_role, '未知')
-            pending_role_request.delete()
-            messages.success(request, f'已取消您的「{requested_role_display}」身份变更请求。')
+        if pending_requests.exists():
+            count = pending_requests.count()
+            pending_requests.delete()
+            messages.success(request, f'已取消您的 {count} 个待审核请求。')
         else:
-            messages.info(request, '您当前没有待审核的身份请求。')
+            messages.info(request, '您当前没有待审核的请求。')
     return redirect('home')
 
 

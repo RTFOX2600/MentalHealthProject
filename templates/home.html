@@ -33,22 +33,40 @@
 			    <h3 style="text-align: left;">个人状态</h3>
 			    <div>您好，<strong>{{ user.last_name }}{{ user.first_name }}{% if not user.last_name and not user.first_name %}{{ user.username }}{% endif %}</strong>！欢迎回来。</div>
 			    <div>当前角色：<span class="badge bg-primary" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ user.role_display }}</span></div>
-			    {% if pending_role_request %}
-			    <div style="padding: 1rem;border-radius: 0.75rem;background-color: var(--bg-color);text-align: left;color: var(--muted-text);line-height: 1.6;">
-			        请求身份：<span class="badge bg-warning" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ pending_role_request.requested_role_display }} (待审核)</span>
-			        <form id="cancelRequestForm" action="{% url 'cancel_request' %}" method="post" style="display: inline-block; margin-left: 0.5rem;">
-			            {% csrf_token %}
-			            <button type="button" class="btn btn-sm btn-outline-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.85rem;"
-			                    onclick="showConfirmDialog({
-			                        title: '确认取消请求',
-			                        message: '确定要取消「{{ pending_role_request.requested_role_display }}」身份变更请求吗？',
-			                        primaryText: '确认取消',
-			                        secondaryText: '我再想想',
-			                        onPrimary: function() { document.getElementById('cancelRequestForm').submit(); }
-			                    })">
-			                取消请求
-			            </button>
-			        </form>
+			    
+			    <!-- 待审核请求 -->
+			    {% if pending_requests %}
+			    <div style="padding: 1rem;border-radius: 0.75rem;background-color: var(--bg-color);text-align: left;color: var(--muted-text);line-height: 1.6;margin-top: 0.5rem;">
+			        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+			            <span class="badge bg-warning" style="font-size: 0.9rem; padding: 0.4rem 0.8rem; color: #664d03;">待审核请求</span>
+			            <form id="cancelAllRequestsForm" action="{% url 'cancel_request' %}" method="post" style="display: inline-block;">
+			                {% csrf_token %}
+			                <button type="button" class="btn btn-sm btn-outline-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;"
+			                        onclick="showConfirmDialog({
+			                            title: '确认取消请求',
+			                            message: '确定要取消所有待审核请求吗？此操作不可恢复。',
+			                            primaryText: '确认取消',
+			                            secondaryText: '我再想想',
+			                            onPrimary: function() { document.getElementById('cancelAllRequestsForm').submit(); }
+			                        })">
+			                    取消请求
+			                </button>
+			            </form>
+			        </div>
+			        
+			        <!-- 请求详情列表 -->
+			        <div style="font-size: 0.9rem; color: var(--text-color);">
+			            {% for request in pending_requests %}
+			            <div style="{% if not forloop.last %}margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);{% endif %}">
+			                <div style="font-weight: 600; margin-bottom: 0.4rem; color: var(--primary-color);">● {{ request.type }}</div>
+			                <div style="padding-left: 1rem;">
+			                    {% for item in request.items %}
+			                    <div style="margin-bottom: 0.25rem;">• {{ item }}</div>
+			                    {% endfor %}
+			                </div>
+			            </div>
+			            {% endfor %}
+			        </div>
 			    </div>
 			    {% endif %}
 			</div>
