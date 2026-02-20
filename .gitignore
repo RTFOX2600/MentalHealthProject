@@ -24,6 +24,10 @@ local_settings.py
 .env.local
 secrets.json
 
+# Logs
+logs/*
+!logs/.gitkeep
+
 
 # IDE
 .idea/
