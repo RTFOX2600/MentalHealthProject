@@ -257,7 +257,7 @@
             const mainForm = document.getElementById('profileUpdateForm');
 
             // 根据当前角色显社对应的组织信息表单
-            function toggleOrgInfo(role) {
+            function toggleOrgInfo(role, isRoleSwitch = false) {
                 const studentOrgInfo = document.getElementById('studentOrgInfo');
                 const managerOrgInfo = document.getElementById('managerOrgInfo');
             
@@ -266,39 +266,43 @@
                     managerOrgInfo.style.display = 'none';
                                 
                     // 切换到学生角色时，触发学院-专业筛选初始化
-                    setTimeout(() => {
-                        if (typeof filterMajorsByCollege === 'function') {
-                            const collegeInput = document.getElementById('{{ org_form.student_college.id_for_label }}');
-                            if (collegeInput && collegeInput.value) {
-                                filterMajorsByCollege();
+                    if (isRoleSwitch) {
+                        setTimeout(() => {
+                            if (typeof filterMajorsByCollege === 'function') {
+                                const collegeInput = document.getElementById('{{ org_form.student_college.id_for_label }}');
+                                if (collegeInput && collegeInput.value) {
+                                    filterMajorsByCollege();
+                                }
                             }
-                        }
-                    }, 100);
+                        }, 100);
+                    }
                 } else if (role === 'counselor' || role === 'admin') {
                     studentOrgInfo.style.display = 'none';
                     managerOrgInfo.style.display = 'block';
                                 
                     // 切换到辅导员/管理员角色时，触发负责学院-专业筛选初始化
-                    setTimeout(() => {
-                        if (typeof updateManagedMajors === 'function') {
-                            updateManagedMajors();
-                        }
-                    }, 100);
+                    if (isRoleSwitch) {
+                        setTimeout(() => {
+                            if (typeof updateManagedMajors === 'function') {
+                                updateManagedMajors();
+                            }
+                        }, 100);
+                    }
                 } else {
                     studentOrgInfo.style.display = 'none';
                     managerOrgInfo.style.display = 'none';
                 }
             }
 
-            // 初始化时根据当前角色显示组织信息
-            toggleOrgInfo(currentUserRole);
+            // 初始化时根据当前角色显示组织信息（不触发筛选）
+            toggleOrgInfo(currentUserRole, false);
 
             // 监听角色选择变化
             const roleInput = document.getElementById('{{ basic_form.role.id_for_label }}');
             if (roleInput) {
                 // 监听自定义下拉框的变化
                 const observer = new MutationObserver(function (mutations) {
-                    toggleOrgInfo(roleInput.value);
+                    toggleOrgInfo(roleInput.value, true); // 角色切换时触发筛选
                 });
                 observer.observe(roleInput, {attributes: true, attributeFilter: ['value']});
             }
@@ -545,12 +549,14 @@
                     });
                 });
 
-                // 页面加载时立即执行初始化
-                setTimeout(() => {
-                    if (currentUserRole === 'counselor' || currentUserRole === 'admin') {
+                // 页面加载时立即执行初始化（只在非角色切换时执行）
+                // 如果是角色切换，由 toggleOrgInfo 触发
+                if (currentUserRole === 'counselor' || currentUserRole === 'admin') {
+                    // 延迟较长时间，确保 currentSelectedMajors 已经初始化
+                    setTimeout(() => {
                         updateManagedMajors();
-                    }
-                }, 150);
+                    }, 200);
+                }
             }
 
             // 辅助函数：为单个下拉框元素重新初始化事件
