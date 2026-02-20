@@ -64,6 +64,39 @@
     padding: 0.25rem;
 }
 
+/* 下拉菜单滚动条样式 - 适配圆角 */
+.dropdown-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: transparent; /* 轨道透明，不超出圆角 */
+    border-radius: 0.75rem;
+    margin: 4px 0; /* 上下留空，避免超出圆角 */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: #cbd5e1; /* 亮色模式：浅灰滑块 */
+    border-radius: 0.75rem;
+    border: 2px solid var(--card-bg); /* 边框颜色与下拉菜单背景一致，形成内缩效果 */
+    transition: background 0.3s ease;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8; /* 悬停时深一点 */
+}
+
+/* 暗色模式下拉菜单滚动条 */
+@media (prefers-color-scheme: dark) {
+    .dropdown-menu::-webkit-scrollbar-thumb {
+        background: #475569; /* 暗色模式：中灰色 */
+    }
+    
+    .dropdown-menu::-webkit-scrollbar-thumb:hover {
+        background: #64748b; /* 暗色模式悬停：亮灰色 */
+    }
+}
+
 .custom-dropdown.active .dropdown-menu {
     opacity: 1;
     visibility: visible;
@@ -401,7 +434,7 @@ select.form-select option {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
     border-radius: 0.5rem;
-    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    /*transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;*/
     cursor: pointer;
     margin: 0 0 0.5rem 0; /* 减小间距：0.75rem → 0.5rem */
     font-size: 0.875rem;
@@ -434,7 +467,6 @@ select.form-select option {
     border: 2px solid var(--border-color);
     border-radius: 0.25rem;
     background-color: transparent;
-    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
     position: relative;
     flex-shrink: 0;
 }

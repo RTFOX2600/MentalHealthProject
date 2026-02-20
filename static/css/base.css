@@ -11,28 +11,53 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-color); /* 轨道使用页面背景色 */
+    background: #e5e7eb; /* 亮色模式：浅灰轨道 */
     border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--input-bg); /* 滑块使用输入框背景色 */
+    background: #9ca3af; /* 亮色模式：中等灰色滑块，明显可见 */
     border-radius: 8px;
     transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-color);
+    background: #4f46e5; /* 悬停时变为紫色 */
 }
 
 ::-webkit-scrollbar-thumb:active {
-    background: var(--primary-hover);
+    background: #4338ca; /* 点击时变为深紫色 */
+}
+
+/* 暗色模式滚动条 */
+@media (prefers-color-scheme: dark) {
+    ::-webkit-scrollbar-track {
+        background: #1e293b; /* 暗色模式：深色轨道 */
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #64748b; /* 暗色模式：亮灰色滑块 */
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #6366f1; /* 暗色模式悬停：亮紫色 */
+    }
+    
+    ::-webkit-scrollbar-thumb:active {
+        background: #818cf8; /* 暗色模式点击：更亮紫色 */
+    }
 }
 
 /* Firefox 浏览器 */
 * {
-    scrollbar-width: auto; /* 使用标准宽度而不是thin */
-    scrollbar-color: var(--input-bg) var(--bg-color); /* 滑块色 轨道色 */
+    scrollbar-width: auto;
+    scrollbar-color: #9ca3af #e5e7eb; /* 滑块色 轨道色 */
+}
+
+@media (prefers-color-scheme: dark) {
+    * {
+        scrollbar-color: #64748b #1e293b; /* 暗色模式：滑块色 轨道色 */
+    }
 }
 
 body {
@@ -132,7 +157,7 @@ input[type="text"], input[type="password"], input[type="email"], select {
     font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
 }
 
-input:focus {
+input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
