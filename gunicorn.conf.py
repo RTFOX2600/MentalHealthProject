@@ -14,6 +14,6 @@ max_requests = 1000
 max_requests_jitter = 50
 
 # 日志配置（相对于项目目录）
-accesslog = str(BASE_DIR / "logs" / "gunicorn_access.log")
-errorlog = str(BASE_DIR / "logs" / "gunicorn_error.log")
+accesslog = str(BASE_DIR / "logs" / "access.log")
+errorlog = str(BASE_DIR / "logs" / "error.log")
 loglevel = "info"
