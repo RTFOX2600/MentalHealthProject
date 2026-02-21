@@ -47,9 +47,9 @@ class MultiTableCampusDataGenerator:
         random.seed(random_seed)
         self.random_seed = random_seed
 
-        # 创建输出目录
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.output_dir = os.path.join(script_dir, "test_tables")
+        # 创建输出目录到桌面
+        desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+        self.output_dir = os.path.join(desktop_path, "精准思政测试数据")
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
@@ -822,4 +822,6 @@ if __name__ == "__main__":
 
     if data:
         print("\n生成完成！")
-        print("文件保存在 scripts/test_tables/ 目录中")
+        print(f"文件已保存到桌面的'精准思政测试数据'文件夹中")
+
+    input("按 Enter 键退出...")
