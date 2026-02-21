@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/staff_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/mental_health.css' %}">
 {% endblock %}
 
 {% block container_class %}dashboard-container{% endblock %}
@@ -37,4 +38,8 @@
         </div>
     </main>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/input_components.js' %}"></script>
 {% endblock %}

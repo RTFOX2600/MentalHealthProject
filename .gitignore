@@ -44,3 +44,4 @@ static/downloads/*
 static/downloads/certificates/*
 !static/downloads/certificates/.gitkeep
 diagnose_upload.py
+scripts/test_tables/

@@ -74,12 +74,22 @@ function initDropdowns() {
                 item.classList.add('selected');
                 dropdown.classList.remove('active');
                 
+                // 触发自定义事件
+                dropdown.dispatchEvent(new CustomEvent('item-selected', {
+                    detail: { value: value, text: text }
+                }));
+                
                 if (hiddenInput) hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
             });
         });
         
         dropdown.dataset.initialized = "true";
     });
+}
+
+// 别名函数，保持向后兼容
+function initAllDropdowns() {
+    initDropdowns();
 }
 
 // 4. Range Slider Value Sync

@@ -140,7 +140,7 @@
     flex: 1;
     margin-left: 200px; /* 调整为新的侧边栏宽度 */
     padding: 2rem;
-    overflow-y: auto;
+    /* 移除 overflow-y: auto 以支持 sticky 定位 */
 }
 
 .dashboard-content {
@@ -207,6 +207,95 @@
 }
 
 /* ========================================
+   统计卡片栅格
+   ======================================== */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    -webkit-mask-size: 24px;
+    mask-size: 24px;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--muted-text);
+    font-weight: 500;
+}
+
+/* ========================================
+   上传区域
+   ======================================== */
+
+.upload-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 1rem;
+}
+
+.section-title .icon {
+    width: 24px;
+    height: 24px;
+    background-color: var(--primary-color);
+}
+
+.empty-placeholder p {
+    color: var(--muted-text);
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+/* ========================================
    响应式布局
    ======================================== */
 
@@ -235,8 +324,16 @@
     }
 
     .dashboard-main {
-        margin-left: 180px; /* 调整为对应侧边栏宽度 */
-        padding: 1.5rem;
+        margin-left: 160px; /* 调整为对应侧边栏宽度 */
+        padding: 1.5rem 1rem; /* 减小左右 padding */
+        width: calc(100% - 160px); /* 明确宽度，避免溢出 */
+        max-width: calc(100% - 160px); /* 确保不超出 */
+    }
+    
+    .dashboard-content {
+        max-width: none; /* 取消最大宽度限制 */
+        margin: 0; /* 取消居中 */
+        width: 100%; /* 占满父容器 */
     }
 
     .page-header h2 {
@@ -257,6 +354,11 @@
         border-right: none;
         border-bottom: 1px solid var(--border-color);
         padding: 0.5rem 0;
+    }
+
+    .dashboard-main {
+        width: 100%;
+        max-width: 100%;
     }
 
     .sidebar-nav {

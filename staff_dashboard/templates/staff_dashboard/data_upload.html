@@ -6,11 +6,234 @@
 {% block dashboard_content %}
 <div class="page-header fade-in-up" style="animation-delay: 0.3s;">
     <h2>数据上传</h2>
-    <p class="page-description">导入学生数据</p>
+    <p class="page-description">批量导入学生信息与行为数据</p>
 </div>
 
-<div class="empty-placeholder fade-in-up" style="animation-delay: 0.4s;">
-    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></div>
-    <p>功能开发中...</p>
+<!-- 数据统计卡片 -->
+<div class="stats-grid fade-in-up" style="animation-delay: 0.4s;">
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}'); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-students">-</div>
+            <div class="stat-label">学生总数</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}'); background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-canteen">-</div>
+            <div class="stat-label">食堂消费记录</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}'); background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-gate">-</div>
+            <div class="stat-label">校门门禁记录</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}'); background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-dorm">-</div>
+            <div class="stat-label">寝室门禁记录</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}'); background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-network">-</div>
+            <div class="stat-label">网络访问记录</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}'); background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-academic">-</div>
+            <div class="stat-label">成绩记录</div>
+        </div>
+    </div>
 </div>
+
+<!-- 上传区域 - 仅管理员可见 -->
+{% if user.is_superuser %}
+<div class="upload-section fade-in-up" style="animation-delay: 0.5s;">
+    <h3 class="section-title">
+        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></span>
+        批量数据导入
+    </h3>
+    <div class="alert alert-info border-0 shadow-sm mb-4">
+        <p class="mb-0">
+            支持 CSV 或 Excel 文件上传。上传前请确保数据格式正确，详见各类型的格式说明。
+        </p>
+    </div>
+
+    <div class="mh-upload-grid">
+        <!-- 1. 学生基本信息 -->
+        <div class="fade-in-up" style="animation-delay: 0.6s;">
+            <div class="upload-item">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="icon text-primary" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}');"></span>
+                    1. 学生基本信息
+                </h4>
+                <p class="small text-light-dimmed mb-3">格式：姓名, 学号, 学院代码, 专业代码, 年级</p>
+                <div class="upload-form" id="students-form">
+                    <div class="upload-area mb-3">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="students-file" class="d-none" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div id="students-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('students')" id="btn-upload-students" disabled>上传表格</button>
+                    <div class="progress mt-3" id="students-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="students-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 食堂消费记录 -->
+        <div class="fade-in-up" style="animation-delay: 0.7s;">
+            <div class="upload-item">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="icon text-primary" style="-webkit-mask-image: url('{% static 'icons/canteen.svg' %}'); mask-image: url('{% static 'icons/canteen.svg' %}');"></span>
+                    2. 食堂消费记录
+                </h4>
+                <p class="small text-light-dimmed mb-3">格式：学号, 月份, 消费金额</p>
+                <div class="upload-form" id="canteen-form">
+                    <div class="upload-area mb-3">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="canteen-file" class="d-none" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div id="canteen-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('canteen')" id="btn-upload-canteen" disabled>上传表格</button>
+                    <div class="progress mt-3" id="canteen-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="canteen-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 校门门禁记录 -->
+        <div class="fade-in-up" style="animation-delay: 0.8s;">
+            <div class="upload-item">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="icon text-primary" style="-webkit-mask-image: url('{% static 'icons/gate.svg' %}'); mask-image: url('{% static 'icons/gate.svg' %}');"></span>
+                    3. 校门门禁记录
+                </h4>
+                <p class="small text-light-dimmed mb-3">格式：学号, 时间, 校门位置, 进出方向</p>
+                <div class="upload-form" id="school-gate-form">
+                    <div class="upload-area mb-3">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="school-gate-file" class="d-none" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div id="school-gate-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('school-gate')" id="btn-upload-school-gate" disabled>上传表格</button>
+                    <div class="progress mt-3" id="school-gate-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="school-gate-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 寝室门禁记录 -->
+        <div class="fade-in-up" style="animation-delay: 0.9s;">
+            <div class="upload-item">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="icon text-primary" style="-webkit-mask-image: url('{% static 'icons/dorm.svg' %}'); mask-image: url('{% static 'icons/dorm.svg' %}');"></span>
+                    4. 寝室门禁记录
+                </h4>
+                <p class="small text-light-dimmed mb-3">格式：学号, 时间, 寝室楼栋, 进出方向</p>
+                <div class="upload-form" id="dormitory-form">
+                    <div class="upload-area mb-3">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="dormitory-file" class="d-none" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div id="dormitory-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('dormitory')" id="btn-upload-dormitory" disabled>上传表格</button>
+                    <div class="progress mt-3" id="dormitory-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="dormitory-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 网络访问记录 -->
+        <div class="fade-in-up" style="animation-delay: 1.0s;">
+            <div class="upload-item">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="icon text-primary" style="-webkit-mask-image: url('{% static 'icons/network.svg' %}'); mask-image: url('{% static 'icons/network.svg' %}');"></span>
+                    5. 网络访问记录
+                </h4>
+                <p class="small text-light-dimmed mb-3">格式：学号, 开始时间, 结束时间, 是否使用VPN</p>
+                <div class="upload-form" id="network-form">
+                    <div class="upload-area mb-3">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="network-file" class="d-none" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div id="network-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('network')" id="btn-upload-network" disabled>上传表格</button>
+                    <div class="progress mt-3" id="network-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="network-result"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 成绩记录 -->
+        <div class="fade-in-up" style="animation-delay: 1.1s;">
+            <div class="upload-item">
+                <h4 class="h6 fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="icon text-primary" style="-webkit-mask-image: url('{% static 'icons/grades.svg' %}'); mask-image: url('{% static 'icons/grades.svg' %}');"></span>
+                    6. 成绩记录
+                </h4>
+                <p class="small text-light-dimmed mb-3">格式：学号, 月份, 平均成绩</p>
+                <div class="upload-form" id="academic-form">
+                    <div class="upload-area mb-3">
+                        <p class="mb-0 small fw-bold text-primary">点击或拖拽上传</p>
+                        <input type="file" id="academic-file" class="d-none" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div id="academic-file-info" class="selected-file small p-2 border rounded mb-3" style="display: none;"></div>
+                    <button class="mh-btn mh-btn-primary" onclick="uploadFile('academic')" id="btn-upload-academic" disabled>上传表格</button>
+                    <div class="progress mt-3" id="academic-progress" style="display: none; height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0"></div>
+                    </div>
+                    <div class="mh-result mt-3" id="academic-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- 非管理员提示 -->
+<div class="upload-section fade-in-up" style="animation-delay: 0.5s;">
+    <div class="alert alert-warning border-0 shadow-sm">
+        <h5 class="alert-heading d-flex align-items-center gap-2">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/lock.svg' %}'); mask-image: url('{% static 'icons/lock.svg' %}'); width: 20px; height: 20px; background: currentColor;"></span>
+            权限不足
+        </h5>
+        <p class="mb-0">
+            批量数据导入功能仅对系统管理员开放。如需使用此功能，请联系管理员。
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Toast 通知 -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="mh-toast" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="mh-toast-body"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/staff_dashboard_upload.js' %}"></script>
 {% endblock %}

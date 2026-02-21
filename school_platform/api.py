@@ -3,6 +3,7 @@ from ninja.openapi.docs import Swagger
 from django.contrib.admin.views.decorators import staff_member_required
 
 from mental_health.api import router as mental_health_router
+from staff_dashboard.api import router as staff_dashboard_router
 
 
 # 创建 API 实例，设置标题和版本
@@ -19,3 +20,4 @@ api = NinjaAPI(
 
 # 注册各个模块的 router
 api.add_router("/mental-health/", mental_health_router)
+api.add_router("/staff-dashboard/", staff_dashboard_router)

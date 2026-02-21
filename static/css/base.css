@@ -164,6 +164,13 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
     transform: translateY(-2px);
 }
 
+/* Placeholder 样式适配 */
+input::placeholder,
+textarea::placeholder {
+    color: var(--muted-text)!important;
+    opacity: 0.6!important;
+}
+
 /* 按钮组件 */
 .btn {
     display: inline-block;
