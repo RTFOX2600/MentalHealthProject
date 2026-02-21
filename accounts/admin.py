@@ -229,16 +229,21 @@ class ProfileChangeRequestAdmin(admin.ModelAdmin):
                 # 更新角色
                 if change_request.requested_role:
                     user.role = change_request.requested_role
-                    user.save()
+                    user.save(update_fields=['role'])
             elif change_request.change_type == 'student_info':
                 # 更新学生信息
+                update_fields = []
                 if change_request.requested_student_college:
                     user.student_college = change_request.requested_student_college
+                    update_fields.append('student_college')
                 if change_request.requested_student_major:
                     user.student_major = change_request.requested_student_major
+                    update_fields.append('student_major')
                 if change_request.requested_student_grade:
                     user.student_grade = change_request.requested_student_grade
-                user.save()
+                    update_fields.append('student_grade')
+                if update_fields:
+                    user.save(update_fields=update_fields)
             else:
                 # 更新辅导员/管理员信息
                 if change_request.requested_managed_colleges:
