@@ -148,6 +148,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     box-shadow: var(--shadow);
     position: relative;
     z-index: 1;
+    container-type: inline-size;
+    container-name: table-card;
 }
 
 .table-header {
@@ -301,6 +303,7 @@ tbody tr:last-child td:last-child {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 1.5rem;
 }
@@ -336,16 +339,46 @@ tbody tr:last-child td:last-child {
     color: var(--muted-text);
     font-size: 0.875rem;
     font-weight: 500;
+    white-space: nowrap;
 }
 
-/* 页码跳转 */
+/* 页码跳转：自动换行 */
 .page-jump {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-left: 1rem;
-    padding-left: 1rem;
+    padding-left: 0.75rem;
+    margin-left: 0.75rem;
     border-left: 2px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+/* 当空间不足时，跳转区域换行并改为横向分隔符 */
+@container (max-width: 500px) {
+    .page-jump {
+        padding-left: 0;
+        padding-top: 0.5rem;
+        margin-left: 0;
+        margin-top: 0;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* 低版本浏览器兼容：使用媒体查询作为后备 */
+@media (max-width: 640px) {
+    .page-jump {
+        padding-left: 0;
+        padding-top: 0.5rem;
+        margin-left: 0;
+        margin-top: 0;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 .page-jump span {
@@ -423,23 +456,12 @@ tbody tr:last-child td:last-child {
 }
 
 /* ========== 响应式设计 ========== */
-/* 中等屏幕：优化间距 */
+/* 平板及以下：表格和统计优化 */
 @media (max-width: 768px) {
     .filter-card {
         padding: 1rem;
     }
-}
-
-/* 移动端：取消固定定位 */
-@media (max-width: 640px) {
-    .filter-card {
-        position: relative;
-        top: auto;
-    }
-}
-
-/* 平板及以下：表格和统计优化 */
-@media (max-width: 768px) {
+    
     .stats-grid {
         grid-template-columns: 1fr;
     }
@@ -455,5 +477,13 @@ tbody tr:last-child td:last-child {
     th, td {
         padding: 0.625rem 0.75rem;
         font-size: 0.8125rem;
+    }
+}
+
+/* 移动端：取消固定定位 */
+@media (max-width: 640px) {
+    .filter-card {
+        position: relative;
+        top: auto;
     }
 }
