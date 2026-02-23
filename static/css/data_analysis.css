@@ -536,11 +536,6 @@ tbody tr:last-child td:last-child {
         top: auto;
     }
     
-    /* 为包裹容器添加上边距，避免被固定导航栏遮挡 */
-    .filter-card-wrapper {
-        margin-top: calc(var(--navbar-height-mobile, 50px) + 1rem);
-    }
-    
     .filter-card-bottom {
         position: relative;
         top: auto;
