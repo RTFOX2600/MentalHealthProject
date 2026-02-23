@@ -484,6 +484,7 @@ form li {
     color: var(--muted-text);
     margin: 0 0 2rem 0;
     line-height: 1.6;
+    white-space: pre-line; /* 保留换行符 */
 }
 
 /* 对话框按钮容器 */

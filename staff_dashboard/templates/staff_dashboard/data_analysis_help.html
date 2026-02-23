@@ -1,0 +1,434 @@
+{% extends 'staff_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}数据分析帮助 - 工作台{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/about.css' %}">
+<style>
+/* 帮助页面专属样式 */
+.help-page-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    animation: fadeInUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.help-banner {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    padding: 3.5rem 2.5rem;
+    border-radius: 1.5rem;
+    color: white;
+    margin-bottom: 3rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.help-banner::after {
+    content: '';
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+}
+
+.help-banner h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.help-banner p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+    line-height: 1.6;
+    color: white;
+}
+
+.help-section {
+    margin-bottom: 3rem;
+}
+
+.step-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.step-card:hover {
+    box-shadow: var(--card-shadow);
+    transform: translateY(-2px);
+}
+
+.step-number {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-weight: bold;
+    margin-right: 0.75rem;
+}
+
+.step-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.step-content {
+    color: var(--text-color);
+    line-height: 1.8;
+    margin-left: 2.5rem;
+}
+
+.info-box {
+    background: rgba(79, 70, 229, 0.05);
+    border-left: 4px solid var(--primary-color);
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.info-box.warning {
+    background: rgba(245, 158, 11, 0.05);
+    border-left-color: #f59e0b;
+}
+
+.info-box.success {
+    background: rgba(16, 185, 129, 0.05);
+    border-left-color: var(--success-color);
+}
+
+.info-box p {
+    margin: 0;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.data-table-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.data-table-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.data-table-list li:last-child {
+    border-bottom: none;
+}
+
+.table-name {
+    font-weight: 600;
+    color: var(--heading-color);
+}
+
+.table-desc {
+    color: var(--muted-text);
+    font-size: 0.9rem;
+}
+
+code {
+    background: var(--input-bg);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+    color: var(--primary-color);
+    font-family: 'Courier New', monospace;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="help-page-container">
+    <!-- 顶部横幅 -->
+    <div class="help-banner fade-in-up" style="animation-delay: 0.1s;">
+        <h1>数据分析页面使用指南</h1>
+        <p>了解如何使用数据分析功能，高效完成学生数据筛选、统计与导出。</p>
+    </div>
+
+    <!-- 测试数据范围 -->
+    <div class="section-title fade-in-up" style="animation-delay: 0.15s;">
+        <div class="dot"></div>
+        <h2>测试数据说明</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.2s;">
+        <div class="info-box success">
+            <p><strong>当前测试数据时间范围：</strong>2024-01-01 至 2024-04-01</p>
+            <p style="margin-top: 0.5rem;">所有统计数据（食堂消费、门禁记录、网络访问、成绩记录等）均基于此时间段生成。查询时请选择此范围内的日期以获取完整数据。</p>
+        </div>
+    </div>
+
+    <!-- 功能介绍 -->
+    <div class="section-title fade-in-up" style="animation-delay: 0.25s;">
+        <div class="dot"></div>
+        <h2>功能介绍</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.3s;">
+        <p style="color: var(--text-color); line-height: 1.8; margin-bottom: 1.5rem;">
+            数据分析页面提供了强大的学生行为数据筛选和统计功能，支持多维度查询、实时排序和批量导出。您可以根据学院、专业、年级等条件快速定位目标学生群体，并查看他们的消费、门禁、网络使用和学业表现等数据。
+        </p>
+    </div>
+
+    <!-- 数据表说明 -->
+    <div class="section-title fade-in-up" style="animation-delay: 0.35s;">
+        <div class="dot"></div>
+        <h2>可用数据表</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.4s;">
+        <ul class="data-table-list">
+            <li>
+                <span class="table-name">学生基本信息</span>
+                <span class="table-desc">学号、姓名、学院、专业、年级</span>
+            </li>
+            <li>
+                <span class="table-name">食堂消费记录</span>
+                <span class="table-desc">月均消费、最低消费、消费趋势</span>
+            </li>
+            <li>
+                <span class="table-name">校门门禁记录</span>
+                <span class="table-desc">夜间/深夜进出次数、总次数</span>
+            </li>
+            <li>
+                <span class="table-name">寝室门禁记录</span>
+                <span class="table-desc">夜间/深夜进出次数、总次数</span>
+            </li>
+            <li>
+                <span class="table-name">网络访问记录</span>
+                <span class="table-desc">VPN使用占比、夜间/深夜上网占比、月均时长、最大月时长</span>
+            </li>
+            <li>
+                <span class="table-name">成绩记录</span>
+                <span class="table-desc">平均成绩、成绩趋势</span>
+            </li>
+        </ul>
+        <div class="info-box">
+            <p><strong>提示：</strong>不同数据表的统计字段需要指定时间范围才能计算。基本信息表不受时间范围限制。</p>
+        </div>
+    </div>
+
+    <!-- 使用步骤 -->
+    <div class="section-title fade-in-up" style="animation-delay: 0.45s;">
+        <div class="dot"></div>
+        <h2>使用步骤</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.5s;">
+        <!-- 步骤1 -->
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">1</span>
+                选择筛选条件
+            </div>
+            <div class="step-content">
+                <p><strong>基础筛选：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li><strong>学院</strong>：选择目标学院，默认显示全部学院</li>
+                    <li><strong>专业</strong>：选择目标专业，默认显示全部专业</li>
+                    <li><strong>年级</strong>：选择目标年级，默认显示全部年级</li>
+                    <li><strong>搜索</strong>：输入学号或姓名进行精确查找</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>数据表与时间筛选：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li><strong>数据表</strong>：选择要查看的数据类型（基本信息、消费、门禁等）</li>
+                    <li><strong>开始时间/结束时间</strong>：设置统计时间范围（仅对统计类数据表有效）</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 步骤2 -->
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">2</span>
+                点击"查询"按钮
+            </div>
+            <div class="step-content">
+                <p>设置好筛选条件后，点击查询按钮，系统将根据您的条件实时计算并显示结果。</p>
+                <div class="info-box warning" style="margin-top: 1rem;">
+                    <p><strong>注意：</strong>如果选择了统计类数据表（如食堂消费、成绩记录等），请务必设置有效的时间范围，否则统计结果可能为空。建议使用测试数据时间范围：2024-01-01 至 2024-04-01。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤3 -->
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">3</span>
+                查看与排序数据
+            </div>
+            <div class="step-content">
+                <p><strong>查看数据：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>表格将显示符合条件的学生数据，右上角会显示总人数</li>
+                    <li>支持滚动加载更多数据（每页显示条数可自定义）</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>排序功能：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>点击表头字段可进行排序（如点击"月均消费"按消费金额排序）</li>
+                    <li>再次点击可切换升序/降序</li>
+                    <li>表头会显示当前排序状态（↑ 升序，↓ 降序）</li>
+                </ul>
+            </div>
+        </div>
+
+{#        <!-- 步骤4 -->#}
+{#        <div class="step-card">#}
+{#            <div class="step-title">#}
+{#                <span class="step-number">4</span>#}
+{#                导出数据（可选）#}
+{#            </div>#}
+{#            <div class="step-content">#}
+{#                <p>如需保存查询结果，可以：</p>#}
+{#                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">#}
+{#                    <li>调整每页显示条数（10/15/20/25/30/50条），查看更多数据</li>#}
+{#                    <li>使用浏览器的打印功能（Ctrl+P）打印当前页面</li>#}
+{#                    <li>或手动复制表格数据到 Excel 等工具</li>#}
+{#                </ul>#}
+{#                <div class="info-box" style="margin-top: 1rem;">#}
+{#                    <p><strong>提示：</strong>筛选条件会自动保存到浏览器缓存，下次打开页面时会自动恢复上次的查询状态。</p>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+    </div>
+
+    <!-- 常见问题 -->
+    <div class="section-title fade-in-up" style="animation-delay: 0.55s;">
+        <div class="dot"></div>
+        <h2>常见问题</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.6s;">
+        <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                为什么查询结果为空？
+            </div>
+            <div class="step-content">
+                <p><strong>可能原因：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>时间范围设置不正确（请使用 2024-01-01 至 2024-04-01）</li>
+                    <li>筛选条件过于严格（如专业和年级交叉筛选后无匹配学生）</li>
+                    <li>该数据表尚无导入数据（请前往"数据上传"页面导入）</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                消费趋势/成绩趋势是如何计算的？（四个月）
+            </div>
+            <div class="step-content">
+                <p><strong>计算规则：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li><strong>消费趋势</strong>：（最后两月平均消费 - 最初两月平均消费）/ 最初两月平均消费 × 100%</li>
+                    <li><strong>成绩趋势</strong>：（最后两月平均成绩 - 最初两月平均成绩）/ 最初两月平均成绩 × 100%</li>
+                    <li>正数表示上升（绿色显示），负数表示下降（红色显示）</li>
+                    <li>需要至少两个月的数据才能计算趋势</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                夜间/深夜进出是如何定义的？
+            </div>
+            <div class="step-content">
+                <p><strong>时间定义：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li><strong>夜间时段</strong>：22:00 - 23:59（晚10点至深夜前）</li>
+                    <li><strong>深夜时段</strong>：00:00 - 05:59（凌晨至早晨）</li>
+                    <li>这些时段的进出次数和上网时长会单独统计，用于识别异常作息</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                如何快速定位特定学生？
+            </div>
+            <div class="step-content">
+                <p><strong>推荐方法：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>在"搜索"框中直接输入学号或姓名（支持模糊匹配）</li>
+                    <li>按回车键或点击"查询"按钮即可快速定位</li>
+                    <li>如果知道学院和专业，建议先选择后再搜索，可提升查询速度</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 技巧提示 -->
+    <div class="section-title fade-in-up" style="animation-delay: 0.65s;">
+        <div class="dot"></div>
+        <h2>使用技巧</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.7s;">
+        <div class="contact-card" style="background: var(--card-bg); border: 2px solid var(--border-color); border-left: 5px solid var(--success-color); border-radius: 1rem; padding: 1.5rem;">
+            <ul style="color: var(--text-color); line-height: 2; margin: 0; padding-left: 1.5rem;">
+                <li><strong>批量查询：</strong>可以只选择学院，不选专业和年级，快速查看整个学院的数据</li>
+                <li><strong>时间对比：</strong>通过调整时间范围，可以对比不同时段的统计数据</li>
+                <li><strong>排序分析：</strong>点击表头排序，可快速找出消费最高/最低、成绩最好/最差的学生</li>
+                <li><strong>缓存恢复：</strong>页面会记住您上次的查询条件，刷新后自动恢复</li>
+                <li><strong>滚动加载：</strong>表格滚动到底部时会自动加载更多数据，无需手动翻页</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 联系支持 -->
+    <div class="section-title fade-in-up" style="margin-top: 3rem; animation-delay: 0.75s;">
+        <div class="dot"></div>
+        <h2>需要帮助？</h2>
+    </div>
+    <div class="help-section fade-in-up" style="animation-delay: 0.8s;">
+        <div class="contact-card" style="background: var(--card-bg); border: 2px solid var(--border-color); border-left: 5px solid var(--primary-color); border-radius: 1rem; padding: 1.5rem;">
+            <p style="color: var(--text-color); line-height: 1.8; margin-bottom: 1rem;">
+                如果在使用过程中遇到问题或有功能建议，欢迎联系系统管理员：
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <p style="margin: 0; color: var(--text-color);">
+                    <strong>史天润：</strong>
+                    <a class="external-link" href="mailto:2652205627@qq.com">2652205627@qq.com</a>
+                </p>
+                <p style="margin: 0; color: var(--text-color);">
+                    <strong>申卓毅：</strong>
+                    <a class="external-link" href="mailto:1578093978@qq.com">1578093978@qq.com</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -12,6 +12,7 @@ let currentDataTable = 'basic'; // 当前选中的数据表
 let pageSize = 20; // 每页显示条数
 let totalCount = 0; // 总记录数
 let apiUrl = ''; // API URL，从 HTML 的 data 属性中获取
+let loadingMessageId = null; // 加载消息 ID
 
 // 数据表对应的列配置
 const tableColumns = {
@@ -26,6 +27,7 @@ const tableColumns = {
         { field: 'student_id', label: '学号' },
         { field: 'name', label: '姓名' },
         { field: 'avg_expense', label: '月均消费' },
+        { field: 'min_expense', label: '最低消费' },
         { field: 'expense_trend', label: '消费趋势' }
     ],
     school_gate: [
@@ -48,12 +50,14 @@ const tableColumns = {
         { field: 'vpn_usage_rate', label: 'VPN使用占比' },
         { field: 'night_usage_rate', label: '夜间上网占比' },
         { field: 'late_night_usage_rate', label: '深夜上网占比' },
-        { field: 'total_duration', label: '总时长' }
+        { field: 'avg_duration', label: '月均时长' },
+        { field: 'max_duration', label: '最大月时长' }
     ],
     academic: [
         { field: 'student_id', label: '学号' },
         { field: 'name', label: '姓名' },
-        { field: 'avg_score', label: '平均成绩' }
+        { field: 'avg_score', label: '平均成绩' },
+        { field: 'score_trend', label: '成绩趋势' }
     ]
 };
 
@@ -176,6 +180,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 绑定搜索框回车事件
     bindSearchEvent();
+    
+    // 初始化 currentFilters（确保包含所有筛选条件）
+    currentFilters = {
+        college: getDropdownValue('dropdown-college'),
+        major: getDropdownValue('dropdown-major'),
+        grade: getDropdownValue('dropdown-grade'),
+        search: document.getElementById('filter-search').value.trim(),
+        data_table: currentDataTable,
+        start_date: document.getElementById('filter-start-date').value,
+        end_date: document.getElementById('filter-end-date').value,
+    };
     
     // 加载学生列表
     loadStudentList();
@@ -319,6 +334,11 @@ function sortTable(field) {
 
 // 加载学生列表
 function loadStudentList() {
+    // 确保 currentFilters 包含 data_table
+    if (!currentFilters.data_table) {
+        currentFilters.data_table = currentDataTable;
+    }
+    
     const params = new URLSearchParams({
         page: currentPage,
         page_size: pageSize,
@@ -327,9 +347,48 @@ function loadStudentList() {
         ...currentFilters
     });
 
-    fetch(`${apiUrl}?${params}`)
+    // 根据当前数据表类型选择不同API
+    let apiEndpoint;
+    let isStatisticsApi = false;
+    let messageStartTime = null;  // 记录消息显示开始时间
+    
+    if (currentDataTable === 'basic') {
+        apiEndpoint = apiUrl;  // 学生基本信息 API
+    } else {
+        // 统计数据API
+        apiEndpoint = '/dashboard/api/data-statistics/';
+        isStatisticsApi = true;
+        
+        // 如果是第一页，显示"正在统计"提示
+        if (currentPage === 1) {
+            // 关闭之前的加载消息
+            if (loadingMessageId) {
+                window.closeMessage(loadingMessageId);
+            }
+            loadingMessageId = window.showMessage('正在统计数据，请稍候...', 'info', 0);
+            messageStartTime = Date.now();  // 记录开始时间
+        }
+    }
+
+    fetch(`${apiEndpoint}?${params}`)
         .then(response => response.json())
         .then(data => {
+            // 确保消息至少显示0.5秒
+            const closeLoadingMessage = () => {
+                if (loadingMessageId) {
+                    window.closeMessage(loadingMessageId);
+                    loadingMessageId = null;
+                }
+            };
+            
+            if (messageStartTime) {
+                const elapsed = Date.now() - messageStartTime;
+                const remainingTime = Math.max(0, 500 - elapsed);  // 至少显示0.5秒
+                setTimeout(closeLoadingMessage, remainingTime);
+            } else {
+                closeLoadingMessage();
+            }
+            
             if (data.success) {
                 totalCount = data.total; // 更新总数
                 renderStudentTable(data);
@@ -337,13 +396,21 @@ function loadStudentList() {
                 document.getElementById('table-info').textContent = `总计 ${data.total} 人`;
             } else {
                 console.error('加载失败');
+                window.showMessage('加载数据失败', 'error', 3000);
             }
         })
         .catch(error => {
+            // 关闭加载消息
+            if (loadingMessageId) {
+                window.closeMessage(loadingMessageId);
+                loadingMessageId = null;
+            }
+            
             console.error('请求失败:', error);
             const columns = tableColumns[currentDataTable] || tableColumns.basic;
             document.getElementById('student-table-body').innerHTML = 
                 `<tr><td colspan="${columns.length}" class="empty">加载失败，请刷新重试</td></tr>`;
+            window.showMessage('请求失败，请检查网络连接', 'error', 3000);
         });
 }
 
@@ -357,6 +424,21 @@ function renderStudentTable(data) {
         return;
     }
     
+    // 格式化趋势显示（消费趋势、成绩趋势）
+    function formatTrend(value) {
+        if (value === undefined || value === null || value === 0) {
+            return '<span style="color: #6c757d;">—</span>';  // 无趋势
+        }
+        const trend = parseFloat(value);
+        if (trend > 0) {
+            return `<span style="color: #28a745;">+${trend.toFixed(2)}%</span>`;  // 绿色表示上升
+        } else if (trend < 0) {
+            return `<span style="color: #dc3545;">${trend.toFixed(2)}%</span>`;  // 红色表示下降
+        } else {
+            return '<span style="color: #6c757d;">0.00%</span>';  // 灰色表示不变
+        }
+    }
+    
     // 根据数据表类型渲染不同的内容
     let html = data.data.map(student => {
         switch(currentDataTable) {
@@ -366,7 +448,8 @@ function renderStudentTable(data) {
                         <td>${student.student_id}</td>
                         <td>${student.name}</td>
                         <td>${student.avg_expense || '-'}</td>
-                        <td>${student.expense_trend || '-'}</td>
+                        <td>${student.min_expense || '-'}</td>
+                        <td>${formatTrend(student.expense_trend)}</td>
                     </tr>
                 `;
             case 'school_gate':
@@ -397,7 +480,8 @@ function renderStudentTable(data) {
                         <td>${student.vpn_usage_rate || '-'}</td>
                         <td>${student.night_usage_rate || '-'}</td>
                         <td>${student.late_night_usage_rate || '-'}</td>
-                        <td>${student.total_duration || '-'}</td>
+                        <td>${student.avg_duration || '-'}</td>
+                        <td>${student.max_duration || '-'}</td>
                     </tr>
                 `;
             case 'academic':
@@ -406,6 +490,7 @@ function renderStudentTable(data) {
                         <td>${student.student_id}</td>
                         <td>${student.name}</td>
                         <td>${student.avg_score || '-'}</td>
+                        <td>${formatTrend(student.score_trend)}</td>
                     </tr>
                 `;
             case 'basic':

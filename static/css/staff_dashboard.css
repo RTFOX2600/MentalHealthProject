@@ -154,6 +154,10 @@
 
 .page-header {
     margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
 }
 
 .page-header h2 {
@@ -167,6 +171,12 @@
     color: var(--muted-text);
     font-size: 0.95rem;
     margin: 0;
+}
+
+/* 页面头部按钮样式 */
+.page-header .btn {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* ========================================
@@ -334,6 +344,10 @@
         max-width: none; /* 取消最大宽度限制 */
         margin: 0; /* 取消居中 */
         width: 100%; /* 占满父容器 */
+    }
+
+    .page-header {
+        flex-wrap: wrap;
     }
 
     .page-header h2 {

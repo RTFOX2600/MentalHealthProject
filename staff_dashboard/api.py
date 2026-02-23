@@ -288,7 +288,7 @@ def check_import_status(request, task_id: str):
     if task.state == 'PENDING':
         return {"status": "pending", "message": "任务排队中...", "current": 0}
     
-    elif task.state in ['PARSING', 'VALIDATING', 'IMPORTING']:
+    elif task.state in ['PARSING', 'VALIDATING', 'PROCESSING', 'IMPORTING']:
         info = task.info if isinstance(task.info, dict) else {}
         return {
             "status": "processing",
@@ -360,3 +360,101 @@ def get_import_summary(request):
         },
         "last_import_time": None  # TODO: 可以添加最后导入时间记录
     }
+
+
+@router.post("/calculate-statistics", response={200: TaskResponse, 400: dict})
+def calculate_statistics(request, start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """
+    ### 开始计算数据统计
+    
+    **权限要求**：仅管理员可以触发统计
+    
+    **参数**：
+    - start_date: 开始日期 (YYYY-MM-DD)，默认为30天前
+    - end_date: 结束日期 (YYYY-MM-DD)，默认为今天
+    
+    **统计内容**：
+    - 食堂消费：月均消费、消费趋势
+    - 校门门禁：夜间进出次数、深夜进出次数
+    - 密室门禁：夜间进出次数、深夜进出次数
+    - 网络访问：VPN使用占比、夜间上网占比
+    - 成绩记录：平均成绩
+    """
+    if not request.user.role == 'admin':
+        return 400, {"status": "error", "detail": "仅管理员可以触发统计"}
+    
+    try:
+        from .tasks import calculate_statistics_task
+        
+        task = calculate_statistics_task.delay(
+            user_id=request.user.id,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        return 200, {
+            "status": "submitted",
+            "task_id": task.id,
+            "message": "数据统计任务已提交"
+        }
+    except Exception as e:
+        return 400, {"status": "error", "detail": str(e)}
+
+
+@router.post("/clear-all-data", response={200: dict, 400: dict})
+def clear_all_data(request):
+    """
+    ### 清空所有数据
+    
+    **权限要求**：仅管理员可以执行此操作
+    
+    **危险等级**：⭐️⭐️⭐️⭐️⭐️ 高度危险
+    
+    **操作范围**：
+    - 删除所有学生信息
+    - 删除所有食堂消费记录
+    - 删除所有校门门禁记录
+    - 删除所有密室门禁记录
+    - 删除所有网络访问记录
+    - 删除所有成绩记录
+    
+    **注意**：此操作不可逆！
+    """
+    if not request.user.is_superuser:
+        return 400, {"status": "error", "detail": "仅管理员可以执行此操作"}
+    
+    try:
+        from .models import (
+            Student,
+            CanteenConsumptionRecord,
+            SchoolGateAccessRecord,
+            DormitoryAccessRecord,
+            NetworkAccessRecord,
+            AcademicRecord
+        )
+        
+        # 记录删除前的数据量
+        deleted_counts = {
+            'students': Student.objects.count(),
+            'canteen': CanteenConsumptionRecord.objects.count(),
+            'school_gate': SchoolGateAccessRecord.objects.count(),
+            'dormitory': DormitoryAccessRecord.objects.count(),
+            'network': NetworkAccessRecord.objects.count(),
+            'academic': AcademicRecord.objects.count()
+        }
+        
+        # 执行删除（按依赖关系从子表到主表）
+        AcademicRecord.objects.all().delete()
+        NetworkAccessRecord.objects.all().delete()
+        DormitoryAccessRecord.objects.all().delete()
+        SchoolGateAccessRecord.objects.all().delete()
+        CanteenConsumptionRecord.objects.all().delete()
+        Student.objects.all().delete()
+        
+        return 200, {
+            "status": "success",
+            "message": "所有数据已清空",
+            "deleted_counts": deleted_counts
+        }
+    except Exception as e:
+        return 400, {"status": "error", "detail": str(e)}

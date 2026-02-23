@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Student, CanteenConsumptionRecord, SchoolGateAccessRecord,
-    DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord
+    DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord, DataStatistics
 )
 
 
@@ -51,3 +51,12 @@ class AcademicRecordAdmin(admin.ModelAdmin):
     list_filter = ['month']
     search_fields = ['student__student_id', 'student__name']
     ordering = ['-month', 'student__student_id']
+
+
+@admin.register(DataStatistics)
+class DataStatisticsAdmin(admin.ModelAdmin):
+    list_display = ['student', 'data_type', 'start_date', 'end_date', 'updated_at']
+    list_filter = ['data_type', 'start_date', 'end_date']
+    search_fields = ['student__student_id', 'student__name']
+    ordering = ['-updated_at']
+    readonly_fields = ['created_at', 'updated_at']

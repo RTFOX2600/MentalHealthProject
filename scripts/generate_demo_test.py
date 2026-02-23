@@ -502,10 +502,10 @@ class MultiTableCampusDataGenerator:
                 vpn_probability = np.random.uniform(0.15, 0.35)  # 15%-35%
             else:
                 vpn_probability = np.random.uniform(0.0, 0.1)  # 0%-10%
-                    
-            # 凌晨上网者：20%的学生喜欢凌晨上网（深夜22点-凌晨5点）
-            is_midnight_user = (i % 5 == 0)  # 20%
                             
+            # 凌晨深夜上网者：10%的学生喜欢在凌晨0:30之后上网（较小众）
+            is_deep_night_user = (i % 10 == 0)  # 10%
+                                    
             # 凌晨VPN用户：5%的学生凌晨喜欢使用VPN
             is_midnight_vpn_user = (i % 20 == 0)  # 5%
                 
@@ -525,7 +525,7 @@ class MultiTableCampusDataGenerator:
             student_preferences[student_id] = {
                 'vpn_probability': vpn_probability,
                 'vpn_type': vpn_type,
-                'is_midnight_user': is_midnight_user,
+                'is_deep_night_user': is_deep_night_user,
                 'is_midnight_vpn_user': is_midnight_vpn_user,
                 'domain_weights': domain_weights
             }
@@ -549,7 +549,7 @@ class MultiTableCampusDataGenerator:
                 # 获取该学生的偏好
                 preferences = student_preferences[student_id]
                 vpn_prob = preferences['vpn_probability']
-                is_midnight_user = preferences['is_midnight_user']
+                is_deep_night_user = preferences['is_deep_night_user']
                 is_midnight_vpn_user = preferences['is_midnight_vpn_user']
                 domain_weights = preferences['domain_weights']
                         
@@ -562,23 +562,25 @@ class MultiTableCampusDataGenerator:
                 visit_count = max(5, min(visit_count, 25))  # 限学5-25次
         
                 for _ in range(visit_count):
-                    # 生成访问时间（凌晨上网者更多深夜时段）
-                    if is_midnight_user:
-                        # 凌晨上网者：偏好晚上22点到凌晨2点，3-5点概率很低
+                    # 生成访问时间（符合大学生作息习惯）
+                    if is_deep_night_user:
+                        # 凌晨深夜上网者（小众）：偏好0:30之后，但晚上也会上网
                         if is_weekend:
                             hour = np.random.choice([0, 1, 2, 3, 4, 10, 14, 16, 19, 20, 21, 22, 23],
-                                                   p=[0.10, 0.10, 0.08, 0.02, 0.01, 0.06, 0.08, 0.06, 0.08, 0.08, 0.1, 0.13, 0.1])
+                                                   p=[0.12, 0.12, 0.10, 0.03, 0.01, 0.05, 0.07, 0.05, 0.06, 0.07, 0.10, 0.12, 0.10])
                         else:
                             hour = np.random.choice([0, 1, 2, 3, 9, 12, 16, 19, 20, 21, 22, 23],
-                                                   p=[0.10, 0.08, 0.06, 0.01, 0.08, 0.08, 0.08, 0.1, 0.1, 0.12, 0.14, 0.05])
+                                                   p=[0.12, 0.10, 0.08, 0.02, 0.06, 0.06, 0.06, 0.08, 0.10, 0.12, 0.14, 0.06])
                     else:
-                        # 普通学生：白天和晚上为主
+                        # 普通学生：主要在晚上19:00~23:00上网，符合大多数大学生作息
                         if is_weekend:
-                            hour = np.random.choice([8, 9, 10, 11, 14, 15, 16, 19, 20, 21, 22, 23],
-                                                   p=[0.05, 0.1, 0.1, 0.1, 0.1, 0.12, 0.1, 0.12, 0.1, 0.06, 0.03, 0.02])
+                            # 周末：白天和晚上都会上网，晚上更多
+                            hour = np.random.choice([9, 10, 11, 14, 15, 16, 19, 20, 21, 22, 23],
+                                                   p=[0.06, 0.08, 0.08, 0.08, 0.10, 0.08, 0.12, 0.14, 0.12, 0.10, 0.04])
                         else:
-                            hour = np.random.choice([8, 9, 10, 12, 14, 15, 16, 18, 19, 20, 21, 22],
-                                                   p=[0.08, 0.1, 0.08, 0.1, 0.12, 0.12, 0.1, 0.12, 0.08, 0.06, 0.03, 0.01])
+                            # 工作日：下午和晚上为主，19:00~23:00高峰
+                            hour = np.random.choice([9, 10, 12, 14, 15, 16, 18, 19, 20, 21, 22, 23],
+                                                   p=[0.04, 0.05, 0.06, 0.08, 0.10, 0.08, 0.08, 0.12, 0.15, 0.12, 0.09, 0.03])
                                             
                     minute = np.random.randint(0, 60)
                     second = np.random.randint(0, 60)
@@ -588,9 +590,9 @@ class MultiTableCampusDataGenerator:
                     duration_minutes = np.random.randint(5, 120)
                     end_time = start_time + timedelta(minutes=duration_minutes)
                     
-                    # 决定VPN使用：凌晨VPN用户在凌晨0-5点使用VPN概率更高
-                    if is_midnight_vpn_user and 0 <= start_time.hour < 5:
-                        # 凌晨VPN用户在凌晨有60-90%概率使用VPN
+                    # 决定VPN使用：凌晨VPN用户在凌晨0:30之后使用VPN概率更高
+                    if is_midnight_vpn_user and (start_time.hour == 0 and start_time.minute >= 30) or (1 <= start_time.hour < 5):
+                        # 凌晨VPN用户在深夜有60-90%概率使用VPN
                         use_vpn = random.random() < np.random.uniform(0.6, 0.9)
                     else:
                         # 正常VPN使用概率

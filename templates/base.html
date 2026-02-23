@@ -99,7 +99,7 @@
                     {% if message.tags == 'info' %}ⓘ{% endif %}
                 </span>
                 <span class="alert-text">{{ message }}</span>
-                <button class="alert-close" onclick="closeMessage(this)">
+                <button class="alert-close" onclick="closeMessageButton(this)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -139,9 +139,9 @@
 <!--suppress JSUnusedLocalSymbols -->
 <script>
     // ==============================================
-    // 关闭消息函数（带退出动画）
+    // 关闭消息函数（供按钮调用）
     // ==============================================
-    function closeMessage(button) {
+    function closeMessageButton(button) {
         const message = button.parentElement;
         message.classList.add('fade-out');
         setTimeout(function() {
@@ -199,6 +199,75 @@
             startTimer();
         });
     });
+
+    // ==============================================
+    // 全局消息提示函数
+    // ==============================================
+    /**
+     * 显示消息提示
+     * @param {string} message - 消息内容
+     * @param {string} type - 消息类型（info/success/warning/error）
+     * @param {number} duration - 显示时长（毫秒），0 表示不自动消失
+     * @returns {string} 消息ID，可用于后续关闭
+     */
+    function showMessage(message, type, duration) {
+        type = type || 'info';
+        duration = duration !== undefined ? duration : 5000;
+        
+        const container = document.getElementById('messages-container');
+        if (!container) return null;
+        
+        const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
+        // 确定图标
+        let icon = 'ⓘ'; // info
+        if (type === 'success') icon = '✔';
+        else if (type === 'error' || type === 'danger') icon = '✖';
+        else if (type === 'warning') icon = '⚠';
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.id = messageId;
+        alertDiv.className = 'alert-message alert-' + type;
+        alertDiv.setAttribute('role', 'alert');
+        
+        // 创建完整的消息结构
+        alertDiv.innerHTML = 
+            '<span class="alert-icon">' + icon + '</span>' +
+            '<span class="alert-text">' + message + '</span>' +
+            '<button class="alert-close" onclick="window.closeMessage(\'' + messageId + '\')">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<line x1="18" y1="6" x2="6" y2="18"></line>' +
+                    '<line x1="6" y1="6" x2="18" y2="18"></line>' +
+                '</svg>' +
+            '</button>';
+        
+        container.appendChild(alertDiv);
+        
+        // 如果设置了时长，自动消失
+        if (duration > 0) {
+            setTimeout(function() {
+                closeMessage(messageId);
+            }, duration);
+        }
+        
+        return messageId;
+    }
+
+    /**
+     * 关闭消息提示
+     * @param {string} messageId - 消息ID
+     */
+    function closeMessage(messageId) {
+        if (!messageId) return;
+        
+        const messageEl = document.getElementById(messageId);
+        if (!messageEl) return;
+        
+        messageEl.classList.add('fade-out');
+        setTimeout(function() {
+            messageEl.remove();
+        }, 300);
+    }
 
     // ==============================================
     // 全局确认对话框函数
@@ -266,6 +335,8 @@
     document.querySelector('.dialog-overlay')?.addEventListener('click', hideConfirmDialog);
 
     // 暴露到全局，供各页面调用
+    window.showMessage = showMessage;
+    window.closeMessage = closeMessage;
     window.showConfirmDialog = showConfirmDialog;
     window.hideConfirmDialog = hideConfirmDialog;
 

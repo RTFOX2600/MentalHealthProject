@@ -58,10 +58,19 @@
 <!-- 上传区域 - 仅管理员可见 -->
 {% if user.is_superuser %}
 <div class="upload-section fade-in-up" style="animation-delay: 0.5s;">
-    <h3 class="section-title">
-        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></span>
-        批量数据导入
-    </h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="section-title mb-0" style="min-width: 210px;">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/upload.svg' %}'); mask-image: url('{% static 'icons/upload.svg' %}');"></span>
+            批量数据导入
+        </h3>
+        <button class="btn btn-primary" 
+                style="background-color: var(--error-color); border: var(--error-color) 2px solid; padding: 0.5rem 1rem; max-width: 150px;"
+                onclick="confirmClearData()" 
+                id="btn-clear-data">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/trash.svg' %}'); mask-image: url('{% static 'icons/trash.svg' %}'); width: 1rem; height: 1rem; display: inline-block; background: currentColor; margin-right: 0.35rem; vertical-align: -0.125rem;"></span>
+            清空数据
+        </button>
+    </div>
     <div class="alert alert-info border-0 shadow-sm mb-4">
         <p class="mb-0">
             支持 CSV 或 Excel 文件上传。上传前请确保数据格式正确，详见各类型的格式说明。
@@ -217,7 +226,7 @@
             权限不足
         </h5>
         <p class="mb-0">
-            批量数据导入功能仅对系统管理员开放。如需使用此功能，请联系管理员。
+            数据导入、删除功能仅对系统管理员开放。如需使用此功能，请联系管理员。
         </p>
     </div>
 </div>

@@ -189,3 +189,46 @@ class AcademicRecord(models.Model):
     
     def __str__(self):
         return f"{self.student.student_id} - {self.month} - {self.average_score}"
+
+
+class DataStatistics(models.Model):
+    """数据统计模型 - 存储各类数据的统计信息"""
+    DATA_TYPE_CHOICES = [
+        ('canteen', '食堂消费记录'),
+        ('school_gate', '校门门禁记录'),
+        ('dormitory', '寝室门禁记录'),
+        ('network', '网络访问记录'),
+        ('academic', '成绩记录'),
+    ]
+    
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        related_name='statistics',
+        verbose_name='学生',
+        db_index=True
+    )
+    data_type = models.CharField(
+        max_length=20,
+        choices=DATA_TYPE_CHOICES,
+        verbose_name='数据类型',
+        db_index=True
+    )
+    start_date = models.DateField(verbose_name='统计开始日期', db_index=True)
+    end_date = models.DateField(verbose_name='统计结束日期', db_index=True)
+    statistics_data = models.JSONField(verbose_name='统计数据', default=dict)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    
+    class Meta:
+        verbose_name = '数据统计'
+        verbose_name_plural = '数据统计'
+        ordering = ['-updated_at']
+        indexes = [
+            models.Index(fields=['student', 'data_type', 'start_date', 'end_date']),
+            models.Index(fields=['data_type', 'updated_at']),
+        ]
+        unique_together = [['student', 'data_type', 'start_date', 'end_date']]
+    
+    def __str__(self):
+        return f"{self.student.student_id} - {self.get_data_type_display()} - {self.start_date} 至 {self.end_date}"
