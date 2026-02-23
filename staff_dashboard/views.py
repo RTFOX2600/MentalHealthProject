@@ -505,8 +505,8 @@ def api_data_statistics(request) -> JsonResponse:
             
             data_with_stats.append(result)
         
-        # 缓存未排序的结果（5分钟）
-        cache.set(cache_key, data_with_stats, 300)
+        # 缓存未排序的结果（60分钟）
+        cache.set(cache_key, data_with_stats, 3600)
     
     # 对数据进行排序（无论是否来自缓存）
     sort_key_map = {
