@@ -24,97 +24,100 @@
 </div>
 
 
-<!-- 筛选条件 - 第一部分（基础筛选） -->
-<div class="filter-card-top fade-in-up" style="animation-delay: 0.2s;">
-    <div class="row g-3">
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">学院</label>
-            <div class="custom-dropdown" id="dropdown-college">
-                <div class="dropdown-trigger">
-                    <span class="selected-text">{% if colleges %}{{ colleges.0.name }}{% else %}全部学院{% endif %}</span>
-                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-item" data-value="">全部学院</div>
-                    {% for college in colleges %}
-                    <div class="dropdown-item{% if forloop.first %} selected{% endif %}" data-value="{{ college.id }}">{{ college.name }}</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">专业</label>
-            <div class="custom-dropdown" id="dropdown-major">
-                <div class="dropdown-trigger">
-                    <span class="selected-text">{% if majors %}{{ majors.0.name }}{% else %}全部专业{% endif %}</span>
-                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-item" data-value="">全部专业</div>
-                    {% for major in majors %}
-                    <div class="dropdown-item{% if forloop.first %} selected{% endif %}" data-value="{{ major.id }}">{{ major.name }}</div>
-                    {% endfor %}
+<!-- 筛选条件包裹容器 -->
+<div class="filter-card-wrapper fade-in-up" style="animation-delay: 0.2s;">
+    <!-- 筛选条件 - 第一部分（基础筛选） -->
+    <div class="filter-card-top">
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">学院</label>
+                <div class="custom-dropdown" id="dropdown-college">
+                    <div class="dropdown-trigger">
+                        <span class="selected-text">{% if colleges %}{{ colleges.0.name }}{% else %}全部学院{% endif %}</span>
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item" data-value="">全部学院</div>
+                        {% for college in colleges %}
+                        <div class="dropdown-item{% if forloop.first %} selected{% endif %}" data-value="{{ college.id }}">{{ college.name }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">年级</label>
-            <div class="custom-dropdown" id="dropdown-grade">
-                <div class="dropdown-trigger">
-                    <span class="selected-text">{% if grades %}{{ grades.0.name }}{% else %}全部年级{% endif %}</span>
-                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-item" data-value="">全部年级</div>
-                    {% for grade in grades %}
-                    <div class="dropdown-item{% if forloop.first %} selected{% endif %}" data-value="{{ grade.id }}">{{ grade.name }}</div>
-                    {% endfor %}
+            
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">专业</label>
+                <div class="custom-dropdown" id="dropdown-major">
+                    <div class="dropdown-trigger">
+                        <span class="selected-text">{% if majors %}{{ majors.0.name }}{% else %}全部专业{% endif %}</span>
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item" data-value="">全部专业</div>
+                        {% for major in majors %}
+                        <div class="dropdown-item{% if forloop.first %} selected{% endif %}" data-value="{{ major.id }}">{{ major.name }}</div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">搜索</label>
-            <input type="text" id="filter-search" placeholder="学号或姓名" class="form-control">
+            
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">年级</label>
+                <div class="custom-dropdown" id="dropdown-grade">
+                    <div class="dropdown-trigger">
+                        <span class="selected-text">{% if grades %}{{ grades.0.name }}{% else %}全部年级{% endif %}</span>
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item" data-value="">全部年级</div>
+                        {% for grade in grades %}
+                        <div class="dropdown-item{% if forloop.first %} selected{% endif %}" data-value="{{ grade.id }}">{{ grade.name }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">搜索</label>
+                <input type="text" id="filter-search" placeholder="学号或姓名" class="form-control">
+            </div>
         </div>
     </div>
-</div>
 
-<!-- 筛选条件 - 第二部分（数据表和时间） -->
-<div class="filter-card-bottom fade-in-up" style="animation-delay: 0.25s;">
-    <div class="row g-3">
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">数据表</label>
-            <div class="custom-dropdown" id="dropdown-data-table">
-                <div class="dropdown-trigger">
-                    <span class="selected-text">学生基本信息</span>
-                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
-                </div>
-                <div class="dropdown-menu">
-                    <div class="dropdown-item selected" data-value="basic">学生基本信息</div>
-                    <div class="dropdown-item" data-value="canteen">食堂消费记录</div>
-                    <div class="dropdown-item" data-value="school_gate">校门门禁记录</div>
-                    <div class="dropdown-item" data-value="dormitory">寝室门禁记录</div>
-                    <div class="dropdown-item" data-value="network">网络访问记录</div>
-                    <div class="dropdown-item" data-value="academic">成绩记录</div>
+    <!-- 筛选条件 - 第二部分（数据表和时间） -->
+    <div class="filter-card-bottom">
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">数据表</label>
+                <div class="custom-dropdown" id="dropdown-data-table">
+                    <div class="dropdown-trigger">
+                        <span class="selected-text">学生基本信息</span>
+                        <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chevron-down.svg' %}'); mask-image: url('{% static 'icons/chevron-down.svg' %}');"></span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item selected" data-value="basic">学生基本信息</div>
+                        <div class="dropdown-item" data-value="canteen">食堂消费记录</div>
+                        <div class="dropdown-item" data-value="school_gate">校门门禁记录</div>
+                        <div class="dropdown-item" data-value="dormitory">寝室门禁记录</div>
+                        <div class="dropdown-item" data-value="network">网络访问记录</div>
+                        <div class="dropdown-item" data-value="academic">成绩记录</div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">开始时间</label>
-            <input type="date" id="filter-start-date" class="form-control">
-        </div>
-        
-        <div class="col-12 col-md-6 col-lg-3">
-            <label class="form-label">结束时间</label>
-            <input type="date" id="filter-end-date" class="form-control">
-        </div>
-        
-        <div class="col-12 col-md-6 col-lg-3 d-flex align-items-end">
-            <button class="btn btn-primary w-100" onclick="applyFilters()">查询</button>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">开始时间</label>
+                <input type="date" id="filter-start-date" class="form-control">
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3">
+                <label class="form-label">结束时间</label>
+                <input type="date" id="filter-end-date" class="form-control">
+            </div>
+            
+            <div class="col-12 col-md-6 col-lg-3 d-flex align-items-end">
+                <button class="btn btn-primary w-100" onclick="applyFilters()">查询</button>
+            </div>
         </div>
     </div>
 </div>

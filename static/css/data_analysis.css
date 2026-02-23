@@ -1,6 +1,13 @@
 /* 数据分析页面样式 */
 
 /* ========== 筛选卡片 ========== */
+/* 筛选卡片包裹容器 - 解决层叠上下文问题 */
+.filter-card-wrapper {
+    /* 动画在这个外层容器上，内部卡片的z-index才能与外部导航栏比较 */
+    position: relative;
+    z-index: 1001; /* 高于导航栏(1000) */
+}
+
 /* 筛选卡片 - 上部（基础筛选） */
 .filter-card-top {
     background: var(--card-bg);
@@ -10,15 +17,6 @@
     box-shadow: var(--shadow);
     transition: all 0.15s ease;
     margin-bottom: 0; /* 无间隙 */
-    position: relative; /* 为了让z-index生效 */
-    z-index: 101; /* 比下部卡片高，下拉菜单才能显示 */
-}
-
-/* 滚动时隐藏上部卡片 */
-.filter-card-top.scrolled {
-    opacity: 0;
-    transform: translateY(-100%);
-    pointer-events: none;
 }
 
 /* 筛选卡片 - 下部（数据表和时间）- 这个要sticky */
@@ -533,7 +531,17 @@ tbody tr:last-child td:last-child {
 
 /* 移动端：取消固定定位 */
 @media (max-width: 640px) {
-    .filter-card {
+    .filter-card {  
+        position: relative;
+        top: auto;
+    }
+    
+    /* 为包裹容器添加上边距，避免被固定导航栏遮挡 */
+    .filter-card-wrapper {
+        margin-top: calc(var(--navbar-height-mobile, 50px) + 1rem);
+    }
+    
+    .filter-card-bottom {
         position: relative;
         top: auto;
     }
