@@ -5,7 +5,8 @@
 
 {% block extra_css %}
 {{ block.super }}
-<link rel="stylesheet" href="{% static 'css/about.css' %}">
+<!--suppress ProblematicWhitespace -->
+	<link rel="stylesheet" href="{% static 'css/about.css' %}">
 <style>
 /* 帮助页面专属样式 */
 .help-page-container {
@@ -66,6 +67,7 @@
 }
 
 .step-card:hover {
+	border-color: var(--primary-hover);
     box-shadow: var(--card-shadow);
     transform: translateY(-2px);
 }
@@ -188,7 +190,7 @@ code {
     <div class="help-section fade-in-up" style="animation-delay: 0.2s;">
         <div class="info-box success">
             <p><strong>当前测试数据时间范围：</strong>2024-01-01 至 2024-04-01</p>
-            <p style="margin-top: 0.5rem;">所有统计数据（食堂消费、门禁记录、网络访问、成绩记录等）均基于此时间段生成。查询时请选择此范围内的日期以获取完整数据。</p>
+            <p style="margin-top: 0.5rem;">所有数据（如基本信息、食堂消费、门禁记录等）均基于此时间段随机生成。查询时请选择此范围内的日期以获取完整数据。</p>
         </div>
     </div>
 
@@ -212,27 +214,27 @@ code {
         <ul class="data-table-list">
             <li>
                 <span class="table-name">学生基本信息</span>
-                <span class="table-desc">学号、姓名、学院、专业、年级</span>
+                <span class="table-desc">学号、姓名、学院、专业、年级等</span>
             </li>
             <li>
                 <span class="table-name">食堂消费记录</span>
-                <span class="table-desc">月均消费、最低消费、消费趋势</span>
+                <span class="table-desc">月均消费、最低消费、消费趋势等</span>
             </li>
             <li>
                 <span class="table-name">校门门禁记录</span>
-                <span class="table-desc">夜间/深夜进出次数、总次数</span>
+                <span class="table-desc">夜间/深夜进出次数、总次数等</span>
             </li>
             <li>
                 <span class="table-name">寝室门禁记录</span>
-                <span class="table-desc">夜间/深夜进出次数、总次数</span>
+                <span class="table-desc">夜间/深夜进出次数、总次数等</span>
             </li>
             <li>
                 <span class="table-name">网络访问记录</span>
-                <span class="table-desc">VPN使用占比、夜间/深夜上网占比、月均时长、最大月时长</span>
+                <span class="table-desc">VPN使用占比、夜间/深夜上网占比、月均时长、最大月时长等</span>
             </li>
             <li>
                 <span class="table-name">成绩记录</span>
-                <span class="table-desc">平均成绩、成绩趋势</span>
+                <span class="table-desc">平均成绩、成绩趋势等</span>
             </li>
         </ul>
         <div class="info-box">
@@ -255,9 +257,9 @@ code {
             <div class="step-content">
                 <p><strong>基础筛选：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                    <li><strong>学院</strong>：选择目标学院，默认显示全部学院</li>
-                    <li><strong>专业</strong>：选择目标专业，默认显示全部专业</li>
-                    <li><strong>年级</strong>：选择目标年级，默认显示全部年级</li>
+                    <li><strong>学院</strong>：选择目标学院，默认显示第一个学院</li>
+                    <li><strong>专业</strong>：选择目标专业，默认显示第一个专业</li>
+                    <li><strong>年级</strong>：选择目标年级，默认显示第一个年级</li>
                     <li><strong>搜索</strong>：输入学号或姓名进行精确查找</li>
                 </ul>
                 <p style="margin-top: 1rem;"><strong>数据表与时间筛选：</strong></p>
@@ -277,7 +279,7 @@ code {
             <div class="step-content">
                 <p>设置好筛选条件后，点击查询按钮，系统将根据您的条件实时计算并显示结果。</p>
                 <div class="info-box warning" style="margin-top: 1rem;">
-                    <p><strong>注意：</strong>如果选择了统计类数据表（如食堂消费、成绩记录等），请务必设置有效的时间范围，否则统计结果可能为空。建议使用测试数据时间范围：2024-01-01 至 2024-04-01。</p>
+                    <p><strong>注意：</strong>如果选择了统计类数据表（如食堂消费、成绩记录等），请务必设置有效的时间范围，否则统计结果可能为空。测试数据时间范围：2024-01-01 至 2024-04-01。</p>
                 </div>
             </div>
         </div>
@@ -292,7 +294,7 @@ code {
                 <p><strong>查看数据：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                     <li>表格将显示符合条件的学生数据，右上角会显示总人数</li>
-                    <li>支持滚动加载更多数据（每页显示条数可自定义）</li>
+                    <li>可以点击某一行查看详细信息</li>
                 </ul>
                 <p style="margin-top: 1rem;"><strong>排序功能：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
@@ -303,24 +305,24 @@ code {
             </div>
         </div>
 
-{#        <!-- 步骤4 -->#}
-{#        <div class="step-card">#}
-{#            <div class="step-title">#}
-{#                <span class="step-number">4</span>#}
-{#                导出数据（可选）#}
-{#            </div>#}
-{#            <div class="step-content">#}
-{#                <p>如需保存查询结果，可以：</p>#}
-{#                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">#}
-{#                    <li>调整每页显示条数（10/15/20/25/30/50条），查看更多数据</li>#}
-{#                    <li>使用浏览器的打印功能（Ctrl+P）打印当前页面</li>#}
-{#                    <li>或手动复制表格数据到 Excel 等工具</li>#}
-{#                </ul>#}
-{#                <div class="info-box" style="margin-top: 1rem;">#}
-{#                    <p><strong>提示：</strong>筛选条件会自动保存到浏览器缓存，下次打开页面时会自动恢复上次的查询状态。</p>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
+        <!-- 步骤4 -->
+        <div class="step-card">
+            <div class="step-title">
+                <span class="step-number">4</span>
+                导出数据（尚未完工）
+            </div>
+            <div class="step-content">
+                <p>。。。。。。：</p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>。。。。。。</li>
+                    <li>。。。。。。</li>
+                    <li>。。。。。。</li>
+                </ul>
+                <div class="info-box" style="margin-top: 1rem;">
+                    <p><strong>提示：</strong>ABCDE。。。。。。</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 常见问题 -->
@@ -339,7 +341,7 @@ code {
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                     <li>时间范围设置不正确（请使用 2024-01-01 至 2024-04-01）</li>
                     <li>筛选条件过于严格（如专业和年级交叉筛选后无匹配学生）</li>
-                    <li>该数据表尚无导入数据（请前往"数据上传"页面导入）</li>
+                    <li>该数据表尚无导入数据</li>
                 </ul>
             </div>
         </div>
@@ -363,13 +365,13 @@ code {
         <div class="step-card">
             <div class="step-title" style="font-size: 1.1rem;">
                 <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
-                夜间/深夜进出是如何定义的？
+                夜间/深夜是如何定义的？
             </div>
             <div class="step-content">
                 <p><strong>时间定义：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                     <li><strong>夜间时段</strong>：22:00 - 23:59（晚10点至深夜前）</li>
-                    <li><strong>深夜时段</strong>：00:00 - 05:59（凌晨至早晨）</li>
+                    <li><strong>深夜时段</strong>：00:00 - 05:59（午夜至早晨）</li>
                     <li>这些时段的进出次数和上网时长会单独统计，用于识别异常作息</li>
                 </ul>
             </div>
@@ -385,7 +387,6 @@ code {
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                     <li>在"搜索"框中直接输入学号或姓名（支持模糊匹配）</li>
                     <li>按回车键或点击"查询"按钮即可快速定位</li>
-                    <li>如果知道学院和专业，建议先选择后再搜索，可提升查询速度</li>
                 </ul>
             </div>
         </div>
@@ -402,8 +403,7 @@ code {
                 <li><strong>批量查询：</strong>可以只选择学院，不选专业和年级，快速查看整个学院的数据</li>
                 <li><strong>时间对比：</strong>通过调整时间范围，可以对比不同时段的统计数据</li>
                 <li><strong>排序分析：</strong>点击表头排序，可快速找出消费最高/最低、成绩最好/最差的学生</li>
-                <li><strong>缓存恢复：</strong>页面会记住您上次的查询条件，刷新后自动恢复</li>
-                <li><strong>滚动加载：</strong>表格滚动到底部时会自动加载更多数据，无需手动翻页</li>
+                <li><strong>缓存恢复：</strong>页面会记住您上次的查询条件</li>
             </ul>
         </div>
     </div>
