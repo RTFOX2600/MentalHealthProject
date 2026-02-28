@@ -8,11 +8,11 @@ from django.core.cache import cache
 from .models import Student
 from accounts.models import College, Major, Grade
 from .core import (
-    calculate_canteen_stats_realtime,
-    calculate_gate_stats_realtime,
-    calculate_dormitory_stats_realtime,
-    calculate_network_stats_realtime,
-    calculate_academic_stats_realtime,
+    aggregate_canteen_stats,
+    aggregate_gate_stats,
+    aggregate_dormitory_stats,
+    aggregate_network_stats,
+    aggregate_academic_stats,
 )
 import hashlib
 import json
@@ -420,7 +420,7 @@ def api_data_statistics(request) -> JsonResponse:
     
     # 生成缓存键（基于所有影响统计结果的参数，排序参数不影响统计结果）
     cache_key_data = {
-        'version': 'v3',  # 版本号：修改统计字段时增加版本号
+        'version': 'v4_daily_stats',  # 版本号：使用每日统计聚合
         'user_id': request.user.id,
         'college': college_id,
         'major': major_id,
@@ -470,24 +470,24 @@ def api_data_statistics(request) -> JsonResponse:
                 },
             }
             
-            # 根据数据类型实时计算统计
+            # 根据数据类型聚合计算统计（基于每日统计）
             if data_type == 'canteen':
-                stat_data = calculate_canteen_stats_realtime(student, start_date, end_date)
+                stat_data = aggregate_canteen_stats(student, start_date, end_date)
                 result['avg_expense'] = stat_data.get('avg_expense', 0)
                 result['min_expense'] = stat_data.get('min_expense', 0)
                 result['expense_trend'] = stat_data.get('expense_trend', 0)
             elif data_type == 'school_gate':
-                stat_data = calculate_gate_stats_realtime(student, start_date, end_date)
+                stat_data = aggregate_gate_stats(student, start_date, end_date)
                 result['night_in_out_count'] = stat_data.get('night_in_out_count', 0)
                 result['late_night_in_out_count'] = stat_data.get('late_night_in_out_count', 0)
                 result['total_count'] = stat_data.get('total_count', 0)
             elif data_type == 'dormitory':
-                stat_data = calculate_dormitory_stats_realtime(student, start_date, end_date)
+                stat_data = aggregate_dormitory_stats(student, start_date, end_date)
                 result['night_in_out_count'] = stat_data.get('night_in_out_count', 0)
                 result['late_night_in_out_count'] = stat_data.get('late_night_in_out_count', 0)
                 result['total_count'] = stat_data.get('total_count', 0)
             elif data_type == 'network':
-                stat_data = calculate_network_stats_realtime(student, start_date, end_date)
+                stat_data = aggregate_network_stats(student, start_date, end_date)
                 result['vpn_usage_rate'] = f"{stat_data.get('vpn_usage_rate', 0)}%"
                 result['night_usage_rate'] = f"{stat_data.get('night_usage_rate', 0)}%"
                 result['late_night_usage_rate'] = f"{stat_data.get('late_night_usage_rate', 0)}%"
@@ -499,7 +499,7 @@ def api_data_statistics(request) -> JsonResponse:
                 result['_avg_duration_raw'] = stat_data.get('avg_duration', 0)
                 result['_max_duration_raw'] = stat_data.get('max_duration', 0)
             elif data_type == 'academic':
-                stat_data = calculate_academic_stats_realtime(student, start_date, end_date)
+                stat_data = aggregate_academic_stats(student, start_date, end_date)
                 result['avg_score'] = stat_data.get('avg_score', 0)
                 result['score_trend'] = stat_data.get('score_trend', 0)
             

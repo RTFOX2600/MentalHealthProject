@@ -1,6 +1,6 @@
 """
 工作台数据导入 Celery 异步任务
-支持大文件批量处理、数据验证、错误收集
+支持大文件批量处理、数据验证、错误收集、每日统计计算
 """
 import time
 
@@ -588,5 +588,274 @@ def import_records_task(self, user_id, record_type, file_content, filename):
         return {
             'status': 'error',
             'message': f'导入失败：{str(e)}'
+        }
+
+
+@shared_task(bind=True, name='staff_dashboard.calculate_daily_statistics_task')
+def calculate_daily_statistics_task(self, start_date=None, end_date=None):
+    """
+    异步计算每日统计数据
+    
+    Args:
+        self: Celery task instance
+        start_date: 开始日期 (YYYY-MM-DD 字符串)，默认为未统计的最早日期
+        end_date: 结束日期 (YYYY-MM-DD 字符串)，默认为今天
+    
+    Returns:
+        dict: 统计结果
+    """
+    try:
+        from .models import (
+            Student, DailyStatistics,
+            CanteenConsumptionRecord, SchoolGateAccessRecord,
+            DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord
+        )
+        from .core.batch_statistics import (
+            batch_calculate_canteen_stats,
+            batch_calculate_gate_stats,
+            batch_calculate_dormitory_stats,
+            batch_calculate_network_stats,
+            batch_calculate_academic_stats,
+        )
+        from datetime import datetime, timedelta
+        from django.utils import timezone as django_timezone
+        
+        # 更新任务状态：正在初始化
+        self.update_state(
+            state='PARSING',
+            meta={'current': 5, 'total': 100, 'message': '正在初始化统计任务...'}
+        )
+        
+        # 解析日期范围
+        if end_date:
+            end = datetime.strptime(end_date, '%Y-%m-%d').date()
+        else:
+            end = django_timezone.now().date()
+        
+        if start_date:
+            start = datetime.strptime(start_date, '%Y-%m-%d').date()
+        else:
+            # 查找最后一次统计的日期，从那之后开始统计（增量更新）
+            last_stat_date = DailyStatistics.objects.values_list('date', flat=True).order_by('-date').first()
+            
+            if last_stat_date:
+                # 从最后统计日期的第二天开始（避免重复）
+                start = last_stat_date + timedelta(days=1)
+                print(f"检测到已有统计数据，从 {start} 开始增量统计")
+            else:
+                # 没有统计记录，查找最早的原始数据日期
+                earliest_dates = []
+                
+                # 食堂消费：最早的月份的第一天
+                earliest_canteen = CanteenConsumptionRecord.objects.values_list('month', flat=True).order_by('month').first()
+                if earliest_canteen:
+                    earliest_dates.append(datetime.strptime(earliest_canteen, '%Y-%m').date())
+                
+                # 校门门禁：最早的时间戳的日期
+                earliest_gate = SchoolGateAccessRecord.objects.values_list('timestamp', flat=True).order_by('timestamp').first()
+                if earliest_gate:
+                    earliest_dates.append(earliest_gate.date())
+                
+                # 寝室门禁：最早的时间戳的日期
+                earliest_dorm = DormitoryAccessRecord.objects.values_list('timestamp', flat=True).order_by('timestamp').first()
+                if earliest_dorm:
+                    earliest_dates.append(earliest_dorm.date())
+                
+                # 网络访问：最早的开始时间的日期
+                earliest_network = NetworkAccessRecord.objects.values_list('start_time', flat=True).order_by('start_time').first()
+                if earliest_network:
+                    earliest_dates.append(earliest_network.date())
+                
+                # 成绩记录：最早的月份的第一天
+                earliest_academic = AcademicRecord.objects.values_list('month', flat=True).order_by('month').first()
+                if earliest_academic:
+                    earliest_dates.append(datetime.strptime(earliest_academic, '%Y-%m').date())
+                
+                if earliest_dates:
+                    start = min(earliest_dates)
+                    print(f"首次统计，从最早数据日期 {start} 开始")
+                else:
+                    # 没有任何数据，使用过去30天
+                    start = end - timedelta(days=30)
+                    print(f"没有数据，使用默认范围 {start} 至 {end}")
+        
+        # 确保开始日期不晚于结束日期
+        if start > end:
+            start = end
+        
+        # 更新任务状态：正在加载数据
+        self.update_state(
+            state='VALIDATING',
+            meta={'current': 10, 'total': 100, 'message': f'正在加载学生数据和统计范围 {start} 至 {end}...'}
+        )
+        
+        # 获取所有学生（预加载到内存，避免重复查询）
+        students = list(Student.objects.all())
+        total_students = len(students)
+        
+        if total_students == 0:
+            return {
+                'status': 'error',
+                'message': '系统中没有学生数据'
+            }
+        
+        # 生成日期列表
+        dates = []
+        current_date = start
+        while current_date <= end:
+            dates.append(current_date)
+            current_date += timedelta(days=1)
+        
+        total_tasks = len(dates) * total_students * 5  # 5种数据类型
+        completed_tasks = 0
+        
+        # 统计类型配置（批量计算）
+        data_types_batch = [
+            ('canteen', batch_calculate_canteen_stats),
+            ('school_gate', batch_calculate_gate_stats),
+            ('dormitory', batch_calculate_dormitory_stats),
+            ('network', batch_calculate_network_stats),
+            ('academic', batch_calculate_academic_stats),
+        ]
+        
+        # 更新任务状态：开始计算
+        self.update_state(
+            state='PROCESSING',
+            meta={
+                'current': 15,
+                'total': 100,
+                'message': f'开始计算 {total_students} 名学生在 {len(dates)} 天的统计数据...'
+            }
+        )
+        
+        # 批量创建统计记录
+        batch_size = 10000  # 增大批次大小
+        statistics_to_create = []
+        statistics_to_update = []
+        
+        # 查询已存在的统计记录（一次性加载到内存）
+        existing_stats = {}
+        for stat in DailyStatistics.objects.filter(
+            date__gte=start,
+            date__lte=end
+        ).select_related('student'):
+            key = (stat.student_id, stat.data_type, stat.date)
+            existing_stats[key] = stat
+        
+        print(f"开始统计：{len(dates)}天 × {total_students}学生 × 5类型 = {total_tasks}项任务")
+        print(f"已存在统计记录：{len(existing_stats)}条")
+        
+        # 优化：按数据类型分组处理，使用批量计算
+        for data_type, batch_calc_func in data_types_batch:
+            print(f"\n=== 处理 {data_type} 统计 ===")
+            
+            # 批量计算所有学生所有日期的统计（一次查询）
+            print(f"正在批量计算 {total_students} 名学生在 {len(dates)} 天的数据...")
+            
+            try:
+                batch_results = batch_calc_func(students, start, end)
+                print(f"批量计算完成，共 {len(batch_results)} 名学生")
+            except Exception as e:
+                print(f"批量计算失败: {e}")
+                import traceback
+                traceback.print_exc()
+                continue
+            
+            # 处理每个学生每天的结果
+            for student in students:
+                student_results = batch_results.get(student.id, {})
+                
+                for date in dates:
+                    try:
+                        stats_data = student_results.get(date, {})
+                        
+                        # 检查是否已存在
+                        key = (student.id, data_type, date)
+                        if key in existing_stats:
+                            # 更新现有记录
+                            existing_stat = existing_stats[key]
+                            existing_stat.statistics_data = stats_data
+                            statistics_to_update.append(existing_stat)
+                        else:
+                            # 创建新记录
+                            statistics_to_create.append(DailyStatistics(
+                                student=student,
+                                data_type=data_type,
+                                date=date,
+                                statistics_data=stats_data
+                            ))
+                        
+                    except Exception as e:
+                        # 跳过错误，继续处理
+                        print(f"处理失败: student={student.student_id}, type={data_type}, date={date}, error={str(e)}")
+                    
+                    completed_tasks += 1
+                    
+                    # 每处理 10000 条记录更新一次进度（减少更新频率）
+                    if completed_tasks % 10000 == 0:
+                        progress = 15 + int((completed_tasks / total_tasks) * 70)
+                        self.update_state(
+                            state='PROCESSING',
+                            meta={
+                                'current': progress,
+                                'total': 100,
+                                'message': f'正在计算... {completed_tasks}/{total_tasks} ({progress-15}%)'
+                            }
+                        )
+                        # print(f"进度：{completed_tasks}/{total_tasks} ({int((completed_tasks/total_tasks)*100)}%)")
+                    
+                    # 批量保存
+                    if len(statistics_to_create) >= batch_size:
+                        with transaction.atomic():
+                            DailyStatistics.objects.bulk_create(statistics_to_create, batch_size=batch_size)
+                        # print(f"批量创建 {len(statistics_to_create)} 条记录")
+                        statistics_to_create = []
+                    
+                    if len(statistics_to_update) >= batch_size:
+                        with transaction.atomic():
+                            DailyStatistics.objects.bulk_update(
+                                statistics_to_update,
+                                ['statistics_data', 'updated_at'],
+                                batch_size=batch_size
+                            )
+                        # print(f"批量更新 {len(statistics_to_update)} 条记录")
+                        statistics_to_update = []
+        
+        # 更新任务状态：保存剩余数据
+        self.update_state(
+            state='IMPORTING',
+            meta={'current': 90, 'total': 100, 'message': '正在保存统计结果...'}
+        )
+        
+        # 保存剩余的记录
+        with transaction.atomic():
+            if statistics_to_create:
+                DailyStatistics.objects.bulk_create(statistics_to_create, batch_size=batch_size)
+            if statistics_to_update:
+                DailyStatistics.objects.bulk_update(
+                    statistics_to_update,
+                    ['statistics_data', 'updated_at'],
+                    batch_size=batch_size
+                )
+        
+        total_created = len(statistics_to_create)
+        total_updated = len(statistics_to_update)
+        
+        return {
+            'status': 'success',
+            'message': f'每日统计计算完成：{start} 至 {end}，新增 {total_created} 条，更新 {total_updated} 条',
+            'records': total_created + total_updated,
+            'date_range': f'{start} 至 {end}',
+            'total_students': total_students,
+            'total_days': len(dates)
+        }
+        
+    except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        print(f"每日统计计算错误: {error_msg}")
+        return {
+            'status': 'error',
+            'message': f'统计计算失败：{str(e)}'
         }
 

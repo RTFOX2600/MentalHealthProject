@@ -365,7 +365,7 @@ function loadStudentList() {
             if (loadingMessageId) {
                 window.closeMessage(loadingMessageId);
             }
-            loadingMessageId = window.showMessage('正在统计数据，请稍候...', 'info', 0);
+            loadingMessageId = window.showMessage('数据加载中...', 'info', 0);
             messageStartTime = Date.now();  // 记录开始时间
         }
     }

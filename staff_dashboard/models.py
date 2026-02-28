@@ -191,8 +191,8 @@ class AcademicRecord(models.Model):
         return f"{self.student.student_id} - {self.month} - {self.average_score}"
 
 
-class DataStatistics(models.Model):
-    """数据统计模型 - 存储各类数据的统计信息"""
+class DailyStatistics(models.Model):
+    """每日统计模型 - 存储每天的统计结果"""
     DATA_TYPE_CHOICES = [
         ('canteen', '食堂消费记录'),
         ('school_gate', '校门门禁记录'),
@@ -204,7 +204,7 @@ class DataStatistics(models.Model):
     student = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
-        related_name='statistics',
+        related_name='daily_statistics',
         verbose_name='学生',
         db_index=True
     )
@@ -214,21 +214,21 @@ class DataStatistics(models.Model):
         verbose_name='数据类型',
         db_index=True
     )
-    start_date = models.DateField(verbose_name='统计开始日期', db_index=True)
-    end_date = models.DateField(verbose_name='统计结束日期', db_index=True)
+    date = models.DateField(verbose_name='统计日期', db_index=True)
     statistics_data = models.JSONField(verbose_name='统计数据', default=dict)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     
     class Meta:
-        verbose_name = '数据统计'
-        verbose_name_plural = '数据统计'
-        ordering = ['-updated_at']
+        verbose_name = '每日统计'
+        verbose_name_plural = '每日统计'
+        ordering = ['-date']
         indexes = [
-            models.Index(fields=['student', 'data_type', 'start_date', 'end_date']),
-            models.Index(fields=['data_type', 'updated_at']),
+            models.Index(fields=['student', 'data_type', 'date']),
+            models.Index(fields=['data_type', 'date']),
+            models.Index(fields=['date']),
         ]
-        unique_together = [['student', 'data_type', 'start_date', 'end_date']]
+        unique_together = [['student', 'data_type', 'date']]
     
     def __str__(self):
-        return f"{self.student.student_id} - {self.get_data_type_display()} - {self.start_date} 至 {self.end_date}"
+        return f"{self.student.student_id} - {self.get_data_type_display()} - {self.date}"

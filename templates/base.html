@@ -34,7 +34,7 @@
 		{% if user.is_authenticated %}
 			{% if user.is_staff %}
 				<a href="{% url 'admin:index' %}" target="_blank">
-                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/shield.svg' %}'); mask-image: url('{% static 'icons/shield.svg' %}');"></span>
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/server.svg' %}'); mask-image: url('{% static 'icons/server.svg' %}');"></span>
                     管理后台
                 </a>
 			{% endif %}

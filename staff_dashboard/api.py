@@ -362,32 +362,31 @@ def get_import_summary(request):
     }
 
 
-@router.post("/calculate-statistics", response={200: TaskResponse, 400: dict})
-def calculate_statistics(request, start_date: Optional[str] = None, end_date: Optional[str] = None):
+@router.post("/calculate-daily-statistics", response={200: TaskResponse, 400: dict})
+def calculate_daily_statistics(request, start_date: Optional[str] = None, end_date: Optional[str] = None):
     """
-    ### 开始计算数据统计
+    ### 开始计算每日统计数据
     
     **权限要求**：仅管理员可以触发统计
     
     **参数**：
-    - start_date: 开始日期 (YYYY-MM-DD)，默认为30天前
+    - start_date: 开始日期 (YYYY-MM-DD)，默认为最早的数据日期
     - end_date: 结束日期 (YYYY-MM-DD)，默认为今天
     
     **统计内容**：
-    - 食堂消费：月均消费、消费趋势
-    - 校门门禁：夜间进出次数、深夜进出次数
-    - 密室门禁：夜间进出次数、深夜进出次数
-    - 网络访问：VPN使用占比、夜间上网占比
-    - 成绩记录：平均成绩
+    - 食堂消费：每天的消费金额
+    - 校门门禁：每天的进出次数、夜间深夜次数
+    - 寝室门禁：每天的进出次数、夜间深夜次数
+    - 网络访问：VPN使用、夜间上网情况
+    - 成绩记录：每天的成绩数据
     """
-    if not request.user.role == 'admin':
+    if not request.user.is_superuser:
         return 400, {"status": "error", "detail": "仅管理员可以触发统计"}
     
     try:
-        from .tasks import calculate_statistics_task
+        from .tasks import calculate_daily_statistics_task
         
-        task = calculate_statistics_task.delay(
-            user_id=request.user.id,
+        task = calculate_daily_statistics_task.delay(
             start_date=start_date,
             end_date=end_date
         )
@@ -395,7 +394,43 @@ def calculate_statistics(request, start_date: Optional[str] = None, end_date: Op
         return 200, {
             "status": "submitted",
             "task_id": task.id,
-            "message": "数据统计任务已提交"
+            "message": "每日统计任务已提交"
+        }
+    except Exception as e:
+        return 400, {"status": "error", "detail": str(e)}
+
+
+@router.post("/clear-statistics", response={200: dict, 400: dict})
+def clear_statistics(request):
+    """
+    ### 清空每日统计
+    
+    **权限要求**：仅管理员可以执行此操作
+    
+    **危险等级**：⭐️⭐️⭐️ 中等危险
+    
+    **操作范围**：
+    - 删除所有每日统计结果
+    - 不影响原始数据
+    
+    **注意**：此操作不可逆！
+    """
+    if not request.user.is_superuser:
+        return 400, {"status": "error", "detail": "仅管理员可以执行此操作"}
+    
+    try:
+        from .models import DailyStatistics
+        
+        # 记录删除前的数据量
+        deleted_count = DailyStatistics.objects.count()
+        
+        # 执行删除
+        DailyStatistics.objects.all().delete()
+        
+        return 200, {
+            "status": "success",
+            "message": "每日统计已清空",
+            "deleted_count": deleted_count
         }
     except Exception as e:
         return 400, {"status": "error", "detail": str(e)}
@@ -417,6 +452,7 @@ def clear_all_data(request):
     - 删除所有密室门禁记录
     - 删除所有网络访问记录
     - 删除所有成绩记录
+    - 删除所有统计结果
     
     **注意**：此操作不可逆！
     """
@@ -430,7 +466,8 @@ def clear_all_data(request):
             SchoolGateAccessRecord,
             DormitoryAccessRecord,
             NetworkAccessRecord,
-            AcademicRecord
+            AcademicRecord,
+            DailyStatistics
         )
         
         # 记录删除前的数据量
@@ -440,10 +477,12 @@ def clear_all_data(request):
             'school_gate': SchoolGateAccessRecord.objects.count(),
             'dormitory': DormitoryAccessRecord.objects.count(),
             'network': NetworkAccessRecord.objects.count(),
-            'academic': AcademicRecord.objects.count()
+            'academic': AcademicRecord.objects.count(),
+            'statistics': DailyStatistics.objects.count()
         }
         
         # 执行删除（按依赖关系从子表到主表）
+        DailyStatistics.objects.all().delete()  # 先删除统计结果
         AcademicRecord.objects.all().delete()
         NetworkAccessRecord.objects.all().delete()
         DormitoryAccessRecord.objects.all().delete()

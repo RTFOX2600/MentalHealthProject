@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试统计弹窗</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 2rem;
+            background: #f5f7fa;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .btn-test {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h2 class="mb-4">统计功能测试</h2>
+        
+        <div class="mb-4">
+            <h5>📊 统计数据弹窗</h5>
+            <p class="text-muted">点击按钮测试统计对话框，包含日期选择器</p>
+            <button class="btn btn-primary btn-test w-100" onclick="testStatisticsDialog()">
+                测试统计弹窗
+            </button>
+        </div>
+        
+        <hr class="my-4">
+        
+        <div class="mb-4">
+            <h5>🗑️ 清空数据弹窗</h5>
+            <p class="text-muted">点击按钮测试清空数据对话框，提示包含统计数据</p>
+            <button class="btn btn-danger btn-test w-100" onclick="testClearDialog()">
+                测试清空弹窗
+            </button>
+        </div>
+        
+        <hr class="my-4">
+        
+        <div id="result" class="alert d-none"></div>
+    </div>
+
+    <!-- 引入base.html的弹窗脚本 -->
+    <script>
+        // 模拟 showConfirmDialog 函数
+        window.showConfirmDialog = function(options) {
+            const { title, message, primaryText, secondaryText, onPrimary } = options;
+            
+            // 创建弹窗HTML
+            const modalHTML = `
+                <div class="modal fade" id="testModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">${title}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                ${message}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${secondaryText}</button>
+                                <button type="button" class="btn btn-primary" id="primaryBtn">${primaryText}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除旧弹窗
+            const oldModal = document.getElementById('testModal');
+            if (oldModal) oldModal.remove();
+            
+            // 插入新弹窗
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // 显示弹窗
+            const modal = new bootstrap.Modal(document.getElementById('testModal'));
+            modal.show();
+            
+            // 绑定主按钮事件
+            document.getElementById('primaryBtn').addEventListener('click', () => {
+                modal.hide();
+                if (onPrimary) onPrimary();
+            });
+        };
+        
+        // 测试统计弹窗
+        function testStatisticsDialog() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            const defaultStartDate = formatDate(thirtyDaysAgo);
+            const defaultEndDate = formatDate(today);
+            
+            const dialogContent = `
+                <div style="margin-bottom: 1rem;">
+                    <p style="margin-bottom: 1rem; color: #666;">
+                        请选择要统计的日期范围，留空则自动统计所有未统计的数据。
+                    </p>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">开始日期：</label>
+                        <input type="date" id="stats-start-date" class="form-control" 
+                               style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">结束日期：</label>
+                        <input type="date" id="stats-end-date" class="form-control" value="${defaultEndDate}"
+                               style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+            `;
+            
+            window.showConfirmDialog({
+                title: '统计数据',
+                message: dialogContent,
+                primaryText: '开始统计',
+                secondaryText: '取消',
+                onPrimary: function() {
+                    const startDate = document.getElementById('stats-start-date').value || null;
+                    const endDate = document.getElementById('stats-end-date').value || null;
+                    showResult(`统计已触发！范围：${startDate || '自动'} 至 ${endDate || '今天'}`, 'success');
+                }
+            });
+        }
+        
+        // 测试清空弹窗
+        function testClearDialog() {
+            window.showConfirmDialog({
+                title: '清空所有数据',
+                message: '此操作将永久删除所有学生信息、行为数据及统计结果。\n此操作不可恢复，请确认是否继续？',
+                primaryText: '确认清空',
+                secondaryText: '取消',
+                onPrimary: function() {
+                    showResult('清空操作已触发！（测试模式，未实际执行）', 'warning');
+                }
+            });
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.className = `alert alert-${type}`;
+            result.textContent = message;
+            result.classList.remove('d-none');
+            
+            setTimeout(() => {
+                result.classList.add('d-none');
+            }, 3000);
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
