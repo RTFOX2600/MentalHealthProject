@@ -49,6 +49,10 @@ async function loadStatistics() {
         if (response.ok) {
             const data = await response.json();
             
+            // 调试：输出API返回数据
+            // console.log('API返回数据:', data);
+            // console.log('每日统计数量:', data.total_records.daily_statistics);
+            
             // 更新统计卡片
             document.getElementById('stat-students').textContent = formatNumber(data.total_students);
             document.getElementById('stat-canteen').textContent = formatNumber(data.total_records.canteen);
@@ -56,6 +60,7 @@ async function loadStatistics() {
             document.getElementById('stat-dorm').textContent = formatNumber(data.total_records.dormitory);
             document.getElementById('stat-network').textContent = formatNumber(data.total_records.network);
             document.getElementById('stat-academic').textContent = formatNumber(data.total_records.academic);
+            document.getElementById('stat-daily-stats').textContent = formatNumber(data.total_records.daily_statistics);
         }
     } catch (e) {
         console.error('加载统计数据失败:', e);
@@ -66,7 +71,15 @@ async function loadStatistics() {
  * 格式化数字（添加千位分隔符）
  */
 function formatNumber(num) {
-    if (num === undefined || num === null) return '-';
+    // 处理 undefined、null 和非数字情况
+    if (num === undefined || num === null || num === '' || isNaN(num)) {
+        return '-';
+    }
+    // 处理数字 0
+    if (num === 0) {
+        return '0';
+    }
+    // 正常格式化
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
@@ -86,7 +99,7 @@ async function triggerStatisticsCalculation() {
     // 确认弹窗
     const rangeText = startDate && endDate 
         ? `${startDate} 至 ${endDate}` 
-        : '所有未统计数据';
+        : '最近30天数据';
     
     window.showConfirmDialog({
         title: '统计数据',
@@ -130,7 +143,7 @@ async function triggerStatisticsCalculation() {
                 window.showMessage(`统计失败：${error.message}`, 'error', 5000);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<span class="icon" style="-webkit-mask-image: url(/static/icons/bar-chart-2.svg); mask-image: url(/static/icons/bar-chart-2.svg); width: 1rem; height: 1rem; display: inline-block; background: currentColor; margin-right: 0.35rem; vertical-align: -0.125rem;"></span>统计数据';
+                btn.innerHTML = '<span class="icon" style="-webkit-mask-image: url(/static/icons/chart.svg); mask-image: url(/static/icons/chart.svg); width: 1rem; height: 1rem; display: inline-block; background: currentColor; margin-right: 0.35rem; vertical-align: -0.125rem;"></span>统计数据';
             }
         }
     });

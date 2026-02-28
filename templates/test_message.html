@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}消息提示测试 - 高校心理健康监测平台{% endblock %}
+
+{% block extra_css %}
+<style>
+    .test-container {
+	    width: 100%;
+    }
+
+    .test-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-section h2 {
+        color: #333;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 0.5rem;
+    }
+
+    .test-section h3 {
+        color: #555;
+        margin: 1.5rem 0 1rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+    
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .test-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+    
+    .test-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-info {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-warning {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .btn-error {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .custom-inputs {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+    
+    .input-group {
+        display: flex;
+	    flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .input-group > div {
+        flex: 1;
+    }
+    
+    .input-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: 500;
+    }
+    
+    .input-group input,
+    .input-group select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+    
+    .input-group button {
+        padding: 0.5rem 1.5rem;
+        white-space: nowrap;
+    }
+    
+    .dialog-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e0e0e0;
+    }
+    
+    .code-example {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 1rem;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        margin-top: 1rem;
+        white-space: pre-wrap; /* 保留空格和换行 */
+    }
+    
+    .tip-box {
+        background: #e7f3ff;
+        border-left: 4px solid #2196f3;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 4px;
+    }
+    
+    .tip-box strong {
+        color: #1976d2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-container">
+    <div class="test-section">
+        <h2>全局消息提示测试</h2>
+        
+        <h3>1. 基础消息类型</h3>
+        <div class="button-grid">
+            <button class="test-btn btn-info" onclick="testInfo()">信息提示 (Info)</button>
+            <button class="test-btn btn-success" onclick="testSuccess()">成功提示 (Success)</button>
+            <button class="test-btn btn-warning" onclick="testWarning()">警告提示 (Warning)</button>
+            <button class="test-btn btn-error" onclick="testError()">错误提示 (Error)</button>
+        </div>
+        
+        <h3>2. 不同时长</h3>
+        <div class="button-grid">
+            <button class="test-btn btn-info" onclick="testDuration(1000)">1秒后消失</button>
+            <button class="test-btn btn-info" onclick="testDuration(3000)">3秒后消失</button>
+            <button class="test-btn btn-info" onclick="testDuration(5000)">5秒后消失</button>
+            <button class="test-btn btn-info" onclick="testDuration(0)">不自动消失</button>
+        </div>
+        
+        <h3>3. 多条消息叠加</h3>
+        <div class="button-grid">
+            <button class="test-btn btn-success" onclick="testMultiple()">连续显示3条消息</button>
+            <button class="test-btn btn-warning" onclick="testMixed()">混合类型消息</button>
+        </div>
+        
+        <h3>4. 自定义消息</h3>
+        <div class="custom-inputs">
+            <div class="input-group">
+                <div>
+                    <label>消息内容</label>
+                    <input type="text" id="custom-message" placeholder="输入消息内容..." value="这是一条自定义消息">
+                </div>
+                <div style="max-width: 150px;">
+                    <label>消息类型</label>
+                    <select id="custom-type">
+                        <option value="info">信息</option>
+                        <option value="success">成功</option>
+                        <option value="warning">警告</option>
+                        <option value="error">错误</option>
+                    </select>
+                </div>
+                <div style="max-width: 150px;">
+                    <label>时长(毫秒)</label>
+                    <input type="number" id="custom-duration" placeholder="5000" value="5000">
+                </div>
+                <button class="test-btn btn-info" onclick="testCustom()">发送</button>
+            </div>
+        </div>
+        
+        <div class="dialog-section">
+            <h3>5. 确认对话框测试</h3>
+            <div class="button-grid">
+                <button class="test-btn btn-warning" onclick="testConfirmDialog()">显示确认对话框</button>
+                <button class="test-btn btn-error" onclick="testDangerDialog()">危险操作确认</button>
+            </div>
+        </div>
+        
+        <div class="tip-box">
+            <strong>提示：</strong>全局消息提示会自动出现在页面右上角，支持多条消息叠加显示，可以手动关闭或自动消失。
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>使用文档</h2>
+        
+        <h3>消息提示 API</h3>
+        <div class="code-example">window.showMessage(message, type, duration)
+
+参数说明：
+- message: 消息内容（字符串）
+- type: 消息类型 'info' | 'success' | 'warning' | 'error'
+- duration: 显示时长（毫秒），0 表示不自动消失
+
+返回值：消息ID（可用于手动关闭）
+
+示例：
+window.showMessage('操作成功！', 'success', 3000);
+const msgId = window.showMessage('加载中...', 'info', 0);
+window.closeMessage(msgId);  // 手动关闭</div>
+        
+        <h3>确认对话框 API</h3>
+        <div class="code-example">window.showConfirmDialog(options)
+
+参数说明：
+options = {
+    title: '对话框标题',
+    message: '对话框内容',
+    primaryText: '确认按钮文字',
+    secondaryText: '取消按钮文字',
+    onPrimary: function() { /* 确认回调 */ },
+    onSecondary: function() { /* 取消回调 */ }
+}
+
+示例：
+window.showConfirmDialog({
+    title: '删除确认',
+    message: '确定要删除这条记录吗？此操作不可恢复。',
+    primaryText: '确认删除',
+    secondaryText: '取消',
+    onPrimary: function() {
+        window.showMessage('已删除', 'success', 3000);
+    }
+});</div>
+    </div>
+</div>
+
+<script>
+    // 基础测试函数
+    function testInfo() {
+        window.showMessage('这是一条信息提示', 'info', 3000);
+    }
+    
+    function testSuccess() {
+        window.showMessage('操作成功！数据已保存', 'success', 3000);
+    }
+    
+    function testWarning() {
+        window.showMessage('警告：请检查输入的数据格式', 'warning', 3000);
+    }
+    
+    function testError() {
+        window.showMessage('错误：网络连接失败，请稍后重试', 'error', 5000);
+    }
+    
+    // 时长测试
+    function testDuration(duration) {
+        const durationText = duration === 0 ? '不会自动消失' : `${duration / 1000}秒后消失`;
+        window.showMessage(`这条消息${durationText}`, 'info', duration);
+    }
+    
+    // 多条消息测试
+    function testMultiple() {
+        window.showMessage('第一条消息', 'success', 4000);
+        setTimeout(() => {
+            window.showMessage('第二条消息', 'success', 4000);
+        }, 500);
+        setTimeout(() => {
+            window.showMessage('第三条消息', 'success', 4000);
+        }, 1000);
+    }
+    
+    function testMixed() {
+        window.showMessage('信息：开始处理...', 'info', 0);
+        setTimeout(() => {
+            window.showMessage('警告：发现潜在问题', 'warning', 3000);
+        }, 1000);
+        setTimeout(() => {
+            window.showMessage('成功：处理完成！', 'success', 3000);
+        }, 2000);
+    }
+    
+    // 自定义消息
+    function testCustom() {
+        const message = document.getElementById('custom-message').value || '自定义消息';
+        const type = document.getElementById('custom-type').value;
+        const duration = parseInt(document.getElementById('custom-duration').value) || 5000;
+        
+        window.showMessage(message, type, duration);
+    }
+    
+    // 确认对话框测试
+    function testConfirmDialog() {
+        window.showConfirmDialog({
+            title: '操作确认',
+            message: '确定要执行此操作吗？\n\n这是一个测试对话框。',
+            primaryText: '确认',
+            secondaryText: '取消',
+            onPrimary: function() {
+                window.showMessage('你点击了"确认"按钮', 'success', 3000);
+            },
+            onSecondary: function() {
+                window.showMessage('你点击了"取消"按钮', 'info', 3000);
+            }
+        });
+    }
+    
+    function testDangerDialog() {
+        window.showConfirmDialog({
+            title: '危险操作',
+            message: '此操作将删除所有数据且不可恢复！\n\n请谨慎操作，确认后将无法撤销。',
+            primaryText: '确认删除',
+            secondaryText: '取消',
+            onPrimary: function() {
+                window.showMessage('危险操作已执行', 'error', 3000);
+            }
+        });
+    }
+</script>
+{% endblock %}

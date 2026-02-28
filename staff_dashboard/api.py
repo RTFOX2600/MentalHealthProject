@@ -18,6 +18,12 @@ class TaskResponse(Schema):
     message: str
 
 
+class StatisticsCalculationRequest(Schema):
+    """统计计算请求"""
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+
+
 class TaskStatusResponse(Schema):
     """任务状态响应"""
     status: str  # pending, processing, success, error
@@ -31,7 +37,7 @@ class TaskStatusResponse(Schema):
 class ImportSummaryResponse(Schema):
     """导入统计响应"""
     total_students: int
-    total_records: dict  # {'canteen': 100, 'gate': 200, ...}
+    total_records: dict[str, int]  # {'canteen': 100, 'gate': 200, 'daily_statistics': 122000, ...}
     last_import_time: Optional[str] = None
 
 
@@ -323,11 +329,12 @@ def get_import_summary(request):
     """
     ### 获取导入统计信息
     
-    返回当前系统中的学生总数和各类记录总数
+    返回当前系统中的学生总数、各类记录总数和每日统计总数
     """
     from .models import (
         Student, CanteenConsumptionRecord, SchoolGateAccessRecord,
-        DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord
+        DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord,
+        DailyStatistics
     )
     
     # 根据用户权限筛选学生
@@ -357,20 +364,21 @@ def get_import_summary(request):
             "dormitory": DormitoryAccessRecord.objects.filter(student_id__in=student_ids).count(),
             "network": NetworkAccessRecord.objects.filter(student_id__in=student_ids).count(),
             "academic": AcademicRecord.objects.filter(student_id__in=student_ids).count(),
+            "daily_statistics": DailyStatistics.objects.filter(student_id__in=student_ids).count(),
         },
         "last_import_time": None  # TODO: 可以添加最后导入时间记录
     }
 
 
 @router.post("/calculate-daily-statistics", response={200: TaskResponse, 400: dict})
-def calculate_daily_statistics(request, start_date: Optional[str] = None, end_date: Optional[str] = None):
+def calculate_daily_statistics(request, payload: StatisticsCalculationRequest):
     """
     ### 开始计算每日统计数据
     
     **权限要求**：仅管理员可以触发统计
     
     **参数**：
-    - start_date: 开始日期 (YYYY-MM-DD)，默认为最早的数据日期
+    - start_date: 开始日期 (YYYY-MM-DD)，默认为最近30天
     - end_date: 结束日期 (YYYY-MM-DD)，默认为今天
     
     **统计内容**：
@@ -387,8 +395,8 @@ def calculate_daily_statistics(request, start_date: Optional[str] = None, end_da
         from .tasks import calculate_daily_statistics_task
         
         task = calculate_daily_statistics_task.delay(
-            start_date=start_date,
-            end_date=end_date
+            start_date=payload.start_date,
+            end_date=payload.end_date
         )
         
         return 200, {

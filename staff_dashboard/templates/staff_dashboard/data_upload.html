@@ -53,6 +53,13 @@
             <div class="stat-label">成绩记录</div>
         </div>
     </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="-webkit-mask-image: url('{% static 'icons/chart.svg' %}'); mask-image: url('{% static 'icons/chart.svg' %}'); background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);"></div>
+        <div class="stat-content">
+            <div class="stat-value" id="stat-daily-stats">-</div>
+            <div class="stat-label">每日统计记录</div>
+        </div>
+    </div>
 </div>
 
 <!-- 上传区域 - 仅管理员可见 -->
@@ -104,7 +111,7 @@
     <div class="alert alert-info border-0 shadow-sm mb-4">
         <p class="mb-0">
             支持 CSV 或 Excel 文件上传。上传前请确保数据格式正确，详见各类型的格式说明。<br>
-            <strong>提示：</strong>上传新数据后，请点击“统计数据”按钮计算每日统计结果。
+            <strong>提示：</strong>上传新数据后，请手动指定时间范围后点击“统计数据”按钮。留空日期则默认统计最近30天。
         </p>
     </div>
 

@@ -44,11 +44,11 @@ def test_aggregate_functions():
     print("=" * 50)
     
     from staff_dashboard.core import (
-        aggregate_canteen_stats,
-        aggregate_gate_stats,
-        aggregate_dormitory_stats,
-        aggregate_network_stats,
-        aggregate_academic_stats
+        calculate_canteen_stats,
+        calculate_gate_stats,
+        calculate_dormitory_stats,
+        calculate_network_stats,
+        calculate_academic_stats
     )
     
     # 获取一个学生进行测试
@@ -70,31 +70,31 @@ def test_aggregate_functions():
     print("\n测试聚合函数:")
     
     try:
-        canteen_stats = aggregate_canteen_stats(student, start_date, end_date)
+        canteen_stats = calculate_canteen_stats(student, start_date, end_date)
         print(f"  ✓ 食堂消费统计: {canteen_stats}")
     except Exception as e:
         print(f"  ✗ 食堂消费统计失败: {e}")
     
     try:
-        gate_stats = aggregate_gate_stats(student, start_date, end_date)
+        gate_stats = calculate_gate_stats(student, start_date, end_date)
         print(f"  ✓ 校门门禁统计: {gate_stats}")
     except Exception as e:
         print(f"  ✗ 校门门禁统计失败: {e}")
     
     try:
-        dorm_stats = aggregate_dormitory_stats(student, start_date, end_date)
+        dorm_stats = calculate_dormitory_stats(student, start_date, end_date)
         print(f"  ✓ 寝室门禁统计: {dorm_stats}")
     except Exception as e:
         print(f"  ✗ 寝室门禁统计失败: {e}")
     
     try:
-        network_stats = aggregate_network_stats(student, start_date, end_date)
+        network_stats = calculate_network_stats(student, start_date, end_date)
         print(f"  ✓ 网络访问统计: {network_stats}")
     except Exception as e:
         print(f"  ✗ 网络访问统计失败: {e}")
     
     try:
-        academic_stats = aggregate_academic_stats(student, start_date, end_date)
+        academic_stats = calculate_academic_stats(student, start_date, end_date)
         print(f"  ✓ 成绩统计: {academic_stats}")
     except Exception as e:
         print(f"  ✗ 成绩统计失败: {e}")

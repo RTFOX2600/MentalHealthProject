@@ -634,50 +634,11 @@ def calculate_daily_statistics_task(self, start_date=None, end_date=None):
         
         if start_date:
             start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            print(f"指定统计范围: {start} 至 {end}")
         else:
-            # 查找最后一次统计的日期，从那之后开始统计（增量更新）
-            last_stat_date = DailyStatistics.objects.values_list('date', flat=True).order_by('-date').first()
-            
-            if last_stat_date:
-                # 从最后统计日期的第二天开始（避免重复）
-                start = last_stat_date + timedelta(days=1)
-                print(f"检测到已有统计数据，从 {start} 开始增量统计")
-            else:
-                # 没有统计记录，查找最早的原始数据日期
-                earliest_dates = []
-                
-                # 食堂消费：最早的月份的第一天
-                earliest_canteen = CanteenConsumptionRecord.objects.values_list('month', flat=True).order_by('month').first()
-                if earliest_canteen:
-                    earliest_dates.append(datetime.strptime(earliest_canteen, '%Y-%m').date())
-                
-                # 校门门禁：最早的时间戳的日期
-                earliest_gate = SchoolGateAccessRecord.objects.values_list('timestamp', flat=True).order_by('timestamp').first()
-                if earliest_gate:
-                    earliest_dates.append(earliest_gate.date())
-                
-                # 寝室门禁：最早的时间戳的日期
-                earliest_dorm = DormitoryAccessRecord.objects.values_list('timestamp', flat=True).order_by('timestamp').first()
-                if earliest_dorm:
-                    earliest_dates.append(earliest_dorm.date())
-                
-                # 网络访问：最早的开始时间的日期
-                earliest_network = NetworkAccessRecord.objects.values_list('start_time', flat=True).order_by('start_time').first()
-                if earliest_network:
-                    earliest_dates.append(earliest_network.date())
-                
-                # 成绩记录：最早的月份的第一天
-                earliest_academic = AcademicRecord.objects.values_list('month', flat=True).order_by('month').first()
-                if earliest_academic:
-                    earliest_dates.append(datetime.strptime(earliest_academic, '%Y-%m').date())
-                
-                if earliest_dates:
-                    start = min(earliest_dates)
-                    print(f"首次统计，从最早数据日期 {start} 开始")
-                else:
-                    # 没有任何数据，使用过去30天
-                    start = end - timedelta(days=30)
-                    print(f"没有数据，使用默认范围 {start} 至 {end}")
+            # 默认统计最近30天
+            start = end - timedelta(days=30)
+            print(f"未指定开始日期，默认统计最近30天: {start} 至 {end}")
         
         # 确保开始日期不晚于结束日期
         if start > end:
@@ -729,7 +690,8 @@ def calculate_daily_statistics_task(self, start_date=None, end_date=None):
         )
         
         # 批量创建统计记录
-        batch_size = 10000  # 增大批次大小
+        batch_size = 500  # SQLite 限制：单次查询最多999个参数，为安全起见使用500
+        update_batch_size = 100  # 更新操作需要更小的批次（每条记录需要2+个参数）
         statistics_to_create = []
         statistics_to_update = []
         
@@ -747,11 +709,9 @@ def calculate_daily_statistics_task(self, start_date=None, end_date=None):
         
         # 优化：按数据类型分组处理，使用批量计算
         for data_type, batch_calc_func in data_types_batch:
-            print(f"\n=== 处理 {data_type} 统计 ===")
-            
+            print(f"开始处理 {data_type} 统计，批量计算 {total_students} 名学生在 {len(dates)} 天的数据...")
+
             # 批量计算所有学生所有日期的统计（一次查询）
-            print(f"正在批量计算 {total_students} 名学生在 {len(dates)} 天的数据...")
-            
             try:
                 batch_results = batch_calc_func(students, start, end)
                 print(f"批量计算完成，共 {len(batch_results)} 名学生")
@@ -791,8 +751,8 @@ def calculate_daily_statistics_task(self, start_date=None, end_date=None):
                     
                     completed_tasks += 1
                     
-                    # 每处理 10000 条记录更新一次进度（减少更新频率）
-                    if completed_tasks % 10000 == 0:
+                    # 每处理 1000 条记录更新一次进度（减少更新频率）
+                    if completed_tasks % 1000 == 0:
                         progress = 15 + int((completed_tasks / total_tasks) * 70)
                         self.update_state(
                             state='PROCESSING',
@@ -804,19 +764,20 @@ def calculate_daily_statistics_task(self, start_date=None, end_date=None):
                         )
                         # print(f"进度：{completed_tasks}/{total_tasks} ({int((completed_tasks/total_tasks)*100)}%)")
                     
-                    # 批量保存
+                    # 批量保存 - 创建
                     if len(statistics_to_create) >= batch_size:
                         with transaction.atomic():
                             DailyStatistics.objects.bulk_create(statistics_to_create, batch_size=batch_size)
                         # print(f"批量创建 {len(statistics_to_create)} 条记录")
                         statistics_to_create = []
                     
-                    if len(statistics_to_update) >= batch_size:
+                    # 批量保存 - 更新（使用更小的批次）
+                    if len(statistics_to_update) >= update_batch_size:
                         with transaction.atomic():
                             DailyStatistics.objects.bulk_update(
                                 statistics_to_update,
                                 ['statistics_data', 'updated_at'],
-                                batch_size=batch_size
+                                batch_size=update_batch_size
                             )
                         # print(f"批量更新 {len(statistics_to_update)} 条记录")
                         statistics_to_update = []
@@ -832,11 +793,14 @@ def calculate_daily_statistics_task(self, start_date=None, end_date=None):
             if statistics_to_create:
                 DailyStatistics.objects.bulk_create(statistics_to_create, batch_size=batch_size)
             if statistics_to_update:
-                DailyStatistics.objects.bulk_update(
-                    statistics_to_update,
-                    ['statistics_data', 'updated_at'],
-                    batch_size=batch_size
-                )
+                # 分批更新，避免超过 SQLite 参数限制
+                for i in range(0, len(statistics_to_update), update_batch_size):
+                    batch = statistics_to_update[i:i + update_batch_size]
+                    DailyStatistics.objects.bulk_update(
+                        batch,
+                        ['statistics_data', 'updated_at'],
+                        batch_size=update_batch_size
+                    )
         
         total_created = len(statistics_to_create)
         total_updated = len(statistics_to_update)

@@ -92,3 +92,11 @@ def about_view(request):
         'current_page': 'about',
     }
     return render(request, 'about.html', context)
+
+
+def test_message_view(request):
+    """消息提示测试页面"""
+    context = {
+        'current_page': 'test_message',
+    }
+    return render(request, 'test_message.html', context)

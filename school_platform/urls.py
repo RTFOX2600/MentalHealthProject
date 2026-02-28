@@ -26,5 +26,6 @@ urlpatterns = [
     path('mental-health/', include('mental_health.urls')),
     path('api/', api.urls),
     path('about/', views.about_view, name='about'),
+    path('test-message/', views.test_message_view, name='test_message'),
     path('', views.home_view, name='home'),
 ]
