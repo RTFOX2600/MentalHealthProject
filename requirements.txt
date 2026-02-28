@@ -10,3 +10,4 @@ celery
 redis
 django-ninja
 python-dotenv
+openai

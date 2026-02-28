@@ -12,6 +12,8 @@ __pycache__/
 dist/
 build/
 *.spec
+scripts/test_deepseek.py
+scripts/test_deepseek01.py
 
 # Django
 db.sqlite3
