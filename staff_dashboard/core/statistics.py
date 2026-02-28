@@ -328,3 +328,4 @@ def calculate_academic_stats(student, start_date, end_date):
         'avg_score': avg_score,
         'score_trend': score_trend
     }
+
