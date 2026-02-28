@@ -22,7 +22,7 @@ from django.utils import timezone
 
 def calculate_canteen_stats(student, start_date, end_date):
     """
-    聚合计算食堂消费统计（基于每日统计）
+    实时计算食堂消费统计（直接查询月度记录）
     
     Args:
         student: Student 模型实例
@@ -36,35 +36,24 @@ def calculate_canteen_stats(student, start_date, end_date):
             'expense_trend': float     # 消费趋势（百分比）
         }
     """
-    from staff_dashboard.models import DailyStatistics
+    from staff_dashboard.models import CanteenConsumptionRecord
     
-    # 查询日期范围内的每日统计
-    daily_stats = DailyStatistics.objects.filter(
+    # 生成月份范围列表
+    start_month = start_date.strftime('%Y-%m')
+    end_month = end_date.strftime('%Y-%m')
+    
+    # 查询月份范围内的记录
+    records = CanteenConsumptionRecord.objects.filter(
         student=student,
-        data_type='canteen',
-        date__gte=start_date,
-        date__lte=end_date
-    ).order_by('date')
+        month__gte=start_month,
+        month__lte=end_month
+    ).order_by('month')
     
-    if not daily_stats.exists():
+    if not records.exists():
         return {'avg_expense': 0, 'expense_trend': 0, 'min_expense': 0}
     
-    # 按月聚合数据
-    from collections import defaultdict
-    monthly_expenses = defaultdict(float)
-    
-    for stat in daily_stats:
-        month_key = stat.date.strftime('%Y-%m')
-        # 每日统计中存储的是当天的消费金额（从 avg_expense 字段获取）
-        daily_expense = stat.statistics_data.get('avg_expense', 0)
-        monthly_expenses[month_key] += daily_expense
-    
-    if not monthly_expenses:
-        return {'avg_expense': 0, 'expense_trend': 0, 'min_expense': 0}
-    
-    # 按月份排序
-    sorted_months = sorted(monthly_expenses.items())
-    expenses = [expense for _, expense in sorted_months]
+    # 获取所有月份的消费
+    expenses = [float(record.amount) for record in records]
     
     # 计算月均消费
     avg_expense = sum(expenses) / len(expenses)
