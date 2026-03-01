@@ -16,4 +16,5 @@ response = client.chat.completions.create(
 )
 
 if __name__ == "__main__":
+    input("DS?")
     print(response.choices[0].message.content)

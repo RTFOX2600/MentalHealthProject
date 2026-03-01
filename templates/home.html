@@ -15,10 +15,11 @@
 	        {% if user.is_authenticated %}
 	            {% if user.role == 'counselor' or user.role == 'admin' %}
 	                <a href="{% url 'staff_dashboard:home' %}" class="btn btn-light">进入工作台</a>
+	                <a href="{% url 'ai_counselor:chat' %}" class="btn btn-outline-light">AI 辅导员</a>
 	            {% else %}
-	                <a href="{% url 'about' %}" class="btn btn-light">了解系统</a>
+	                <a href="{% url 'ai_counselor:chat' %}" class="btn btn-light">AI 辅导员</a>
+	                <a href="{% url 'about' %}" class="btn btn-outline-light">了解更多</a>
 	            {% endif %}
-	            <a href="{% url 'about' %}" class="btn btn-outline-light">了解更多</a>
 	        {% else %}
 	            <a href="{% url 'login' %}" class="btn btn-light">立即登录</a>
 	            <a href="{% url 'register' %}" class="btn btn-outline-light">加入我们</a>

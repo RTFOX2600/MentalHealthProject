@@ -32,6 +32,12 @@
             关于
         </a>
 		{% if user.is_authenticated %}
+			{% if user.role == 'student' %}
+				<a href="{% url 'ai_counselor:chat' %}" class="{% if current_page == 'ai_counselor' %}active{% endif %}">
+	                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/message-circle.svg' %}'); mask-image: url('{% static 'icons/message-circle.svg' %}');"></span>
+	                AI 辅导员
+	            </a>
+			{% endif %}
 			{% if user.is_staff %}
 				<a href="{% url 'admin:index' %}" target="_blank">
                     <span class="icon" style="-webkit-mask-image: url('{% static 'icons/server.svg' %}'); mask-image: url('{% static 'icons/server.svg' %}');"></span>

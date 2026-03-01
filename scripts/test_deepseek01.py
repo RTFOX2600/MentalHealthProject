@@ -112,6 +112,7 @@ class AICounselor:
 
 # 使用示例
 if __name__ == "__main__":
+    input("DS?")
     print("=" * 50)
     # 初始化
     counselor = AICounselor(api_key="sk-22aebe4114294886bd14e0029de559a4")

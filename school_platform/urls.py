@@ -24,6 +24,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('dashboard/', include('staff_dashboard.urls')),
     path('mental-health/', include('mental_health.urls')),
+    path('ai-counselor/', include('ai_counselor.urls')),
     path('api/', api.urls),
     path('about/', views.about_view, name='about'),
     path('test-message/', views.test_message_view, name='test_message'),

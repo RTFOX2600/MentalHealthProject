@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI 辅导员 - 精准思政系统{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'lib/highlight.js/github-dark.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/ai_counselor.css' %}">
+{% endblock %}
+
+{% block container_class %}ai-chat-container{% endblock %}
+
+{% block content_wrapper %}
+<div class="chat-wrapper">
+    <!-- 侧边栏：会话列表 -->
+    <div class="chat-sidebar">
+        <div class="sidebar-header">
+            <h3>对话历史</h3>
+            <button class="btn-new-chat" onclick="createNewSession()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                新对话
+            </button>
+        </div>
+        <div class="sessions-list" id="sessionsList">
+            <div class="loading-sessions">加载中...</div>
+        </div>
+    </div>
+
+    <!-- 主聊天区域 -->
+    <div class="chat-main">
+        <div class="chat-header">
+            <h2>AI 辅导员 · 小智</h2>
+            <p class="chat-subtitle">我是你的心理辅导助手，有什么可以帮助你的吗？</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <div class="welcome-icon">🤗</div>
+                <h3>你好！我是小智</h3>
+                <p>我是你的 AI 心理辅导员，可以帮助你：</p>
+                <ul>
+                    <li>倾听你的困扰和烦恼</li>
+                    <li>提供学习、生活、情感方面的建议</li>
+                    <li>帮助你分析和解决问题</li>
+                </ul>
+                <p class="welcome-tip">💡 有什么想聊的吗？随时开始吧～</p>
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+	            <label for="userInput"></label><textarea
+                    id="userInput" 
+                    placeholder="输入消息... (Shift + Enter 换行，Enter 发送)"
+                    rows="1"
+                ></textarea>
+                <button class="btn-send" id="btnSend" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'lib/marked.min.js' %}"></script>
+<script src="{% static 'lib/highlight.js/highlight.min.js' %}"></script>
+<script src="{% static 'lib/highlight.js/languages/python.min.js' %}"></script>
+<script src="{% static 'lib/highlight.js/languages/javascript.min.js' %}"></script>
+<script src="{% static 'lib/highlight.js/languages/java.min.js' %}"></script>
+<script src="{% static 'lib/highlight.js/languages/cpp.min.js' %}"></script>
+<script src="{% static 'lib/highlight.js/languages/sql.min.js' %}"></script>
+<script src="{% static 'js/ai_counselor.js' %}"></script>
+{% endblock %}
