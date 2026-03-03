@@ -23,6 +23,11 @@
                 <span class="icon" style="-webkit-mask-image: url('{% static 'icons/chart.svg' %}'); mask-image: url('{% static 'icons/chart.svg' %}');"></span>
                 数据分析
             </a>
+            <a href="{% url 'staff_dashboard:monthly_report' %}"
+               class="sidebar-item {% if current_page == 'monthly_report' %}active{% endif %}">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/python.svg' %}'); mask-image: url('{% static 'icons/python.svg' %}');"></span>
+                每月报表
+            </a>
             <a href="{% url 'staff_dashboard:public_opinion' %}" 
                class="sidebar-item {% if current_page == 'public_opinion' %}active{% endif %}">
                 <span class="icon" style="-webkit-mask-image: url('{% static 'icons/eye.svg' %}'); mask-image: url('{% static 'icons/eye.svg' %}');"></span>

@@ -1,0 +1,16 @@
+{% extends 'staff_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}每月报表 - 工作台{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header fade-in-up" style="animation-delay: 0.3s;">
+    <h2>每月报表</h2>
+    <p class="page-description">月度数据汇总与报表生成</p>
+</div>
+
+<div class="empty-placeholder fade-in-up" style="animation-delay: 0.4s;">
+    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/python.svg' %}'); mask-image: url('{% static 'icons/python.svg' %}');"></div>
+    <p>功能开发中...</p>
+</div>
+{% endblock %}

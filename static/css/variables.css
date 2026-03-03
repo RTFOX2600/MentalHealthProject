@@ -8,14 +8,14 @@
     --border-color: #e5e7eb;
     --nav-link-color: #4b5563;
     --label-color: #374151;
-    --input-bg: #f9fafb;
+    --input-bg: #f7f7fc;
     --muted-text: #4b5563;
     --text-light: #9ca3af;
     --error-color: #ef4444;
     --error-hover: #bf2727;
     --success-color: #10b981;
     --success-hover: #14a868;
-    --info-color: #0683f1;
+    --info-color: #148cf1;
     --shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --bg-color-purple: rgba(79, 70, 229, 0.1);

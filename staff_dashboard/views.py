@@ -126,6 +126,20 @@ def public_opinion(request) -> HttpResponse:
 
 
 @login_required
+def monthly_report(request) -> HttpResponse:
+    """每月报表页面"""
+    if not check_staff_permission(request.user):
+        messages.error(request, '您没有权限访问工作台')
+        return redirect('home')
+    
+    context = {
+        'current_page': 'monthly_report',
+        'navbar_page': 'dashboard',
+    }
+    return render(request, 'staff_dashboard/monthly_report.html', context)
+
+
+@login_required
 def data_analysis_help(request) -> HttpResponse:
     """数据分析帮助页面"""
     if not check_staff_permission(request.user):

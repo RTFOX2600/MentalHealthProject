@@ -3,6 +3,7 @@ let currentSessionId = null;
 let isStreaming = false;
 let hljsReady = false;
 let markedReady = false;
+let linkify = null;  // linkify-it 实例，用于识别文本中的裸域名/URL
 
 // ==================== 离开页面拦截 ====================
 // 生成过程中拦截导航链接点击，弹出全局对话框，防止意外中断
@@ -56,19 +57,34 @@ function initLibraries() {
             gfm: true
         });
 
-        // 自定义 link 渲染：剥离末尾非 ASCII 字符（中文标点/箭头/emoji），并将其保留到 <a> 标签外
+        // 自定义 link 渲染：清理末尾误入 URL 的字符（非 ASCII、括号不平衡、英文标点），并将其保留到 <a> 标签外
         marked.use({
             renderer: {
                 link(href, title, text) {
                     href = href || '';
-                    const cleanHref = href.replace(/[^\x00-\x7F]+$/, '');
-                    const suffix   = href.slice(cleanHref.length);           // 被剥离的非 ASCII 后缀
+                    // 1. 剥离末尾非 ASCII 字符（中文标点/箭头/emoji）
+                    let cleanHref = href.replace(/[^\x00-\x7F]+$/, '');
+                    // 2. 括号平衡：若末尾 ) 数量超过 (，逐个移除多余的 )
+                    let opens  = (cleanHref.match(/\(/g) || []).length;
+                    let closes = (cleanHref.match(/\)/g) || []).length;
+                    while (closes > opens && cleanHref.endsWith(')')) {
+                        cleanHref = cleanHref.slice(0, -1);
+                        closes--;
+                    }
+                    // 3. 剥离末尾常见英文标点（句号、逗号、分号等）
+                    cleanHref = cleanHref.replace(/[.,;:!?'"]+$/, '');
+                    const suffix    = href.slice(cleanHref.length);           // 被剥离的后缀
                     const cleanText = (text || '').replace(/[^\x00-\x7F]+$/, '');
                     const titleAttr = title ? ` title="${title}"` : '';
                     return `<a href="${cleanHref}"${titleAttr} target="_blank" rel="noopener noreferrer">${cleanText}</a>${suffix}`;
                 }
             }
         });
+    }
+    
+    // 初始化 linkify-it
+    if (typeof LinkifyIt !== 'undefined') {
+        linkify = new LinkifyIt.default();
     }
     
     // 检查 hljs 是否加载
@@ -101,7 +117,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 点击屏幕其他区域关闭所有菜单
     document.addEventListener('click', function(e) {
-        if (!e.target.closest('.session-item')) {
+        if (!e.target.closest('.session-menu-dropdown') && !e.target.closest('.btn-session-menu')) {
             closeAllMenus();
         }
     });
@@ -201,6 +217,10 @@ function renderSessions(sessions) {
 // 会话项点击（区分点击菜单和加载会话）
 function handleSessionClick(event, sessionId) {
     if (event.target.closest('.btn-session-menu') || event.target.closest('.session-menu-dropdown')) {
+        return;
+    }
+    // 重命名输入框点击时不触发会话切换
+    if (event.target.closest('.session-title-input')) {
         return;
     }
     // 仅在移动端侧边栏已展开时才关闭
@@ -452,7 +472,7 @@ function appendMessage(role, content, animate = true) {
     // 使用图标而非 emoji
     const avatarIcon = role === 'user' 
         ? '<span class="icon" style="-webkit-mask-image: url(/static/icons/user.svg); mask-image: url(/static/icons/user.svg); width: 1.5rem; height: 1.5rem; margin: 0; background: white;"></span>'
-        : '<span class="icon" style="-webkit-mask-image: url(/static/icons/message-circle.svg); mask-image: url(/static/icons/message-circle.svg); width: 1.5rem; height: 1.5rem; margin: 0; background: white;"></span>';
+        : '<span class="icon" style="-webkit-mask-image: url(/static/icons/api-app.svg); mask-image: url(/static/icons/api-app.svg); width: 1.5rem; height: 1.5rem; margin: 0; background: white;"></span>';
     
     messageDiv.innerHTML = `
         <div class="message-avatar">${avatarIcon}</div>
@@ -461,7 +481,7 @@ function appendMessage(role, content, animate = true) {
     
     const contentDiv = messageDiv.querySelector('.message-content');
     if (role === 'assistant') {
-        contentDiv.innerHTML = markedReady ? marked.parse(content) : escapeHtml(content);
+        contentDiv.innerHTML = safeMarkdown(content);
     } else {
         // 用户消息用 textContent 赋値，避免模板字符串缩进被 pre-wrap 显示
         contentDiv.textContent = content;
@@ -744,16 +764,49 @@ function escapeHtml(text) {
 }
 
 // 将 Markdown 转为 HTML，同时：
-// 1. 预处理裸域名（如 zgs.chsi.com.cn），补上 https:// 使 GFM 自动链接生效
-// 2. 由自定义 link renderer 将末尾误入 URL 的非 ASCII 字符移到 <a> 标签外
+// 1. 用 linkify-it 识别裸域名并补 https://（fallback 使用手写正则）
+// 2. 由自定义 link renderer 将末尾误入 URL 的标点符号/括号移到 <a> 标签外
 function safeMarkdown(text) {
     if (!markedReady) return escapeHtml(text);
-    // 为裸域名补协议前缀，仅匹配常见 TLD，且不能紧接在 ://  /  . 之后（避免重复处理）
-    const processed = text.replace(
+    const processed = linkify ? addProtocolPrefix(text) : text.replace(
         /(?<![:/\w.])([a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z0-9-]+)*\.(?:com|cn|edu|gov|net|org|io|ac|info)(?:\.[a-zA-Z]{2})?(?:\/[^\s\u0100-\uffff]*)?)/g,
         'https://$1'
     );
     return marked.parse(processed);
+}
+
+// 利用 linkify-it 找出文本中所有 URL，统一包裹为显式 Markdown 链接 [url](url)，
+// 防止 GFM 自动链接在 URL 后紧跟中文符号时错误扩展边界。
+// 已处于 markdown 链接语法中（[text](url) 的 URL 或文本位置）的不重复处理。
+function addProtocolPrefix(text) {
+    const matches = linkify.match(text);
+    if (!matches) return text;
+
+    let result = '';
+    let lastIndex = 0;
+
+    for (const match of matches) {
+        result += text.slice(lastIndex, match.index);
+
+        const prevTwo = text.slice(Math.max(0, match.index - 2), match.index);
+        const prevOne = text.slice(Math.max(0, match.index - 1), match.index);
+        const isInsideLinkUrl  = prevTwo === '](';
+        const isInsideLinkText = prevOne === '[';
+
+        if (isInsideLinkUrl || isInsideLinkText) {
+            // 已在 [text](url) 语法内，原样保留，不重复处理
+            result += match.raw;
+        } else {
+            // 用显式 Markdown 链接包裹，彻底截断 GFM 自动链接的边界扩展
+            // 裸域名：显示时不带协议，href 用协议相对 URL（// 跟随当前页面协议）
+            const cleanUrl = match.schema === '' ? '//' + match.raw : match.url;
+            const displayUrl = match.schema === '' ? match.raw : match.url;
+            result += `[${displayUrl}](${cleanUrl})`;
+        }
+        lastIndex = match.lastIndex;
+    }
+    result += text.slice(lastIndex);
+    return result;
 }
 
 

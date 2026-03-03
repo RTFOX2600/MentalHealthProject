@@ -33,13 +33,13 @@
 			<div class="status-card" style="text-align: left; max-width: 100%; margin-bottom: 0;">
 			    <h3 style="text-align: left;">个人状态</h3>
 			    <div>您好，<strong>{{ user.last_name }}{{ user.first_name }}{% if not user.last_name and not user.first_name %}{{ user.username }}{% endif %}</strong>！欢迎回来。</div>
-			    <div>当前角色：<span class="badge bg-primary" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ user.role_display }}</span></div>
+			    <div>当前角色：<span class="badge bg-success" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ user.role_display }}</span></div>
 			    
 			    <!-- 待审核请求 -->
 			    {% if pending_requests %}
 			    <div style="padding: 1rem;border-radius: 0.75rem;background-color: var(--bg-color);text-align: left;color: var(--muted-text);line-height: 1.6;margin-top: 0.5rem;">
 			        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
-			            <span class="badge bg-warning" style="font-size: 0.9rem; padding: 0.4rem 0.8rem; color: #664d03;">待审核请求</span>
+			            <span class="badge bg-success" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">待审核请求</span>
 			            <form id="cancelAllRequestsForm" action="{% url 'cancel_request' %}" method="post" style="display: inline-block;">
 			                {% csrf_token %}
 			                <button type="button" class="btn btn-sm btn-outline-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;"

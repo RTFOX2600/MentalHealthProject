@@ -119,6 +119,10 @@
     background: var(--success-hover);
 }
 
+.btn-new-chat > * {
+    transform: translateX(-5px);
+}
+
 .sessions-list {
     flex: 1;
     overflow-y: auto;
@@ -180,7 +184,10 @@
     font-weight: 600;
     font-size: 0.875rem;
     outline: none;
-    padding: 0;
+    padding: 0.5rem!important;
+    line-height: 1.2;
+    height: 1.4em;
+    box-sizing: content-box;
 }
 
 .session-time {
@@ -196,7 +203,7 @@
     border: none;
     background: transparent;
     color: inherit;
-    opacity: 0;
+    opacity: 0.5;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -206,19 +213,13 @@
     padding: 0;
 }
 
-.session-item:hover .btn-session-menu,
-.session-item.active .btn-session-menu {
-    opacity: 0.7;
-}
-
 .btn-session-menu:hover {
-    opacity: 1 !important;
+    opacity: 1;
     background: rgba(255,255,255,0.15);
 }
 
 /* 下拉菜单 */
 .session-menu-dropdown {
-    display: none;
     position: absolute;
     right: 0;
     top: 100%;
@@ -229,10 +230,16 @@
     z-index: 100;
     min-width: 120px;
     overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
 }
 
 .session-menu-dropdown.open {
-    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-20px);
 }
 
 .session-menu-dropdown button {
@@ -421,7 +428,7 @@
 }
 
 .message-content {
-    max-width: 70%;
+    max-width: 75%;
     padding: 1rem 1.25rem;
     border-radius: 1rem;
     word-wrap: break-word;
@@ -469,10 +476,12 @@
 
 .message-content code {
     background: var(--input-bg);
+    color: var(--info-color);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.875em;
+    font-weight: bold;
 }
 
 .message-content pre {
@@ -687,6 +696,17 @@
 }
 
 /* ==================== 响应式设计 ==================== */
+@media (max-width: 1024px) {
+    .chat-sidebar {
+        width: 200px;
+    }
+
+    .sidebar-inner {
+        width: 200px;
+    }
+}
+
+
 @media (max-width: 768px) {
     .chat-sidebar {
         position: absolute;
@@ -698,7 +718,11 @@
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         animation: none;
-        border-radius: 0 0.75rem 0.75rem 0;
+        border-radius: 0 1.5rem 1.5rem 0;
+    }
+
+    .sidebar-inner {
+        width: 100%;
     }
 
     .chat-sidebar.open {

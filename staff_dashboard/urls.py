@@ -9,6 +9,7 @@ urlpatterns = [
     path('data-analysis/', views.data_analysis, name='data_analysis'),
     path('data-analysis/help/', views.data_analysis_help, name='data_analysis_help'),
     path('public-opinion/', views.public_opinion, name='public_opinion'),
+    path('monthly-report/', views.monthly_report, name='monthly_report'),
     
     # API接口
     path('api/student-list/', views.api_student_list, name='api_student_list'),
