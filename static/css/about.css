@@ -42,6 +42,8 @@
     --redis-celery-color: #D82C20;
     --docker-color: #2496ED;
     --pandas-sklearn-color: #210883;
+    --javascript-color: #F7DF1E;
+    --html5-color: #E34F26;
     --unused-color: #979797;
 }
 
@@ -58,6 +60,8 @@
         --redis-celery-color: #ff5c5c;
         --docker-color: #38b1ff;
         --pandas-sklearn-color: #8c7ae6;
+        --javascript-color: #FFE066;
+        --html5-color: #FF6B4A;
         --unused-color: #656565;
     }
 }
