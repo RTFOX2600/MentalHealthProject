@@ -12,6 +12,7 @@
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow);
+    border-radius: 0 0 16px 16px;
     transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
     height: var(--navbar-height, 60px);
 }
@@ -19,13 +20,13 @@
 .navbar-brand {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: var(--success-color);
     text-decoration: none;
-    transition: color 0.4s ease;
+    transition: color 0.2s ease;
 }
 
 .navbar-brand:hover {
-    color: var(--primary-hover);
+    color: var(--success-hover);
 }
 
 .nav-links {

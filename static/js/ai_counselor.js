@@ -4,6 +4,37 @@ let isStreaming = false;
 let hljsReady = false;
 let markedReady = false;
 
+// ==================== 离开页面拦截 ====================
+// 生成过程中拦截导航链接点击，弹出全局对话框，防止意外中断
+function setupNavigationGuard() {
+    document.addEventListener('click', function(e) {
+        if (!isStreaming) return;
+        const link = e.target.closest('a');
+        if (!link || !link.href) return;
+        // 跳过不导致页面跳转的链接
+        if (link.hasAttribute('download') ||
+            link.href.startsWith('mailto:') ||
+            link.href.startsWith('tel:') ||
+            link.href.includes('#') ||
+            link.target === '_blank') return;
+
+        // 阻止默认导航 + 阻止冒泡（防止 base.html 的加载动画触发）
+        e.preventDefault();
+        e.stopPropagation();
+
+        const targetUrl = link.href;
+        showConfirmDialog({
+            title: '生成中',
+            message: '确认离开？离开后当前回答将被中断。',
+            secondaryText: '确认离开',
+            primaryText: '继续生成',
+            onSecondary: () => {
+                window.location.href = targetUrl;
+            }
+        });
+    }, true); // 捕获阶段，先于其他点击处理
+}
+
 // 等待 hljs 和 marked 加载完成
 function initLibraries() {
     // 配置 marked.js
@@ -24,6 +55,20 @@ function initLibraries() {
             breaks: true,
             gfm: true
         });
+
+        // 自定义 link 渲染：剥离末尾非 ASCII 字符（中文标点/箭头/emoji），并将其保留到 <a> 标签外
+        marked.use({
+            renderer: {
+                link(href, title, text) {
+                    href = href || '';
+                    const cleanHref = href.replace(/[^\x00-\x7F]+$/, '');
+                    const suffix   = href.slice(cleanHref.length);           // 被剥离的非 ASCII 后缀
+                    const cleanText = (text || '').replace(/[^\x00-\x7F]+$/, '');
+                    const titleAttr = title ? ` title="${title}"` : '';
+                    return `<a href="${cleanHref}"${titleAttr} target="_blank" rel="noopener noreferrer">${cleanText}</a>${suffix}`;
+                }
+            }
+        });
     }
     
     // 检查 hljs 是否加载
@@ -33,11 +78,27 @@ function initLibraries() {
 }
 
 // ====================页面加载 ====================
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     initLibraries();
-    loadSessions();
     setupInputHandlers();
-    
+    setupNavigationGuard();
+
+    // 恢复输入框草稿
+    const draft = sessionStorage.getItem('ai_counselor_draft');
+    if (draft) {
+        const input = document.getElementById('userInput');
+        input.value = draft;
+        autoResizeTextarea(input);
+    }
+
+    // 加载会话列表，完成后尝试恢复上次会话
+    await loadSessions();
+    const savedId = localStorage.getItem('ai_counselor_session_id');
+    if (savedId) {
+        const exists = document.querySelector(`.session-item[data-session-id="${savedId}"]`);
+        if (exists) loadSession(parseInt(savedId));
+    }
+
     // 点击屏幕其他区域关闭所有菜单
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.session-item')) {
@@ -50,12 +111,20 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleSidebar() {
     const sidebar = document.getElementById('chatSidebar');
     const overlay = document.getElementById('sidebarOverlay');
-    const isOpen = sidebar.classList.contains('open');
-    if (isOpen) {
-        closeSidebar();
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+        // 移动端：覆盖层模式
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            sidebar.classList.add('open');
+            overlay.classList.remove('closing');
+            overlay.classList.add('active');
+        }
     } else {
-        sidebar.classList.add('open');
-        overlay.classList.add('active');
+        // 桌面端：收折模式（宽度过渡，无遮罩）
+        sidebar.classList.toggle('collapsed');
     }
 }
 
@@ -63,7 +132,12 @@ function closeSidebar() {
     const sidebar = document.getElementById('chatSidebar');
     const overlay = document.getElementById('sidebarOverlay');
     if (sidebar) sidebar.classList.remove('open');
-    if (overlay) overlay.classList.remove('active');
+    if (overlay && overlay.classList.contains('active')) {
+        overlay.classList.add('closing');
+        overlay.addEventListener('animationend', function handler() {
+            overlay.classList.remove('active', 'closing');
+        }, { once: true });
+    }
 }
 
 // ==================== 会话管理 ====================
@@ -138,9 +212,32 @@ function handleSessionClick(event, sessionId) {
 }
 
 async function createNewSession() {
+    if (isStreaming) {
+        showConfirmDialog({
+            title: '生成中',
+            message: '确认离开？离开后当前回答将被中断。',
+            secondaryText: '确认离开',
+            primaryText: '继续生成',
+            onSecondary: () => _doCreateNewSession()
+        });
+        return;
+    }
+    await _doCreateNewSession();
+}
+
+async function _doCreateNewSession() {
+    const container = document.getElementById('chatMessages');
+    container.classList.add('switching');
+    await new Promise(r => setTimeout(r, 150));
     currentSessionId = null;
+    saveSessionId();
+    updateActiveSession(null); // 清除侧边栏高亮
     clearMessages();
     showWelcomeMessage();
+    container.classList.remove('switching');
+    container.classList.add('switched');
+    container.addEventListener('animationend', () => container.classList.remove('switched'), { once: true });
+    if (window.innerWidth <= 768) closeSidebar();
     document.getElementById('userInput').focus();
 }
 
@@ -149,28 +246,31 @@ async function loadSession(sessionId) {
         showMessage('请等待当前消息发送完成', 'warning');
         return;
     }
-    
-    try {
-        const response = await fetch(`/ai-counselor/api/sessions/${sessionId}/`, {
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken')
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.status === 'success') {
-            currentSessionId = sessionId;
-            clearMessages();
-            renderMessages(data.messages);
-            updateActiveSession(sessionId);
-        } else {
-            showMessage('加载会话失败', 'error');
-        }
-    } catch (e) {
-        console.error('加载会话失败:', e);
+
+    const container = document.getElementById('chatMessages');
+
+    // 淡出动画与 fetch 并行，减少总等待时间
+    container.classList.add('switching');
+    const fetchPromise = fetch(`/ai-counselor/api/sessions/${sessionId}/`, {
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    }).then(r => r.json()).catch(() => null);
+
+    const [data] = await Promise.all([fetchPromise, new Promise(r => setTimeout(r, 150))]);
+
+    clearMessages();
+    container.classList.remove('switching');
+    container.classList.add('switched');
+    container.addEventListener('animationend', () => container.classList.remove('switched'), { once: true });
+
+    if (!data || data.status !== 'success') {
         showMessage('加载会话失败', 'error');
+        return;
     }
+
+    currentSessionId = sessionId;
+    saveSessionId();
+    renderMessages(data.messages);
+    updateActiveSession(sessionId);
 }
 
 function updateActiveSession(sessionId) {
@@ -182,6 +282,15 @@ function updateActiveSession(sessionId) {
     const activeItem = document.querySelector(`.session-item[data-session-id="${sessionId}"]`);
     if (activeItem) {
         activeItem.classList.add('active');
+    }
+}
+
+// 持久化当前会话 ID 到 localStorage
+function saveSessionId() {
+    if (currentSessionId != null) {
+        localStorage.setItem('ai_counselor_session_id', String(currentSessionId));
+    } else {
+        localStorage.removeItem('ai_counselor_session_id');
     }
 }
 
@@ -269,9 +378,16 @@ async function deleteSession(event, sessionId) {
                 const data = await resp.json();
                 if (data.status === 'success') {
                     if (currentSessionId === sessionId) {
+                        const container = document.getElementById('chatMessages');
+                        container.classList.add('switching');
+                        await new Promise(r => setTimeout(r, 150));
                         currentSessionId = null;
+                        saveSessionId();
                         clearMessages();
                         showWelcomeMessage();
+                        container.classList.remove('switching');
+                        container.classList.add('switched');
+                        container.addEventListener('animationend', () => container.classList.remove('switched'), { once: true });
                     }
                     loadSessions();
                 } else {
@@ -443,6 +559,7 @@ async function sendMessage() {
     appendMessage('user', message);
     input.value = '';
     autoResizeTextarea(input);
+    sessionStorage.removeItem('ai_counselor_draft'); // 发送后清除草稿
     
     // 禁用输入
     isStreaming = true;
@@ -508,6 +625,7 @@ async function handleStreamResponse(response) {
                     
                     if (data.type === 'session_id') {
                         currentSessionId = data.session_id;
+                        saveSessionId();
                         loadSessions(); // 刷新会话列表
                     } else if (data.type === 'content') {
                         // 第一次接收内容时移除加载指示器
@@ -535,7 +653,7 @@ async function handleStreamResponse(response) {
                         // 实时渲染 Markdown
                         const contentDiv = messageElement.querySelector('.message-content');
                         if (markedReady) {
-                            contentDiv.innerHTML = marked.parse(assistantMessage);
+                            contentDiv.innerHTML = safeMarkdown(assistantMessage);
                         } else {
                             contentDiv.textContent = assistantMessage;
                         }
@@ -584,18 +702,32 @@ async function handleStreamResponse(response) {
 // ==================== 输入处理 ====================
 function setupInputHandlers() {
     const input = document.getElementById('userInput');
-    
-    // Enter 发送，Shift+Enter 换行
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-    
-    // 自动调整高度
+    const isMobile = navigator.maxTouchPoints > 0;
+
+    // 根据设备类型设置 placeholder
+    input.placeholder = isMobile
+        ? '输入消息...'
+        : '输入消息... (Shift + Enter 换行，Enter 发送)';
+
+    // 桌面端：Enter 发送，Shift+Enter 换行
+    // 移动端：不绑定 Enter 发送（虚拟键盘 Enter 用于换行）
+    if (!isMobile) {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    // 自动调整高度 + 保存草稿
     input.addEventListener('input', function() {
         autoResizeTextarea(this);
+        if (this.value) {
+            sessionStorage.setItem('ai_counselor_draft', this.value);
+        } else {
+            sessionStorage.removeItem('ai_counselor_draft');
+        }
     });
 }
 
@@ -610,6 +742,20 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
+// 将 Markdown 转为 HTML，同时：
+// 1. 预处理裸域名（如 zgs.chsi.com.cn），补上 https:// 使 GFM 自动链接生效
+// 2. 由自定义 link renderer 将末尾误入 URL 的非 ASCII 字符移到 <a> 标签外
+function safeMarkdown(text) {
+    if (!markedReady) return escapeHtml(text);
+    // 为裸域名补协议前缀，仅匹配常见 TLD，且不能紧接在 ://  /  . 之后（避免重复处理）
+    const processed = text.replace(
+        /(?<![:/\w.])([a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z0-9-]+)*\.(?:com|cn|edu|gov|net|org|io|ac|info)(?:\.[a-zA-Z]{2})?(?:\/[^\s\u0100-\uffff]*)?)/g,
+        'https://$1'
+    );
+    return marked.parse(processed);
+}
+
 
 function addLineNumbers(codeBlock) {
     // 检查是否已经添加过行号

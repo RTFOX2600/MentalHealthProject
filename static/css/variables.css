@@ -12,7 +12,9 @@
     --muted-text: #4b5563;
     --text-light: #9ca3af;
     --error-color: #ef4444;
+    --error-hover: #bf2727;
     --success-color: #10b981;
+    --success-hover: #14a868;
     --info-color: #0683f1;
     --shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -27,6 +29,10 @@
     :root {
         --primary-color: #6366f1;
         --primary-hover: #818cf8;
+        --error-color: #ef4444;
+        --error-hover: #ff7e7e;
+        --success-color: #10b981;
+        --success-hover: #41e09a;
         --bg-color: #0f172a;
         --text-color: #f1f5f9;
         --heading-color: #f8fafc;

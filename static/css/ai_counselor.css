@@ -47,6 +47,7 @@
     box-shadow: var(--card-shadow);
     border-radius: 1rem;
     overflow: hidden;
+    position: relative;
 }
 
 /* ==================== 侧边栏样式 ==================== */
@@ -56,11 +57,28 @@
     border-right: 2px solid var(--border-color);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    transition: width 0.3s ease, border-color 0.3s ease;
+    flex-shrink: 0;
+}
+
+/* 桌面端收折状态 */
+.chat-sidebar.collapsed {
+    width: 0;
+    border-right-color: transparent;
+}
+
+/* 侧边栏固定宽度内容层，防止动画时内容变形 */
+.sidebar-inner {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .sidebar-header {
-    padding: 1.5rem;
-    border-bottom: 2px solid var(--border-color);
+    padding: 1.5rem 1.5rem 0.75rem;
 }
 
 .sidebar-header h3 {
@@ -68,6 +86,11 @@
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--heading-color);
+}
+
+.sessions-top {
+    padding: 0 0.5rem 0.5rem;
+    flex-shrink: 0;
 }
 
 .btn-new-chat {
@@ -89,6 +112,11 @@
 .btn-new-chat:hover {
     background: var(--primary-hover);
     transform: translateY(-1px);
+}
+
+.btn-new-chat:active {
+    transform: translateY(1px);
+    background: var(--success-hover);
 }
 
 .sessions-list {
@@ -263,9 +291,9 @@
     text-align: left;
 }
 
-/* 移动端侧边栏切换按鈕（大屏隐藏） */
+/* 侧边栏切换按钮（全平台可见） */
 .btn-sidebar-toggle {
-    display: none;
+    display: flex;
     width: 36px;
     height: 36px;
     background: var(--input-bg);
@@ -297,6 +325,23 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+/* 消息区域切换动画 */
+.chat-messages.switching {
+    animation: msgFadeOut 0.15s ease-out forwards;
+    pointer-events: none;
+}
+.chat-messages.switched {
+    animation: msgFadeIn 0.22s ease-out;
+}
+@keyframes msgFadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-6px); }
+}
+@keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ==================== 欢迎消息 ==================== */
@@ -400,6 +445,7 @@
 .message-content h3 {
     margin: 1rem 0 0.5rem 0;
     font-weight: 600;
+    text-align: left;
 }
 
 .message-content h1 { font-size: 1.5rem; }
@@ -491,6 +537,11 @@
 
 .message-content a {
     color: var(--primary-color);
+    text-decoration: none;
+}
+
+.message-content a:hover {
+    color: var(--primary-hover);
     text-decoration: underline;
 }
 
@@ -514,7 +565,7 @@
 
 /* ==================== 输入区域 ==================== */
 .chat-input-area {
-    padding: 1.5rem 2rem;
+    padding: 0.75rem 1.5rem;
     border-top: 2px solid var(--border-color);
     background: var(--card-bg);
 }
@@ -527,7 +578,7 @@
 
 #userInput {
     flex: 1;
-    padding: 0.875rem 1rem;
+    padding: 0.5rem 0.75rem;
     border: 2px solid var(--border-color);
     border-radius: 0.75rem;
     background: var(--input-bg);
@@ -535,7 +586,7 @@
     font-family: inherit;
     font-size: 0.9375rem;
     resize: none;
-    min-height: 48px;
+    min-height: 42px;
     max-height: 150px;
     transition: all 0.2s;
 }
@@ -547,9 +598,9 @@
 }
 
 .btn-send {
-    width: 48px;
-    height: 48px;
-    background: var(--primary-color);
+    width: 42px;
+    height: 42px;
+    background: var(--success-color);
     color: white;
     border: none;
     border-radius: 0.75rem;
@@ -562,7 +613,7 @@
 }
 
 .btn-send:hover:not(:disabled) {
-    background: var(--primary-hover);
+    background: var(--success-hover);
     transform: translateY(-2px);
 }
 
@@ -605,13 +656,13 @@
     }
 }
 
-/* ==================== 移动端遗罩层 ==================== */
+/* ==================== 移动端遮罩层 ==================== */
 .sidebar-overlay {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.45);
-    z-index: 200;
+    z-index: 250;
     backdrop-filter: blur(2px);
 }
 
@@ -620,28 +671,34 @@
     animation: fadeIn 0.2s ease-out;
 }
 
+.sidebar-overlay.closing {
+    display: block;
+    animation: fadeOut 0.2s ease-out forwards;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
 }
 
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
 /* ==================== 响应式设计 ==================== */
 @media (max-width: 768px) {
-    .btn-sidebar-toggle {
-        display: flex;
-    }
-
     .chat-sidebar {
-        position: fixed;
+        position: absolute;
         left: 0;
-        top: 64px;
+        top: 0;
         bottom: 0;
-        width: 280px;
+        width: 280px !important;   /* 移动端始终保持宽度，由 transform 控制显隐 */
         z-index: 300;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         animation: none;
-        border-radius: 0;
+        border-radius: 0 0.75rem 0.75rem 0;
     }
 
     .chat-sidebar.open {
@@ -651,9 +708,39 @@
 
     .chat-main {
         animation: none;
+        min-width: 0;
+    }
+
+    .chat-messages {
+        padding: 1rem;
+    }
+
+    .chat-input-area {
+        padding: 0.75rem 1rem;
+    }
+
+    .message {
+        min-width: 0;
     }
 
     .message-content {
         max-width: 85%;
+        min-width: 0;
+        padding: 0.75rem 1rem;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* 代码块在移动端允许横向滚动，不撑破气泡 */
+    .message-content pre {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    /* 表格在移动端允许横向滚动 */
+    .message-content table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
     }
 }

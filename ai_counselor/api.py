@@ -9,9 +9,15 @@ from openai import OpenAI
 from .models import ChatSession, ChatMessage, estimate_tokens
 
 
+# 从 .env 获取 Deepseek API
+base_url = os.getenv('DEEPSEEK_BASE_URL', 'https://api.deepseek.com')
+api_key = os.getenv('DEEPSEEK_API_KEY', 'deepseek-api-key')
+model_name = os.getenv('DEEPSEEK_MODEL_NAME', 'deepseek-chat')
+
 # 系统提示词
 SYSTEM_PROMPT = """你是一位专业的武汉轻工大学的 AI 辅导员，名字叫"小智"。
-回答风格：回答多要正面积极，复杂概念简单化解释，不确定的问题建议咨询相关人员、查询相关网站，重要事项提醒以官方通知为准。
+回答风格：回答多要正面积极，复杂概念简单化解释，不确定但重要的问题建议咨询相关人员、查询相关网站，以官方通知为准。
+配置信息：deepseek v3，必要时可以自动联网搜索，单次最多能回复 2000 tokens，知道最近 20 条消息，暂不支持文件上传、深度思考。
 """
 
 
@@ -149,28 +155,28 @@ def chat_stream(request):
                 })
         
         # 调用 DeepSeek API
-        api_key = os.getenv('DEEPSEEK_API_KEY')
         if not api_key:
             return JsonResponse({
                 'status': 'error',
                 'message': 'DeepSeek API Key 未配置'
             }, status=500)
-        
+
         client = OpenAI(
             api_key=api_key,
-            base_url="https://api.deepseek.com"
+            base_url=base_url
         )
         
         def event_stream():
             """生成 SSE 事件流"""
+            assistant_message = ""
+            stream_complete = False  # 标记流是否正常结束（用于区分正常完成与客户端中途离开）
             try:
                 # 先发送会话 ID
                 yield f"data: {json.dumps({'type': 'session_id', 'session_id': session.id})}\n\n"
                 
-                assistant_message = ""
                 # noinspection PyTypeChecker
                 response = client.chat.completions.create(
-                    model="deepseek-chat",
+                    model=model_name,
                     messages=messages,
                     stream=True,
                     temperature=0.7,
@@ -183,24 +189,31 @@ def chat_stream(request):
                         assistant_message += content
                         yield f"data: {json.dumps({'type': 'content', 'content': content})}\n\n"
                 
-                # 保存助手消息，并更新会话 token 用量
-                assistant_tokens = estimate_tokens(assistant_message)
-                ChatMessage.objects.create(
-                    session=session,
-                    role='assistant',
-                    content=assistant_message,
-                    token_count=assistant_tokens
-                )
-                # 累加 token 到会话（用户消息 + 助手消息）
-                ChatSession.objects.filter(pk=session.pk).update(
-                    total_tokens=models.F('total_tokens') + user_tokens + assistant_tokens
-                )
-                
-                # 发送完成信号
+                # 全部内容已生成，标记完成后再发送 done 信号
+                stream_complete = True
                 yield f"data: {json.dumps({'type': 'done'})}\n\n"
                 
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+            finally:
+                # 无论正常结束、出错还是客户端中途离开（GeneratorExit），
+                # 都将已生成的内容持久化，防止丢失
+                if assistant_message:
+                    # 若客户端中途离开导致截断，追加中断提示
+                    save_content = (
+                        assistant_message if stream_complete
+                        else assistant_message + '\n\n*（回答被中断）*'
+                    )
+                    assistant_tokens = estimate_tokens(save_content)
+                    ChatMessage.objects.create(
+                        session=session,
+                        role='assistant',
+                        content=save_content,
+                        token_count=assistant_tokens
+                    )
+                    ChatSession.objects.filter(pk=session.pk).update(
+                        total_tokens=models.F('total_tokens') + user_tokens + assistant_tokens
+                    )
         
         response = StreamingHttpResponse(
             event_stream(),

@@ -25,7 +25,8 @@
     height: calc(100vh - 60px); /* 减去导航栏高度 */
     width: 200px; /* 减小宽度 */
     background: var(--card-bg);
-    border-right: 1px solid var(--border-color);
+    border-right: 2px solid var(--border-color);
+    border-radius: 16px;
     padding: 2rem 0;
     overflow-y: auto; /* 内容过多时可滚动 */
     z-index: 100;
@@ -362,7 +363,6 @@
 
     .dashboard-sidebar {
         position: static; /* 移动端取消固定定位 */
-        transform: translateY(-5px);
         height: auto;
         width: 100%;
         border-right: none;
