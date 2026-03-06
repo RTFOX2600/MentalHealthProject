@@ -32,7 +32,7 @@
 		<div class="fade-in-up" style="animation-delay: 0.2s; margin-top: -2rem; margin-bottom: 3rem;">
 			<div class="status-card" style="text-align: left; max-width: 100%; margin-bottom: 0;">
 			    <h3 style="text-align: left;">个人状态</h3>
-			    <div>您好，<strong>{{ user.last_name }}{{ user.first_name }}{% if not user.last_name and not user.first_name %}{{ user.username }}{% endif %}</strong>！欢迎回来。</div>
+			    <div>您好，<strong style="color: var(--success-color)">{{ user.last_name }}{{ user.first_name }}{% if not user.last_name and not user.first_name %}{{ user.username }}{% endif %}</strong>！欢迎回来。</div>
 			    <div>当前角色：<span class="badge bg-success" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">{{ user.role_display }}</span></div>
 			    
 			    <!-- 待审核请求 -->
@@ -87,7 +87,7 @@
                      <span class="icon" style="-webkit-mask-image: url('{% static 'icons/user.svg' %}'); mask-image: url('{% static 'icons/user.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
                 </div>
                 <h3>心理咨询</h3>
-                <p>专业的心理咨询师团队与 AI 辅导员，为我校学生提供一对一的线下线上交流与心理服务。</p>
+                <p>专业的心理咨询师团队，为我校学生提供一对一的线下线上交流与心理服务。</p>
             </div>
         </div>
 
@@ -97,7 +97,7 @@
                      <span class="icon" style="-webkit-mask-image: url('{% static 'icons/info.svg' %}'); mask-image: url('{% static 'icons/info.svg' %}'); width: 2.5rem; height: 2.5rem; margin: 0;"></span>
                 </div>
                 <h3>智能分析</h3>
-                <p>智能分析学生心理、思想健康状态，提供个性化的建议。</p>
+                <p>智能分析学生心理、思想健康、经济状态，提供个性化的建议。</p>
             </div>
         </div>
 

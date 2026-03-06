@@ -274,6 +274,13 @@ def batch_calculate_network_stats(students, start_date, end_date):
         'has_late_night': False
     }))
     
+    def _intervals_overlap(rec_start_min, rec_end_min, zone_start_min, zone_end_min):
+        """
+        判断两个分钟级区间是否有交集（均相对于同一天的 00:00 计算）。
+        rec_end_min 允许超过 1440（跨日记录）。
+        """
+        return rec_start_min < zone_end_min and rec_end_min > zone_start_min
+
     for record in records:
         # 转换为本地时区
         local_start = record.start_time.astimezone(timezone.get_current_timezone())
@@ -288,16 +295,26 @@ def batch_calculate_network_stats(students, start_date, end_date):
         if record.use_vpn:
             student_date_stats[record.student_id][date_key]['vpn_count'] += 1
         
-        # 检查是否覆盖夜间时段（22:00-23:59）
-        start_hour = local_start.hour
-        end_hour = local_end.hour
+        # 将记录时间转换为相对 date_key 当天 00:00 的分钟数
+        # local_end 可能跨日，允许超过 1440
+        from datetime import datetime as _dt
+        day_start = _dt(
+            date_key.year, date_key.month, date_key.day,
+            tzinfo=local_start.tzinfo
+        )
+        rec_start_min = int((local_start - day_start).total_seconds() / 60)
+        rec_end_min   = int((local_end   - day_start).total_seconds() / 60)
+        # 若结束时间早于开始时间（数据异常），至少保证区间长度为1分钟
+        if rec_end_min <= rec_start_min:
+            rec_end_min = rec_start_min + 1
         
-        # 判断是否覆盖夜间时段
-        if (22 <= start_hour <= 23) or (22 <= end_hour <= 23):
+        # 夜间时段：21:00-次日01:00 → [1260, 1500)
+        # （跨日区间：21*60=1260，次日1点=1440+60=1500）
+        if _intervals_overlap(rec_start_min, rec_end_min, 1260, 1500):
             student_date_stats[record.student_id][date_key]['has_night'] = True
         
-        # 判断是否覆盖深夜时段
-        if (0 <= start_hour <= 5) or (0 <= end_hour <= 5):
+        # 深夜时段：01:00-05:00 → [60, 300)
+        if _intervals_overlap(rec_start_min, rec_end_min, 60, 300):
             student_date_stats[record.student_id][date_key]['has_late_night'] = True
     
     # 构建结果

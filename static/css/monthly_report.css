@@ -1,0 +1,212 @@
+/* ========================================
+   每月报表页面样式
+   ======================================== */
+
+/* 月份选择器与按钮同行布局 */
+.month-selector-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.month-selector-row .form-group {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.month-selector-row .btn {
+    flex-shrink: 0;
+    height: fit-content;
+}
+
+/* 月份输入框样式 */
+input[type="month"].form-control {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    width: 100%;
+}
+
+input[type="month"].form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* 折叠面板样式 */
+.report-panel {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.report-panel:hover {
+    box-shadow: var(--card-shadow);
+}
+
+.report-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    background: var(--card-bg);
+    transition: background 0.2s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.report-panel-header:hover {
+    background: var(--bg-color);
+}
+
+.report-panel.expanded .report-panel-header {
+    border-bottom-color: var(--border-color);
+}
+
+.report-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--heading-color);
+}
+
+.report-title .icon {
+    background-color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.report-toggle-icon {
+    width: 20px;
+    height: 20px;
+    background-color: var(--muted-text);
+    transition: transform 0.3s ease;
+}
+
+.report-panel-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.report-panel.expanded .report-panel-body {
+    max-height: 300px;
+    padding: 1.5rem;
+}
+
+.report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta-label {
+    color: var(--muted-text);
+    font-size: 0.875rem;
+}
+
+.meta-value {
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.report-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.report-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.report-actions .btn .icon {
+    background-color: currentColor;
+}
+
+/* 管理员区域样式 */
+.admin-section {
+    margin-top: 2rem;
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.divider-text {
+    color: var(--muted-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .month-selector-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .month-selector-row .form-group {
+        max-width: none;
+    }
+
+    .month-selector-row .btn {
+        width: 100%;
+    }
+
+    .report-panel-header {
+        padding: 1rem 1.25rem;
+    }
+
+    .report-title {
+        font-size: 1rem;
+    }
+
+    .report-meta {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .report-actions {
+        flex-direction: column;
+    }
+
+    .report-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

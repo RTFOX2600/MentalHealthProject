@@ -154,11 +154,13 @@
 
 code {
     background: var(--input-bg);
-    padding: 0.2rem 0.5rem;
+    padding: 0.3rem 0.5rem 0.2rem 0.5rem;
+	margin: 0 0.2rem;
     border-radius: 0.25rem;
     font-size: 0.9em;
-    color: var(--primary-color);
+    color: var(--success-color);
     font-family: 'Courier New', monospace;
+	font-weight: bold;
 }
 
 @keyframes fadeInUp {
@@ -189,8 +191,11 @@ code {
     </div>
     <div class="help-section fade-in-up" style="animation-delay: 0.2s;">
         <div class="info-box success">
-            <p><strong>当前测试数据时间范围：</strong>2024-01-01 至 2024-04-01</p>
-            <p style="margin-top: 0.5rem;">所有数据（如基本信息、食堂消费、门禁记录等）均基于此时间段随机生成。查询时请选择此范围内的日期以获取完整数据。</p>
+            <p><strong>当前测试数据时间范围：</strong>2024-01-01 至 2024-04-30</p>
+            <p style="margin-top: 0.5rem;">
+	            所有数据（如基本信息、食堂消费、门禁记录等）均基于此时间段随机生成。
+	            查询时请<code>选择此范围内的日期</code>以获取完整数据。
+            </p>
         </div>
     </div>
 
@@ -201,7 +206,9 @@ code {
     </div>
     <div class="help-section fade-in-up" style="animation-delay: 0.3s;">
         <p style="color: var(--text-color); line-height: 1.8; margin-bottom: 1.5rem;">
-            数据分析页面提供了强大的学生行为数据筛选和统计功能，支持多维度查询、实时排序和批量导出。您可以根据学院、专业、年级等条件快速定位目标学生群体，并查看他们的消费、门禁、网络使用和学业表现等数据。
+            数据分析页面提供了强大的学生行为<code>数据筛选</code>和<code>统计</code>功能，
+	        支持<code>多维度查询</code>、<code>实时排序</code>和<code>批量导出</code>。
+	        您可以根据学院、专业、年级等条件快速定位目标学生群体，并查看他们的消费、门禁、网络使用和学业表现等数据。
         </p>
     </div>
 
@@ -274,12 +281,12 @@ code {
         <div class="step-card">
             <div class="step-title">
                 <span class="step-number">2</span>
-                点击"查询"按钮
+                点击<code>查询</code>按钮
             </div>
             <div class="step-content">
-                <p>设置好筛选条件后，点击查询按钮，系统将根据您的条件实时计算并显示结果。</p>
+                <p>设置好筛选条件后，点击<code>查询</code>按钮，系统将根据您的条件实时计算并显示结果。</p>
                 <div class="info-box warning" style="margin-top: 1rem;">
-                    <p><strong>注意：</strong>如果选择了统计类数据表（如食堂消费、成绩记录等），请务必设置有效的时间范围，否则统计结果可能为空。测试数据时间范围：2024-01-01 至 2024-04-01。</p>
+                    <p><strong>注意：</strong>如果选择了统计类数据表（如食堂消费、成绩记录等），请务必设置有效的时间范围，否则统计结果可能为空。测试数据时间范围：<code>2024-01-01 至 2024-04-30</code>。</p>
                 </div>
             </div>
         </div>
@@ -294,11 +301,11 @@ code {
                 <p><strong>查看数据：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                     <li>表格将显示符合条件的学生数据，右上角会显示总人数</li>
-                    <li>可以点击某一行查看详细信息</li>
+	                <li>可以<code>点击某一行</code>查看详细信息</li>
                 </ul>
                 <p style="margin-top: 1rem;"><strong>排序功能：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                    <li>点击表头字段可进行排序（如点击"月均消费"按消费金额排序）</li>
+                    <li>点击<code>表头</code>可进行排序（如点击"月均消费"按消费金额排序）</li>
                     <li>再次点击可切换升序/降序</li>
                     <li>表头会显示当前排序状态（↑ 升序，↓ 降序）</li>
                 </ul>
@@ -339,40 +346,9 @@ code {
             <div class="step-content">
                 <p><strong>可能原因：</strong></p>
                 <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                    <li>时间范围设置不正确（请使用 2024-01-01 至 2024-04-01）</li>
+                    <li>时间范围设置不正确（请使用 <code>2024-01-01 至 2024-04-30</code>）</li>
                     <li>筛选条件过于严格（如专业和年级交叉筛选后无匹配学生）</li>
                     <li>该数据表尚无导入数据</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="step-card">
-            <div class="step-title" style="font-size: 1.1rem;">
-                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
-                消费趋势/成绩趋势是如何计算的？（四个月）
-            </div>
-            <div class="step-content">
-                <p><strong>计算规则：</strong></p>
-                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                    <li><strong>消费趋势</strong>：（最后两月平均消费 - 最初两月平均消费）/ 最初两月平均消费 × 100%</li>
-                    <li><strong>成绩趋势</strong>：（最后两月平均成绩 - 最初两月平均成绩）/ 最初两月平均成绩 × 100%</li>
-                    <li>正数表示上升（绿色显示），负数表示下降（红色显示）</li>
-                    <li>需要至少两个月的数据才能计算趋势</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="step-card">
-            <div class="step-title" style="font-size: 1.1rem;">
-                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
-                夜间/深夜是如何定义的？
-            </div>
-            <div class="step-content">
-                <p><strong>时间定义：</strong></p>
-                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-                    <li><strong>夜间时段</strong>：22:00 - 23:59（晚10点至深夜前）</li>
-                    <li><strong>深夜时段</strong>：00:00 - 05:59（午夜至早晨）</li>
-                    <li>这些时段的进出次数和上网时长会单独统计，用于识别异常作息</li>
                 </ul>
             </div>
         </div>
@@ -390,7 +366,57 @@ code {
                 </ul>
             </div>
         </div>
+
+	    <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                消费趋势/成绩趋势是如何计算的？
+            </div>
+            <div class="step-content">
+                <p><strong>计算规则：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li><strong>消费趋势</strong>：<code>（最后两月消费 - 最初两月消费）/ 最初两月消费 × 100%</code></li>
+                    <li><strong>成绩趋势</strong>：<code>（最后两月成绩 - 最初两月成绩）/ 最初两月成绩 × 100%</code></li>
+                    <li>正数表示上升（绿色显示），负数表示下降（红色显示）</li>
+                    <li>需要至少两个月的数据才能计算趋势</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                夜间/深夜是如何定义的？
+            </div>
+            <div class="step-content">
+	            <p><strong>1. 校门、寝室门禁：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+	                <li><strong>夜间时段</strong>：<code>22:00 - 24:00</code></li>
+                    <li><strong>深夜时段</strong>：<code>00:00 - 06:00</code></li>
+                </ul>
+	            <p><strong>2. 网络访问记录：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li><strong>夜间时段</strong>：<code>21:00 - 次日 01:00</code></li>
+                    <li><strong>深夜时段</strong>：<code>01:00 - 05:00</code></li>
+                </ul>
+            </div>
+        </div>
+
+	    <div class="step-card">
+            <div class="step-title" style="font-size: 1.1rem;">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/help-circle.svg' %}'); mask-image: url('{% static 'icons/help-circle.svg' %}'); background-color: var(--primary-color); width: 24px; height: 24px; margin-right: 0.75rem;"></span>
+                用网占比是如何计算的？
+            </div>
+            <div class="step-content">
+                <p><strong>计算规则：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>例如：如果在深夜使用了网络，则标记当天深夜用网</li>
+	                <li>那么<code>深夜用网占比</code>的计算公式为：<code>（深夜用网天数 / 总天数）× 100%</code></li>
+                </ul>
+            </div>
+        </div>
     </div>
+
 
     <!-- 技巧提示 -->
     <div class="section-title fade-in-up" style="animation-delay: 0.65s;">
@@ -415,7 +441,7 @@ code {
     </div>
     <div class="help-section fade-in-up" style="animation-delay: 0.8s;">
         <div class="contact-card" style="background: var(--card-bg); border: 2px solid var(--border-color); border-left: 5px solid var(--primary-color); border-radius: 1rem; padding: 1.5rem;">
-            <p style="color: var(--text-color); line-height: 1.8; margin-bottom: 1rem;">
+            <p style="color: var(--text-color); line-height: 1.8;">
                 如果在使用过程中遇到问题或有功能建议，欢迎联系系统管理员：
             </p>
             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -423,10 +449,10 @@ code {
                     <strong>史天润：</strong>
                     <a class="external-link" href="mailto:2652205627@qq.com">2652205627@qq.com</a>
                 </p>
-                <p style="margin: 0; color: var(--text-color);">
-                    <strong>申卓毅：</strong>
-                    <a class="external-link" href="mailto:1578093978@qq.com">1578093978@qq.com</a>
-                </p>
+{#                <p style="margin: 0; color: var(--text-color);">#}
+{#                    <strong>申卓毅：</strong>#}
+{#                    <a class="external-link" href="mailto:1578093978@qq.com">1578093978@qq.com</a>#}
+{#                </p>#}
             </div>
         </div>
     </div>

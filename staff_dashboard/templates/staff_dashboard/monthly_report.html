@@ -3,14 +3,292 @@
 
 {% block title %}每月报表 - 工作台{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/monthly_report.css' %}">
+{% endblock %}
+
 {% block dashboard_content %}
-<div class="page-header fade-in-up" style="animation-delay: 0.3s;">
+<div class="page-header fade-in-up" style="animation-delay: 0.1s;">
     <h2>每月报表</h2>
-    <p class="page-description">月度数据汇总与报表生成</p>
+    <p class="page-description">月度数据汇总与报表下载</p>
 </div>
 
-<div class="empty-placeholder fade-in-up" style="animation-delay: 0.4s;">
-    <div class="empty-icon" style="-webkit-mask-image: url('{% static 'icons/python.svg' %}'); mask-image: url('{% static 'icons/python.svg' %}');"></div>
-    <p>功能开发中...</p>
+<!-- 月份选择器 -->
+<div class="filter-card fade-in-up" style="animation-delay: 0.2s; margin-bottom: 1.5rem;">
+    <div class="month-selector-row">
+        <div class="form-group">
+            <label class="form-label" for="report-month">选择月份</label>
+            <input type="month" id="report-month" class="form-control">
+        </div>
+        <button class="btn btn-primary" onclick="loadMonthlyReports()">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/search.svg' %}'); mask-image: url('{% static 'icons/search.svg' %}'); width: 16px; height: 16px;"></span>
+            查询报表
+        </button>
+    </div>
 </div>
+
+<!-- 报表列表（折叠面板） -->
+<div id="report-list" class="fade-in-up" style="animation-delay: 0.3s;">
+    <!-- 学生心理健康分析报表 -->
+    <div class="report-panel" data-report-type="mental_health">
+        <div class="report-panel-header" onclick="togglePanel(this)">
+            <div class="report-title">
+                <span class="icon report-toggle-icon" style="-webkit-mask-image: url('{% static 'icons/chevron-right.svg' %}'); mask-image: url('{% static 'icons/chevron-right.svg' %}');"></span>
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/heart-pulse.svg' %}'); mask-image: url('{% static 'icons/heart-pulse.svg' %}'); width: 20px; height: 20px;"></span>
+                <span>学生心理健康分析报表</span>
+            </div>
+            <div class="report-status" id="status-mental_health">
+                <span class="badge bg-secondary">未生成</span>
+            </div>
+        </div>
+        <div class="report-panel-body">
+            <div class="report-meta">
+                <div class="meta-item">
+                    <span class="meta-label">生成时间：</span>
+                    <span class="meta-value" id="time-mental_health">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">数据条数：</span>
+                    <span class="meta-value" id="count-mental_health">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">文件大小：</span>
+                    <span class="meta-value" id="size-mental_health">-</span>
+                </div>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-outline-secondary" onclick="previewReport('mental_health')" disabled id="preview-mental_health">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/eye.svg' %}'); mask-image: url('{% static 'icons/eye.svg' %}'); width: 16px; height: 16px;"></span>
+                    预览
+                </button>
+                <button class="btn btn-primary" onclick="downloadReport('mental_health', 'excel')" disabled id="download-excel-mental_health">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/download.svg' %}'); mask-image: url('{% static 'icons/download.svg' %}'); width: 16px; height: 16px;"></span>
+                    下载 Excel
+                </button>
+                <button class="btn btn-outline-primary" onclick="downloadReport('mental_health', 'csv')" disabled id="download-csv-mental_health">
+                    下载 CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 精准思政多维分析报表 -->
+    <div class="report-panel" data-report-type="ideology">
+        <div class="report-panel-header" onclick="togglePanel(this)">
+            <div class="report-title">
+                <span class="icon report-toggle-icon" style="-webkit-mask-image: url('{% static 'icons/chevron-right.svg' %}'); mask-image: url('{% static 'icons/chevron-right.svg' %}');"></span>
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/lightbulb.svg' %}'); mask-image: url('{% static 'icons/lightbulb.svg' %}'); width: 20px; height: 20px;"></span>
+                <span>精准思政多维分析报表</span>
+            </div>
+            <div class="report-status" id="status-ideology">
+                <span class="badge bg-secondary">未生成</span>
+            </div>
+        </div>
+        <div class="report-panel-body">
+            <div class="report-meta">
+                <div class="meta-item">
+                    <span class="meta-label">生成时间：</span>
+                    <span class="meta-value" id="time-ideology">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">数据条数：</span>
+                    <span class="meta-value" id="count-ideology">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">文件大小：</span>
+                    <span class="meta-value" id="size-ideology">-</span>
+                </div>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-outline-secondary" onclick="previewReport('ideology')" disabled id="preview-ideology">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/eye.svg' %}'); mask-image: url('{% static 'icons/eye.svg' %}'); width: 16px; height: 16px;"></span>
+                    预览
+                </button>
+                <button class="btn btn-primary" onclick="downloadReport('ideology', 'excel')" disabled id="download-excel-ideology">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/download.svg' %}'); mask-image: url('{% static 'icons/download.svg' %}'); width: 16px; height: 16px;"></span>
+                    下载 Excel
+                </button>
+                <button class="btn btn-outline-primary" onclick="downloadReport('ideology', 'csv')" disabled id="download-csv-ideology">
+                    下载 CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 食堂消费趋势报表 -->
+    <div class="report-panel" data-report-type="canteen">
+        <div class="report-panel-header" onclick="togglePanel(this)">
+            <div class="report-title">
+                <span class="icon report-toggle-icon" style="-webkit-mask-image: url('{% static 'icons/chevron-right.svg' %}'); mask-image: url('{% static 'icons/chevron-right.svg' %}');"></span>
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/cup-hot.svg' %}'); mask-image: url('{% static 'icons/cup-hot.svg' %}'); width: 20px; height: 20px;"></span>
+                <span>食堂消费趋势报表</span>
+            </div>
+            <div class="report-status" id="status-canteen">
+                <span class="badge bg-secondary">未生成</span>
+            </div>
+        </div>
+        <div class="report-panel-body">
+            <div class="report-meta">
+                <div class="meta-item">
+                    <span class="meta-label">生成时间：</span>
+                    <span class="meta-value" id="time-canteen">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">数据条数：</span>
+                    <span class="meta-value" id="count-canteen">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">文件大小：</span>
+                    <span class="meta-value" id="size-canteen">-</span>
+                </div>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-outline-secondary" onclick="previewReport('canteen')" disabled id="preview-canteen">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/eye.svg' %}'); mask-image: url('{% static 'icons/eye.svg' %}'); width: 16px; height: 16px;"></span>
+                    预览
+                </button>
+                <button class="btn btn-primary" onclick="downloadReport('canteen', 'excel')" disabled id="download-excel-canteen">
+                    <span class="icon" style="-webkit-mask-image: url('{% static 'icons/download.svg' %}'); mask-image: url('{% static 'icons/download.svg' %}'); width: 16px; height: 16px;"></span>
+                    下载 Excel
+                </button>
+                <button class="btn btn-outline-primary" onclick="downloadReport('canteen', 'csv')" disabled id="download-csv-canteen">
+                    下载 CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 管理员专属：生成报表区域 -->
+{% if user.is_superuser %}
+<div class="admin-section fade-in-up" style="animation-delay: 0.4s; margin-top: 2rem;">
+    <div class="section-divider">
+        <span class="divider-line"></span>
+        <span class="divider-text">管理员功能</span>
+        <span class="divider-line"></span>
+    </div>
+    
+    <div class="filter-card" style="background-color: var(--bg-color); border: 1px solid var(--border-color);">
+        <h4 style="margin-bottom: 1rem; color: var(--primary-color);">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/gear.svg' %}'); mask-image: url('{% static 'icons/gear.svg' %}'); width: 20px; height: 20px;"></span>
+            生成数据报表
+        </h4>
+        <div class="month-selector-row">
+            <div class="form-group">
+                <label class="form-label" for="generate-month">选择月份</label>
+                <input type="month" id="generate-month" class="form-control">
+            </div>
+            <button class="btn btn-success" onclick="generateMonthlyReports()">
+                <span class="icon" style="-webkit-mask-image: url('{% static 'icons/play-circle.svg' %}'); mask-image: url('{% static 'icons/play-circle.svg' %}'); width: 16px; height: 16px;"></span>
+                生成报表
+            </button>
+        </div>
+        <p class="text-muted" style="margin-top: 0.75rem; font-size: 0.875rem;">
+            <span class="icon" style="-webkit-mask-image: url('{% static 'icons/info-circle.svg' %}'); mask-image: url('{% static 'icons/info-circle.svg' %}'); width: 14px; height: 14px;"></span>
+            点击生成后，系统将自动计算并生成该月份的所有报表数据。此操作可能需要几分钟时间。
+        </p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    // 初始化月份选择器为当前月份
+    document.addEventListener('DOMContentLoaded', function() {
+        const now = new Date();
+        const yearMonth = now.toISOString().slice(0, 7);
+        document.getElementById('report-month').value = yearMonth;
+        
+        const generateMonthInput = document.getElementById('generate-month');
+        if (generateMonthInput) {
+            generateMonthInput.value = yearMonth;
+        }
+    });
+
+    // 切换折叠面板
+    function togglePanel(header) {
+        const panel = header.parentElement;
+        const icon = header.querySelector('.report-toggle-icon');
+        const isExpanded = panel.classList.contains('expanded');
+        
+        // 关闭所有其他面板
+        document.querySelectorAll('.report-panel').forEach(p => {
+            p.classList.remove('expanded');
+            p.querySelector('.report-toggle-icon').style.transform = 'rotate(0deg)';
+        });
+        
+        // 切换当前面板
+        if (!isExpanded) {
+            panel.classList.add('expanded');
+            icon.style.transform = 'rotate(90deg)';
+        }
+    }
+
+    // 加载月度报表
+    function loadMonthlyReports() {
+        const month = document.getElementById('report-month').value;
+        if (!month) {
+            showToast('请选择月份', 'warning');
+            return;
+        }
+        
+        // TODO: 调用API获取报表列表
+        console.log('加载月份报表:', month);
+        showToast('正在加载报表数据...', 'info');
+    }
+
+    // 预览报表
+    function previewReport(reportType) {
+        console.log('预览报表:', reportType);
+        showToast('预览功能开发中...', 'info');
+    }
+
+    // 下载报表
+    function downloadReport(reportType, format) {
+        console.log('下载报表:', reportType, format);
+        showToast(`正在下载 ${format.toUpperCase()} 格式...`, 'info');
+    }
+
+    // 生成月度报表（管理员功能）
+    function generateMonthlyReports() {
+        const month = document.getElementById('generate-month').value;
+        if (!month) {
+            showToast('请选择月份', 'warning');
+            return;
+        }
+        
+        showConfirmDialog({
+            title: '确认生成报表',
+            message: `确定要生成 ${month} 月份的数据报表吗？此操作可能需要几分钟时间。`,
+            primaryText: '确认生成',
+            secondaryText: '取消',
+            onPrimary: function() {
+                console.log('生成月份报表:', month);
+                showToast('报表生成任务已提交，请稍后刷新查看', 'success');
+            }
+        });
+    }
+
+    // 简单的Toast提示（如果页面没有全局的showToast函数）
+    function showToast(message, type = 'info') {
+        if (typeof window.showToast === 'function' && window.showToast !== showToast) {
+            window.showToast(message, type);
+        } else {
+            alert(message);
+        }
+    }
+
+    // 确认对话框（如果页面没有全局的showConfirmDialog函数）
+    function showConfirmDialog(options) {
+        if (typeof window.showConfirmDialog === 'function' && window.showConfirmDialog !== showConfirmDialog) {
+            window.showConfirmDialog(options);
+        } else {
+            if (confirm(options.message)) {
+                options.onPrimary();
+            }
+        }
+    }
+</script>
 {% endblock %}

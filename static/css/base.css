@@ -355,7 +355,6 @@ form li {
 }
 
 /* 图标系统 (Mask 方案) */
-/*noinspection DuplicatedCode*/
 .icon {
     display: inline-block;
     width: 1.25rem;
@@ -369,6 +368,7 @@ form li {
     mask-position: center;
     margin-right: 0.35rem;
     transition: background-color 0.4s ease;
+    vertical-align: middle;
 }
 
 /* 全局响应式微调 */
