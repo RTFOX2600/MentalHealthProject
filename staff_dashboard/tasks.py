@@ -2,13 +2,9 @@
 工作台数据导入 Celery 异步任务
 支持大文件批量处理、数据验证、错误收集、每日统计计算
 """
-import time
-
 from celery import shared_task
 from django.db import transaction
 from django.utils import timezone
-from django.db.models import Avg, Count, Sum, Q, F
-from datetime import datetime, timedelta
 import pandas as pd
 import io
 import base64

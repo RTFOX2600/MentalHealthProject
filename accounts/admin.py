@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.utils.html import format_html
 from django.utils import timezone
 import json
 from .models import User, College, Major, Grade, ProfileChangeRequest
@@ -85,7 +84,8 @@ class ProfileChangeRequestAdmin(admin.ModelAdmin):
     readonly_fields = ['user', 'change_type', 'created_at', 'get_current_info', 'get_requested_info']
     actions = ['approve_change', 'reject_change']
     ordering = ['-created_at']
-    
+
+    # noinspection PyUnresolvedReferences
     fieldsets = (
         ('申请信息', {
             'fields': ('user', 'change_type', 'status', 'created_at')
@@ -153,10 +153,12 @@ class ProfileChangeRequestAdmin(admin.ModelAdmin):
     def get_current_info(self, obj):
         """显示当前信息"""
         user = obj.user
+        # noinspection DuplicatedCode
         if obj.change_type == 'role_change':
             role_choices = dict(User.ROLE_CHOICES)
             return f"当前角色: {role_choices.get(user.role, '未知')}"
         elif obj.change_type == 'student_info':
+            # noinspection DuplicatedCode
             current = []
             if user.student_college:
                 current.append(f"学院: {user.student_college.name}")
@@ -181,10 +183,12 @@ class ProfileChangeRequestAdmin(admin.ModelAdmin):
     
     def get_requested_info(self, obj):
         """显示申请信息"""
+        # noinspection DuplicatedCode
         if obj.change_type == 'role_change':
             role_choices = dict(User.ROLE_CHOICES)
             return f"申请角色: {role_choices.get(obj.requested_role, '未知')}"
         elif obj.change_type == 'student_info':
+            # noinspection DuplicatedCode
             requested = []
             if obj.requested_student_college:
                 requested.append(f"学院: {obj.requested_student_college.name}")

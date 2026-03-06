@@ -85,18 +85,6 @@
     background: var(--input-bg);
 }
 
-/* 日期选择器日历图标 - 暗色模式适配 */
-input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    filter: none;
-}
-
-@media (prefers-color-scheme: dark) {
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-    }
-}
-
 /* ========== 按钮组 ========== */
 .btn-group {
     display: flex;

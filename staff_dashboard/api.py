@@ -5,7 +5,6 @@
 from ninja import Router, Schema, File
 from ninja.files import UploadedFile
 from typing import Optional, List
-from django.http import JsonResponse
 import base64
 
 router = Router(tags=["工作台-数据导入"])
@@ -61,21 +60,21 @@ def import_students(request, file: UploadedFile = File(...)):
     3. 批量创建或更新学生记录
     4. 返回导入统计
     """
-    if not request.user.role in ['counselor', 'admin']:
+    if request.user.role not in ['counselor', 'admin']:
         return 400, {"status": "error", "detail": "权限不足"}
-    
+
     try:
         from .tasks import import_students_task
-        
+
         file_content = file.read()
         file_b64 = base64.b64encode(file_content).decode('utf-8')
-        
+
         task = import_students_task.delay(
             user_id=request.user.id,
             file_content=file_b64,
             filename=file.name
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -101,22 +100,22 @@ def import_canteen_records(request, file: UploadedFile = File(...)):
     - 学号必须在学生表中存在
     - 同一学生同一月份只能有一条记录（重复则更新）
     """
-    if not request.user.role in ['counselor', 'admin']:
+    if request.user.role not in ['counselor', 'admin']:
         return 400, {"status": "error", "detail": "权限不足"}
-    
+
     try:
         from .tasks import import_records_task
-        
+
         file_content = file.read()
         file_b64 = base64.b64encode(file_content).decode('utf-8')
-        
+
         task = import_records_task.delay(
             user_id=request.user.id,
             record_type='canteen',
             file_content=file_b64,
             filename=file.name
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -139,22 +138,22 @@ def import_school_gate_records(request, file: UploadedFile = File(...)):
     - 校门位置 (如 北门)
     - 进出方向 (进 或 出)
     """
-    if not request.user.role in ['counselor', 'admin']:
+    if request.user.role not in ['counselor', 'admin']:
         return 400, {"status": "error", "detail": "权限不足"}
-    
+
     try:
         from .tasks import import_records_task
-        
+
         file_content = file.read()
         file_b64 = base64.b64encode(file_content).decode('utf-8')
-        
+
         task = import_records_task.delay(
             user_id=request.user.id,
             record_type='school-gate',
             file_content=file_b64,
             filename=file.name
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -177,22 +176,22 @@ def import_dormitory_records(request, file: UploadedFile = File(...)):
     - 寝室楼栋 (如 12栋)
     - 进出方向 (进 或 出)
     """
-    if not request.user.role in ['counselor', 'admin']:
+    if request.user.role not in ['counselor', 'admin']:
         return 400, {"status": "error", "detail": "权限不足"}
-    
+
     try:
         from .tasks import import_records_task
-        
+
         file_content = file.read()
         file_b64 = base64.b64encode(file_content).decode('utf-8')
-        
+
         task = import_records_task.delay(
             user_id=request.user.id,
             record_type='dormitory',
             file_content=file_b64,
             filename=file.name
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -215,22 +214,22 @@ def import_network_records(request, file: UploadedFile = File(...)):
     - 结束时间 (时间戳格式)
     - 是否使用VPN (是/否 或 True/False)
     """
-    if not request.user.role in ['counselor', 'admin']:
+    if request.user.role not in ['counselor', 'admin']:
         return 400, {"status": "error", "detail": "权限不足"}
-    
+
     try:
         from .tasks import import_records_task
-        
+
         file_content = file.read()
         file_b64 = base64.b64encode(file_content).decode('utf-8')
-        
+
         task = import_records_task.delay(
             user_id=request.user.id,
             record_type='network',
             file_content=file_b64,
             filename=file.name
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -255,22 +254,22 @@ def import_academic_records(request, file: UploadedFile = File(...)):
     **注意事项**：
     - 同一学生同一月份只能有一条记录（重复则更新）
     """
-    if not request.user.role in ['counselor', 'admin']:
+    if request.user.role not in ['counselor', 'admin']:
         return 400, {"status": "error", "detail": "权限不足"}
-    
+
     try:
         from .tasks import import_records_task
-        
+
         file_content = file.read()
         file_b64 = base64.b64encode(file_content).decode('utf-8')
-        
+
         task = import_records_task.delay(
             user_id=request.user.id,
             record_type='academic',
             file_content=file_b64,
             filename=file.name
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -288,12 +287,12 @@ def check_import_status(request, task_id: str):
     返回任务的执行进度、成功/失败状态、错误信息等
     """
     from celery.result import AsyncResult
-    
+
     task = AsyncResult(task_id)
-    
+
     if task.state == 'PENDING':
         return {"status": "pending", "message": "任务排队中...", "current": 0}
-    
+
     elif task.state in ['PARSING', 'VALIDATING', 'PROCESSING', 'IMPORTING']:
         info = task.info if isinstance(task.info, dict) else {}
         return {
@@ -303,12 +302,12 @@ def check_import_status(request, task_id: str):
             "message": info.get('message', '处理中...'),
             "records": info.get('records', 0)
         }
-    
+
     elif task.state == 'SUCCESS':
         result = task.result
         if not isinstance(result, dict):
             return {"status": "error", "message": f"任务执行异常: {str(result)}", "current": 100}
-        
+
         return {
             "status": "success" if result.get('status') == 'success' else "error",
             "message": result.get('message', '导入完成'),
@@ -316,7 +315,7 @@ def check_import_status(request, task_id: str):
             "records": result.get('records'),
             "errors": result.get('errors', [])
         }
-    
+
     return {
         "status": "error",
         "message": str(task.info) if task.info else "任务执行失败",
@@ -336,7 +335,7 @@ def get_import_summary(request):
         DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord,
         DailyStatistics
     )
-    
+
     # 根据用户权限筛选学生
     if request.user.role == 'admin':
         students = Student.objects.all()
@@ -345,7 +344,7 @@ def get_import_summary(request):
         managed_colleges = request.user.managed_colleges.all()
         managed_majors = request.user.managed_majors.all()
         managed_grades = request.user.managed_grades.all()
-        
+
         students = Student.objects.filter(
             college__in=managed_colleges,
             major__in=managed_majors,
@@ -353,9 +352,9 @@ def get_import_summary(request):
         ).distinct()
     else:
         students = Student.objects.none()
-    
+
     student_ids = list(students.values_list('id', flat=True))
-    
+
     return {
         "total_students": students.count(),
         "total_records": {
@@ -390,15 +389,15 @@ def calculate_daily_statistics(request, payload: StatisticsCalculationRequest):
     """
     if not request.user.is_superuser:
         return 400, {"status": "error", "detail": "仅管理员可以触发统计"}
-    
+
     try:
         from .tasks import calculate_daily_statistics_task
-        
+
         task = calculate_daily_statistics_task.delay(
             start_date=payload.start_date,
             end_date=payload.end_date
         )
-        
+
         return 200, {
             "status": "submitted",
             "task_id": task.id,
@@ -425,16 +424,16 @@ def clear_statistics(request):
     """
     if not request.user.is_superuser:
         return 400, {"status": "error", "detail": "仅管理员可以执行此操作"}
-    
+
     try:
         from .models import DailyStatistics
-        
+
         # 记录删除前的数据量
         deleted_count = DailyStatistics.objects.count()
-        
+
         # 执行删除
         DailyStatistics.objects.all().delete()
-        
+
         return 200, {
             "status": "success",
             "message": "每日统计已清空",
@@ -466,7 +465,7 @@ def clear_all_data(request):
     """
     if not request.user.is_superuser:
         return 400, {"status": "error", "detail": "仅管理员可以执行此操作"}
-    
+
     try:
         from .models import (
             Student,
@@ -477,7 +476,7 @@ def clear_all_data(request):
             AcademicRecord,
             DailyStatistics
         )
-        
+
         # 记录删除前的数据量
         deleted_counts = {
             'students': Student.objects.count(),
@@ -488,7 +487,7 @@ def clear_all_data(request):
             'academic': AcademicRecord.objects.count(),
             'statistics': DailyStatistics.objects.count()
         }
-        
+
         # 执行删除（按依赖关系从子表到主表）
         DailyStatistics.objects.all().delete()  # 先删除统计结果
         AcademicRecord.objects.all().delete()
@@ -497,7 +496,7 @@ def clear_all_data(request):
         SchoolGateAccessRecord.objects.all().delete()
         CanteenConsumptionRecord.objects.all().delete()
         Student.objects.all().delete()
-        
+
         return 200, {
             "status": "success",
             "message": "所有数据已清空",

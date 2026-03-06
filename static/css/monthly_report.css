@@ -2,42 +2,28 @@
    每月报表页面样式
    ======================================== */
 
+/* 筛选卡片容器 */
+.filter-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+}
+
 /* 月份选择器与按钮同行布局 */
 .month-selector-row {
     display: flex;
     align-items: flex-end;
     gap: 1rem;
-    flex-wrap: wrap;
 }
 
 .month-selector-row .form-group {
-    flex: 1;
     min-width: 200px;
     max-width: 300px;
 }
 
 .month-selector-row .btn {
-    flex-shrink: 0;
     height: fit-content;
-}
-
-/* 月份输入框样式 */
-input[type="month"].form-control {
-    appearance: none;
-    -webkit-appearance: none;
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 0.625rem 0.875rem;
-    font-size: 0.9375rem;
-    width: 100%;
-}
-
-input[type="month"].form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 /* 折叠面板样式 */
@@ -174,7 +160,7 @@ input[type="month"].form-control:focus {
 }
 
 /* 响应式调整 */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
     .month-selector-row {
         flex-direction: column;
         align-items: stretch;

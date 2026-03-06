@@ -1,4 +1,6 @@
-from django.http import HttpResponse, JsonResponse
+from typing import Any
+
+from django.http import HttpResponse, JsonResponse, HttpRequest
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -16,6 +18,7 @@ from .core import (
 )
 import hashlib
 import json
+from datetime import datetime, timedelta
 
 
 def check_staff_permission(user) -> bool:
@@ -153,6 +156,70 @@ def data_analysis_help(request) -> HttpResponse:
     return render(request, 'staff_dashboard/data_analysis_help.html', context)
 
 
+def _from_one_student_stat_to_dict(student: Student) -> dict[str, Any]:
+    return {
+        'id': student.id,
+        'student_id': student.student_id,
+        'name': student.name,
+        'college': {
+            'id': student.college.id,
+            'name': student.college.name,
+            'code': student.college.code,
+        },
+        'major': {
+            'id': student.major.id,
+            'name': student.major.name,
+            'code': student.major.code,
+        },
+        'grade': {
+            'id': student.grade.id,
+            'name': student.grade.name,
+            'year': student.grade.year,
+        },
+    }
+
+
+def _from_request_to_query_info(request: HttpRequest):
+    # 获取基础查询集（带权限过滤）
+    queryset = filter_students_by_permission(request.user)
+
+    # 筛选条件
+    college_id = request.GET.get('college')
+    if college_id:
+        queryset = queryset.filter(college_id=college_id)
+
+    major_id = request.GET.get('major')
+    if major_id:
+        queryset = queryset.filter(major_id=major_id)
+
+    grade_id = request.GET.get('grade')
+    if grade_id:
+        queryset = queryset.filter(grade_id=grade_id)
+
+    search = request.GET.get('search', '').strip()
+    if search:
+        queryset = queryset.filter(
+            Q(name__icontains=search) | Q(student_id__icontains=search)
+        )
+    return queryset, college_id, major_id, grade_id, search
+
+
+def _get_page_info(request: HttpRequest):
+    try:
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 20))
+    except ValueError:
+        page = 1
+        page_size = 20
+
+    # 限制每页数量
+    page_size = min(max(page_size, 10), 100)
+
+    start = (page - 1) * page_size
+    end = start + page_size
+    return page, page_size, start, end
+
+
 @login_required
 def api_student_list(request) -> JsonResponse:
     """
@@ -170,27 +237,7 @@ def api_student_list(request) -> JsonResponse:
     if not check_staff_permission(request.user):
         return JsonResponse({'error': '无权限访问'}, status=403)
     
-    # 获取基础查询集（带权限过滤）
-    queryset = filter_students_by_permission(request.user)
-    
-    # 筛选条件
-    college_id = request.GET.get('college')
-    if college_id:
-        queryset = queryset.filter(college_id=college_id)
-    
-    major_id = request.GET.get('major')
-    if major_id:
-        queryset = queryset.filter(major_id=major_id)
-    
-    grade_id = request.GET.get('grade')
-    if grade_id:
-        queryset = queryset.filter(grade_id=grade_id)
-    
-    search = request.GET.get('search', '').strip()
-    if search:
-        queryset = queryset.filter(
-            Q(name__icontains=search) | Q(student_id__icontains=search)
-        )
+    queryset, *_ = _from_request_to_query_info(request)
     
     # 排序
     order_by = request.GET.get('order_by', 'student_id')
@@ -215,44 +262,14 @@ def api_student_list(request) -> JsonResponse:
     total = queryset.count()
     
     # 分页
-    try:
-        page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 20))
-    except ValueError:
-        page = 1
-        page_size = 20
-    
-    # 限制每页数量
-    page_size = min(max(page_size, 10), 100)
-    
-    start = (page - 1) * page_size
-    end = start + page_size
+    page, page_size, start, end = _get_page_info(request)
     
     students = queryset.select_related('college', 'major', 'grade')[start:end]
     
     # 构建返回数据
     data = []
     for student in students:
-        data.append({
-            'id': student.id,
-            'student_id': student.student_id,
-            'name': student.name,
-            'college': {
-                'id': student.college.id,
-                'name': student.college.name,
-                'code': student.college.code,
-            },
-            'major': {
-                'id': student.major.id,
-                'name': student.major.name,
-                'code': student.major.code,
-            },
-            'grade': {
-                'id': student.grade.id,
-                'name': student.grade.name,
-                'year': student.grade.year,
-            },
-        })
+        data.append(_from_one_student_stat_to_dict(student))
     
     return JsonResponse({
         'success': True,
@@ -276,22 +293,8 @@ def api_student_statistics(request) -> JsonResponse:
     """
     if not check_staff_permission(request.user):
         return JsonResponse({'error': '无权限访问'}, status=403)
-    
-    # 获取基础查询集（带权限过滤）
-    queryset = filter_students_by_permission(request.user)
-    
-    # 筛选条件
-    college_id = request.GET.get('college')
-    if college_id:
-        queryset = queryset.filter(college_id=college_id)
-    
-    major_id = request.GET.get('major')
-    if major_id:
-        queryset = queryset.filter(major_id=major_id)
-    
-    grade_id = request.GET.get('grade')
-    if grade_id:
-        queryset = queryset.filter(grade_id=grade_id)
+
+    queryset, *_ = _from_request_to_query_info(request)
     
     # 分组统计
     group_by = request.GET.get('group_by', 'college')
@@ -367,35 +370,8 @@ def api_data_statistics(request) -> JsonResponse:
     if not check_staff_permission(request.user):
         return JsonResponse({'error': '无权限访问'}, status=403)
 
-    # from .models import (
-    #     CanteenConsumptionRecord, SchoolGateAccessRecord,
-    #     DormitoryAccessRecord, NetworkAccessRecord, AcademicRecord
-    # )
-    from datetime import datetime, timedelta
-    # from django.db.models import Avg, Sum
-    
-    # 获取基础查询集（带权限过滤）
-    students_queryset = filter_students_by_permission(request.user)
-    
-    # 筛选条件
-    college_id = request.GET.get('college')
-    if college_id:
-        students_queryset = students_queryset.filter(college_id=college_id)
-    
-    major_id = request.GET.get('major')
-    if major_id:
-        students_queryset = students_queryset.filter(major_id=major_id)
-    
-    grade_id = request.GET.get('grade')
-    if grade_id:
-        students_queryset = students_queryset.filter(grade_id=grade_id)
-    
-    search = request.GET.get('search', '').strip()
-    if search:
-        students_queryset = students_queryset.filter(
-            Q(name__icontains=search) | Q(student_id__icontains=search)
-        )
-    
+    students_queryset, college_id, major_id, grade_id, search = _from_request_to_query_info(request)
+
     # 获取数据表类型
     data_table = request.GET.get('data_table', 'canteen')
     
@@ -463,26 +439,7 @@ def api_data_statistics(request) -> JsonResponse:
         # 实时计算所有学生的统计数据
         data_with_stats = []
         for student in all_students:
-            result = {
-                'id': student.id,
-                'student_id': student.student_id,
-                'name': student.name,
-                'college': {
-                    'id': student.college.id,
-                    'name': student.college.name,
-                    'code': student.college.code,
-                },
-                'major': {
-                    'id': student.major.id,
-                    'name': student.major.name,
-                    'code': student.major.code,
-                },
-                'grade': {
-                    'id': student.grade.id,
-                    'name': student.grade.name,
-                    'year': student.grade.year,
-                },
-            }
+            result = _from_one_student_stat_to_dict(student)
             
             # 根据数据类型聚合计算统计（基于每日统计）
             if data_type == 'canteen':
@@ -548,20 +505,11 @@ def api_data_statistics(request) -> JsonResponse:
     total_students = len(data_with_stats)
     
     # 分页
-    try:
-        page = int(request.GET.get('page', 1))
-        page_size = int(request.GET.get('page_size', 20))
-    except ValueError:
-        page = 1
-        page_size = 20
-    
-    page_size = min(max(page_size, 10), 100)
-    start_idx = (page - 1) * page_size
-    end_idx = start_idx + page_size
-    
+    page, page_size, start, end = _get_page_info(request)
+
     # 获取当前页数据并移除临时字段
     data = []
-    for item in data_with_stats[start_idx:end_idx]:
+    for item in data_with_stats[start:end]:
         item.pop('_vpn_usage_rate_raw', None)
         item.pop('_night_usage_rate_raw', None)
         item.pop('_late_night_usage_rate_raw', None)

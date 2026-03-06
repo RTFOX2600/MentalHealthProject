@@ -14,6 +14,7 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField(label='电子邮箱', required=True)
     phone_number = forms.CharField(label='电话号码', required=True)
 
+    # noinspection PyUnresolvedReferences
     class Meta(UserCreationForm.Meta):
         model = User
         fields = UserCreationForm.Meta.fields + ('last_name', 'first_name', 'role', 'email', 'phone_number')

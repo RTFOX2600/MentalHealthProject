@@ -88,7 +88,7 @@ def home_view(request):
 
 def about_view(request):
     """关于页面视图"""
-    context = {
+    context: dict[str, Any] = {
         'current_page': 'about',
     }
     return render(request, 'about.html', context)
@@ -96,7 +96,7 @@ def about_view(request):
 
 def test_message_view(request):
     """消息提示测试页面"""
-    context = {
+    context: dict[str, Any] = {
         'current_page': 'test_message',
     }
     return render(request, 'test_message.html', context)

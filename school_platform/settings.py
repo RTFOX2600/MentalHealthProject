@@ -20,9 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 try:
     from dotenv import load_dotenv
     load_dotenv(BASE_DIR / '.env')
-except ImportError:
-    # python-dotenv 未安装，直接使用系统环境变量
-    pass
+except Exception as e:
+    # python-dotenv 未安装
+    print("Error: python-dotenv 未安装")
+    raise e
 
 
 # Quick-start development settings - unsuitable for production

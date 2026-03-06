@@ -6,12 +6,19 @@
 """
 
 from datetime import datetime, timedelta
-from django.db.models import Q
+from typing import Any
+
 from django.utils import timezone
 from collections import defaultdict
 
+from staff_dashboard.models import SchoolGateAccessRecord, DormitoryAccessRecord
 
-def batch_calculate_canteen_stats(students, start_date, end_date):
+
+# dict: {student_id: {date: {stat_col_name: value}}}
+type StatData = dict[str, dict[str, dict[str, Any]]]
+
+
+def batch_calculate_canteen_stats(students, start_date, end_date) -> StatData:
     """
     批量计算食堂消费统计
     
@@ -24,7 +31,8 @@ def batch_calculate_canteen_stats(students, start_date, end_date):
         dict: {student_id: {date: stats_data}}
     """
     from staff_dashboard.models import CanteenConsumptionRecord
-    
+
+    # noinspection DuplicatedCode
     student_ids = [s.id for s in students]
     
     # 生成日期列表
@@ -87,7 +95,70 @@ def batch_calculate_canteen_stats(students, start_date, end_date):
     return results
 
 
-def batch_calculate_gate_stats(students, start_date, end_date):
+def _batch_calculate_gate_or_dorm_stats(
+        students, start_date, end_date,
+        access_record_model: type[SchoolGateAccessRecord] | type[DormitoryAccessRecord]
+) -> StatData:
+    # noinspection DuplicatedCode
+    student_ids = [s.id for s in students]
+
+    # 生成日期列表
+    dates = []
+    current = start_date
+    while current <= end_date:
+        dates.append(current)
+        current += timedelta(days=1)
+
+    # 转换为datetime范围
+    start_datetime = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
+    end_datetime = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
+
+    # 一次性查询所有记录
+    records = access_record_model.objects.filter(
+        student_id__in=student_ids,
+        timestamp__gte=start_datetime,
+        timestamp__lte=end_datetime
+    ).select_related('student')
+
+    # 按学生+日期分组统计
+    student_date_stats = defaultdict(lambda: defaultdict(lambda: {
+        'total': 0,
+        'night': 0,
+        'late_night': 0
+    }))
+
+    for record in records:
+        # 转换为本地时区（Asia/Shanghai）
+        local_time = record.timestamp.astimezone(timezone.get_current_timezone())
+        date_key = local_time.date()
+        hour = local_time.hour
+
+        student_date_stats[record.student_id][date_key]['total'] += 1
+
+        # 夜间时段：22:00 - 23:59
+        if 22 <= hour <= 23:
+            student_date_stats[record.student_id][date_key]['night'] += 1
+        # 深夜时段：00:00 - 05:59
+        elif 0 <= hour <= 5:
+            student_date_stats[record.student_id][date_key]['late_night'] += 1
+
+    # 构建结果
+    results = defaultdict(dict)
+    for student in students:
+        date_stats = student_date_stats.get(student.id, {})
+
+        for date in dates:
+            stats = date_stats.get(date, {'total': 0, 'night': 0, 'late_night': 0})
+            results[student.id][date] = {
+                'total_count': stats['total'],
+                'night_in_out_count': stats['night'],
+                'late_night_in_out_count': stats['late_night']
+            }
+
+    return results
+
+
+def batch_calculate_gate_stats(students, start_date, end_date) -> StatData:
     """
     批量计算校门门禁统计
     
@@ -99,70 +170,16 @@ def batch_calculate_gate_stats(students, start_date, end_date):
     Returns:
         dict: {student_id: {date: stats_data}}
     """
-    from staff_dashboard.models import SchoolGateAccessRecord
-    
-    student_ids = [s.id for s in students]
-    
-    # 生成日期列表
-    dates = []
-    current = start_date
-    while current <= end_date:
-        dates.append(current)
-        current += timedelta(days=1)
-    
-    # 转换为datetime范围
-    start_datetime = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
-    end_datetime = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
-    
-    # 一次性查询所有记录
-    records = SchoolGateAccessRecord.objects.filter(
-        student_id__in=student_ids,
-        timestamp__gte=start_datetime,
-        timestamp__lte=end_datetime
-    ).select_related('student')
-    
-    # 按学生+日期分组统计
-    student_date_stats = defaultdict(lambda: defaultdict(lambda: {
-        'total': 0,
-        'night': 0,
-        'late_night': 0
-    }))
-    
-    for record in records:
-        # 转换为本地时区（Asia/Shanghai）
-        local_time = record.timestamp.astimezone(timezone.get_current_timezone())
-        date_key = local_time.date()
-        hour = local_time.hour
-        
-        student_date_stats[record.student_id][date_key]['total'] += 1
-        
-        # 夜间时段：22:00 - 23:59
-        if 22 <= hour <= 23:
-            student_date_stats[record.student_id][date_key]['night'] += 1
-        # 深夜时段：00:00 - 05:59
-        elif 0 <= hour <= 5:
-            student_date_stats[record.student_id][date_key]['late_night'] += 1
-    
-    # 构建结果
-    results = defaultdict(dict)
-    for student in students:
-        date_stats = student_date_stats.get(student.id, {})
-        
-        for date in dates:
-            stats = date_stats.get(date, {'total': 0, 'night': 0, 'late_night': 0})
-            results[student.id][date] = {
-                'total_count': stats['total'],
-                'night_in_out_count': stats['night'],
-                'late_night_in_out_count': stats['late_night']
-            }
-    
-    return results
+    return _batch_calculate_gate_or_dorm_stats(
+        students, start_date, end_date,
+        SchoolGateAccessRecord
+    )
 
 
-def batch_calculate_dormitory_stats(students, start_date, end_date):
+def batch_calculate_dormitory_stats(students, start_date, end_date) -> StatData:
     """
     批量计算寝室门禁统计
-    
+
     Args:
         students: 学生列表
         start_date: 开始日期
@@ -171,67 +188,13 @@ def batch_calculate_dormitory_stats(students, start_date, end_date):
     Returns:
         dict: {student_id: {date: stats_data}}
     """
-    from staff_dashboard.models import DormitoryAccessRecord
-    
-    student_ids = [s.id for s in students]
-    
-    # 生成日期列表
-    dates = []
-    current = start_date
-    while current <= end_date:
-        dates.append(current)
-        current += timedelta(days=1)
-    
-    # 转换为datetime范围
-    start_datetime = timezone.make_aware(datetime.combine(start_date, datetime.min.time()))
-    end_datetime = timezone.make_aware(datetime.combine(end_date, datetime.max.time()))
-    
-    # 一次性查询所有记录
-    records = DormitoryAccessRecord.objects.filter(
-        student_id__in=student_ids,
-        timestamp__gte=start_datetime,
-        timestamp__lte=end_datetime
-    ).select_related('student')
-    
-    # 按学生+日期分组统计
-    student_date_stats = defaultdict(lambda: defaultdict(lambda: {
-        'total': 0,
-        'night': 0,
-        'late_night': 0
-    }))
-    
-    for record in records:
-        # 转换为本地时区（Asia/Shanghai）
-        local_time = record.timestamp.astimezone(timezone.get_current_timezone())
-        date_key = local_time.date()
-        hour = local_time.hour
-        
-        student_date_stats[record.student_id][date_key]['total'] += 1
-        
-        # 夜间时段：22:00 - 23:59
-        if 22 <= hour <= 23:
-            student_date_stats[record.student_id][date_key]['night'] += 1
-        # 深夜时段：00:00 - 05:59
-        elif 0 <= hour <= 5:
-            student_date_stats[record.student_id][date_key]['late_night'] += 1
-    
-    # 构建结果
-    results = defaultdict(dict)
-    for student in students:
-        date_stats = student_date_stats.get(student.id, {})
-        
-        for date in dates:
-            stats = date_stats.get(date, {'total': 0, 'night': 0, 'late_night': 0})
-            results[student.id][date] = {
-                'total_count': stats['total'],
-                'night_in_out_count': stats['night'],
-                'late_night_in_out_count': stats['late_night']
-            }
-    
-    return results
+    return _batch_calculate_gate_or_dorm_stats(
+        students, start_date, end_date,
+        DormitoryAccessRecord
+    )
 
 
-def batch_calculate_network_stats(students, start_date, end_date):
+def batch_calculate_network_stats(students, start_date, end_date) -> StatData:
     """
     批量计算网络访问统计
     
@@ -244,7 +207,8 @@ def batch_calculate_network_stats(students, start_date, end_date):
         dict: {student_id: {date: stats_data}}
     """
     from staff_dashboard.models import NetworkAccessRecord
-    
+
+    # noinspection DuplicatedCode
     student_ids = [s.id for s in students]
     
     # 生成日期列表
@@ -303,7 +267,7 @@ def batch_calculate_network_stats(students, start_date, end_date):
             tzinfo=local_start.tzinfo
         )
         rec_start_min = int((local_start - day_start).total_seconds() / 60)
-        rec_end_min   = int((local_end   - day_start).total_seconds() / 60)
+        rec_end_min = int((local_end - day_start).total_seconds() / 60)
         # 若结束时间早于开始时间（数据异常），至少保证区间长度为1分钟
         if rec_end_min <= rec_start_min:
             rec_end_min = rec_start_min + 1
@@ -344,7 +308,7 @@ def batch_calculate_network_stats(students, start_date, end_date):
     return results
 
 
-def batch_calculate_academic_stats(students, start_date, end_date):
+def batch_calculate_academic_stats(students, start_date, end_date) -> StatData:
     """
     批量计算成绩统计
     
@@ -357,7 +321,8 @@ def batch_calculate_academic_stats(students, start_date, end_date):
         dict: {student_id: {date: stats_data}}
     """
     from staff_dashboard.models import AcademicRecord
-    
+
+    # noinspection DuplicatedCode
     student_ids = [s.id for s in students]
     
     # 生成日期列表

@@ -1,6 +1,5 @@
 from ninja import NinjaAPI
 from ninja.openapi.docs import Swagger
-from django.contrib.admin.views.decorators import staff_member_required
 
 from mental_health.api import router as mental_health_router
 from staff_dashboard.api import router as staff_dashboard_router
